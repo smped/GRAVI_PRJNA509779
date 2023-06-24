@@ -1,0 +1,37 @@
+## Please see https://steveped.github.io/GRAVI/editing-yaml.html for a description of this file
+samples:
+  file: "config/samples.tsv"
+
+paths:
+  bam: "data/bam"
+
+comparisons:
+  method: "sq-lt"
+  fc: 1.2
+  fdr: 0.05
+  paired: false
+  filter_q: 0.6
+  contrasts:
+    - ["Control", "Treat"]
+  ihw: "regions"
+
+genome:
+  build: "GRCh37"
+  gencode: "33"
+
+external:
+  rnaseq:
+  features:
+  hic:
+  coverage:
+
+peaks:
+  macs2:
+    gsize: "hs"
+    fdr: 0.05
+    keep_duplicates: "all"
+  qc:
+    outlier_threshold: 10
+    allow_zero: true
+    min_prop_reps: 0.5
+
