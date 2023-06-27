@@ -1,6 +1,6 @@
 ## Please see https://steveped.github.io/GRAVI/editing-yaml.html for a description of this file
 samples:
-  file: "config/samples.tsv"
+  file: "config/PRJNA509779.tsv"
 
 paths:
   bam: "data/bam"
@@ -12,8 +12,8 @@ comparisons:
   paired: false
   filter_q: 0.6
   contrasts:
-    - ["Control", "Treat"]
-  ihw: "regions"
+    - ["E2", "E2DHT"]
+  ihw: "targets"
 
 genome:
   build: "GRCh37"

@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>AR: MACS2 Summary</title>
+
+<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<link rel="stylesheet" href="gravi.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">GRAVI</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+<li>
+  <a href="annotation_description.html">Annotations</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    MACS2 Peak Calling
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="AR_macs2_summary.html">AR</a>
+    </li>
+    <li>
+      <a href="ER_macs2_summary.html">ER</a>
+    </li>
+    <li>
+      <a href="H3K27ac_macs2_summary.html">H3K27ac</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Differential Binding
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">AR</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="AR_E2_E2DHT_differential_binding.html">E2DHT Vs. E2</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">ER</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="ER_E2_E2DHT_differential_binding.html">E2DHT Vs. E2</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">H3K27ac</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="H3K27ac_E2_E2DHT_differential_binding.html">E2DHT Vs. E2</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Pairwise Comparisons
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">AR-ER</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="AR_E2_E2DHT_ER_E2_E2DHT_pairwise_comparison.html">E2DHT Vs. E2 / E2DHT Vs. E2</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">AR-H3K27ac</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="AR_E2_E2DHT_H3K27ac_E2_E2DHT_pairwise_comparison.html">E2DHT Vs. E2 / E2DHT Vs. E2</a>
+        </li>
+      </ul>
+    </li>
+    <li class="dropdown-submenu">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">ER-H3K27ac</a>
+      <ul class="dropdown-menu" role="menu">
+        <li>
+          <a href="ER_E2_E2DHT_H3K27ac_E2_E2DHT_pairwise_comparison.html">E2DHT Vs. E2 / E2DHT Vs. E2</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/steveped/GRAVI">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">AR: MACS2 Summary</h1>
+<h4 class="date">27 June, 2023</h4>
+
+</div>
+
+
+<pre class="r"><code>target &lt;- &quot;AR&quot;
+threads &lt;- 1</code></pre>
+<pre class="r"><code>library(tidyverse)
+library(magrittr)
+library(rtracklayer)
+library(glue)
+library(pander)
+library(scales)
+library(plyranges)
+library(yaml)
+library(ngsReports)
+library(ComplexUpset)
+library(VennDiagram)
+library(cowplot)
+library(rlang)
+library(BiocParallel)
+library(parallel)
+library(Rsamtools)
+library(Biostrings)
+library(ggside)
+library(extraChIPs)</code></pre>
+<pre class="r"><code>panderOptions(&quot;big.mark&quot;, &quot;,&quot;)
+panderOptions(&quot;missing&quot;, &quot;&quot;)
+panderOptions(&quot;table.split.table&quot;, Inf)
+theme_set(
+  theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5)
+    )
+)
+register(MulticoreParam(workers = threads))
+source(here::here(&quot;workflow/scripts/custom_functions.R&quot;))</code></pre>
+<pre class="r"><code>config &lt;- read_yaml(
+  here::here(&quot;config&quot;, &quot;config.yml&quot;)
+)
+fdr_alpha &lt;- config$comparisons$fdr
+params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
+bam_path &lt;- here::here(config$paths$bam, target)
+macs2_path &lt;- here::here(&quot;output&quot;, &quot;macs2&quot;, target)
+annotation_path &lt;- here::here(&quot;output&quot;, &quot;annotations&quot;)
+colours &lt;- read_rds(
+  file.path(annotation_path, &quot;colours.rds&quot;)
+) %&gt;% 
+  lapply(unlist)</code></pre>
+<pre class="r"><code>samples &lt;-read_tsv(file.path(macs2_path, &quot;qc_samples.tsv&quot;))
+treat_levels &lt;- unique(samples$treat)
+if (!is.null(config$comparisons$contrasts)) {
+  ## Ensure levels respect those provided in contrasts
+  treat_levels &lt;- config$comparisons$contrasts %&gt;%
+    unlist() %&gt;%
+    intersect(samples$treat) %&gt;% 
+    unique()
+}
+rep_col &lt;- setdiff(
+  colnames(samples), c(&quot;sample&quot;, &quot;treat&quot;, &quot;target&quot;, &quot;input&quot;, &quot;label&quot;, &quot;qc&quot;)
+)
+samples &lt;- samples %&gt;%
+  unite(label, treat, !!sym(rep_col), remove = FALSE) %&gt;%
+  mutate(
+    treat = factor(treat, levels = treat_levels),
+    &quot;{rep_col}&quot; := as.factor(!!sym(rep_col))
+  ) %&gt;% 
+  dplyr::filter(treat %in% treat_levels)
+stopifnot(nrow(samples) &gt; 0)</code></pre>
+<pre class="r"><code>sq &lt;- read_rds(file.path(annotation_path, &quot;seqinfo.rds&quot;))
+blacklist &lt;-  file.path(annotation_path, &quot;blacklist.bed.gz&quot;) %&gt;%
+  import.bed(seqinfo = sq) %&gt;%
+  sort()
+all_gr &lt;- file.path(annotation_path, &quot;all_gr.rds&quot;) %&gt;% 
+  read_rds()
+genes_gr &lt;- all_gr$gene
+external_features &lt;- c()
+has_features &lt;- FALSE
+if (!is.null(config$external$features)) {
+  external_features &lt;- suppressWarnings(
+    import.gff(here::here(config$external$features), genome = sq)
+  )
+  keep_cols &lt;- !vapply(
+    mcols(external_features), function(x) all(is.na(x)), logical(1)
+  )
+  mcols(external_features) &lt;- mcols(external_features)[keep_cols]
+  has_features &lt;- TRUE
+}
+gene_regions &lt;- read_rds(file.path(annotation_path, &quot;gene_regions.rds&quot;))
+regions &lt;- vapply(gene_regions, function(x) unique(x$region), character(1))
+rna_path &lt;- here::here(config$external$rnaseq)
+rnaseq &lt;- tibble(gene_id = character())
+if (length(rna_path) &gt; 0) {
+  stopifnot(file.exists(rna_path))
+  if (str_detect(rna_path, &quot;tsv$&quot;)) rnaseq &lt;- read_tsv(rna_path)
+  if (str_detect(rna_path, &quot;csv$&quot;)) rnaseq &lt;- read_csv(rna_path)
+  if (!&quot;gene_id&quot; %in% colnames(rnaseq)) stop(&quot;Supplied RNA-Seq data must contain the column &#39;gene_id&#39;&quot;)
+  genes_gr &lt;- subset(genes_gr, gene_id %in% rnaseq$gene_id)
+}
+tx_col &lt;- intersect(c(&quot;tx_id&quot;, &quot;transcript_id&quot;), colnames(rnaseq))
+rna_gr_col &lt;- ifelse(length(tx_col) &gt; 0, &quot;transcript_id&quot;, &quot;gene_id&quot;)
+rna_col &lt;- c(tx_col, &quot;gene_id&quot;)[[1]]
+tss &lt;- read_rds(file.path(annotation_path, &quot;tss.rds&quot;))
+## bands_df
+cb &lt;- config$genome$build %&gt;%
+  str_to_lower() %&gt;% 
+  paste0(&quot;.cytobands&quot;) 
+data(list = cb)
+bands_df &lt;- get(cb)</code></pre>
+<pre class="r"><code>fig_path &lt;- here::here(&quot;docs&quot;, &quot;assets&quot;, target)
+if (!dir.exists(fig_path)) dir.create(fig_path, recursive = TRUE)
+fig_dev &lt;- knitr::opts_chunk$get(&quot;dev&quot;)
+fig_type &lt;- fig_dev[[1]]
+if (is.null(fig_type)) stop(&quot;Couldn&#39;t detect figure type&quot;)
+fig_fun &lt;- match.fun(fig_type)
+if (fig_type %in% c(&quot;bmp&quot;, &quot;jpeg&quot;, &quot;png&quot;, &quot;tiff&quot;)) {
+  ## These figure types require dpi &amp; resetting to be inches
+  formals(fig_fun)$units &lt;- &quot;in&quot;
+  formals(fig_fun)$res &lt;- 300
+}</code></pre>
+<pre class="r"><code>bfl &lt;- bam_path %&gt;%
+  file.path(glue(&quot;{samples$sample}.bam&quot;)) %&gt;%
+  BamFileList() %&gt;%
+  setNames(samples$sample)</code></pre>
+<pre class="r"><code>individual_peaks &lt;- file.path(
+  macs2_path, glue(&quot;{samples$sample}_peaks.narrowPeak&quot;)
+) %&gt;%
+  importPeaks(seqinfo = sq, blacklist = blacklist) %&gt;%
+  endoapply(names_to_column, var = &quot;sample&quot;) %&gt;% 
+  endoapply(mutate, sample = str_remove(sample, &quot;_peak_[0-9]+$&quot;)) %&gt;% 
+  endoapply(
+    mutate, 
+    treat = left_join(tibble(sample = sample), samples, by = &quot;sample&quot;)$treat
+  ) %&gt;% 
+  setNames(samples$sample)</code></pre>
+<pre class="r"><code>macs2_logs &lt;- file.path(macs2_path, glue(&quot;{samples$sample}_callpeak.log&quot;)) %&gt;%
+  importNgsLogs() %&gt;%
+  dplyr::select(
+    -contains(&quot;file&quot;), -outputs, -n_reads, -alt_fragment_length
+  ) %&gt;%
+  left_join(samples, by = c(&quot;name&quot; = &quot;sample&quot;)) %&gt;%
+  mutate(
+    total_peaks = map_int(
+      name,
+      function(x) {
+        length(individual_peaks[[x]])
+      }
+    )
+  ) 
+n_reps &lt;- macs2_logs %&gt;% 
+  group_by(treat) %&gt;%
+  summarise(n = sum(qc == &quot;pass&quot;))</code></pre>
+<div id="qc" class="section level2 tabset">
+<h2 class="tabset">QC</h2>
+<p>This section provides a simple series of visualisations to enable
+detection of any problematic samples.</p>
+<ul>
+<li>Library Sizes: These are the total number of alignments contained in
+each <code>bam</code> file, as passed to <code>macs2 callpeak</code>
+<span class="citation">(<a href="#ref-Zhang18798982"
+role="doc-biblioref">Zhang et al. 2008</a>)</span></li>
+<li>GC Content: Most variation in GC-content should have been identified
+prior to performing alignments, using common tools such as <a
+href="https://github.com/s-andrews/FastQC">FastQC</a>, MultiQC <span
+class="citation">(<a href="#ref-EwelsMultiQC2016"
+role="doc-biblioref">Ewels et al. 2016</a>)</span> or
+<code>ngsReports</code> <span class="citation">(<a
+href="#ref-WardNgsReports2019" role="doc-biblioref">Ward, To, and
+Pederson 2019</a>)</span>. However, these plots may still be informative
+for detection of potential sequencing issues not previously
+addressed</li>
+<li>Peaks Detected: The number of peaks detected within each individual
+replicate are shown here, and provide clear guidance towards any samples
+where the IP may have been less successful, or there may be possible
+sample mis-labelling. Using the settings provided in
+<code>config.yml</code> (i.e. <code>peaks:qc:outlier_threshold</code>),
+any replicates where the number of peaks falls outside the range defined
+by <span class="math inline">\(\pm\)</span> 10-fold of the median peak
+number within each treatment group <strong>will be marked as failing
+QC</strong>. Whilst most cell-line generated data-sets are consistent,
+organoid or solid-tissue samples are far more prone to high variability
+in the success of the IP step.</li>
+<li>Cross Correlations: Shows the cross-correlation coefficients between
+read positions across a series of intervals <span class="citation">(<a
+href="#ref-LunSmythCsaw2014" role="doc-biblioref">Lun and Smyth
+2014</a>)</span>. Weak cross-correlations can also indicate low-quality
+samples. These values are also used to estimate fragment length within
+each sample, as the peak value of the cross-correlations</li>
+<li>Fraction Of Reads In Peaks (FRIP): This plot shows the proportion of
+the alignments which fall within peaks identified by
+<code>macs2 callpeak</code>, with the remainder of alignments being
+assumed to be background <span class="citation">(<a
+href="#ref-Landt01092012" role="doc-biblioref">Landt et al.
+2012</a>)</span>. This can provide guidance as to the success of the IP
+protocol, and the common-use threshold of 1% is indicated as a
+horizontal line. This value is not enforced as a hard QC criteria, but
+may be used to manually exclude samples from the file
+<code>samples.tsv</code> of deemed to be appropriate.</li>
+</ul>
+<pre class="r"><code>emphasize.italics.rows(NULL)
+any_fail &lt;- any(macs2_logs$qc == &quot;fail&quot;)
+if (any_fail) emphasize.italics.rows(which(macs2_logs$qc == &quot;fail&quot;))
+macs2_logs %&gt;%
+  dplyr::select(
+    sample = name, label,
+    total_peaks, 
+    reads = n_tags_treatment, read_length = tag_length,
+    fragment_length
+  ) %&gt;%
+  rename_all(str_sep_to_title )%&gt;%
+  pander(
+    justify = &quot;llrrrr&quot;,
+    caption = glue(
+      &quot;*Summary of results for `macs2 callpeak` on individual {target} samples.&quot;,
+      &quot;Total peaks indicates the number retained after applying the FDR &quot;, 
+      &quot;threshold of {percent(config$peaks$macs2$fdr)} during the peak calling &quot;, 
+      &quot;process.&quot;,
+      ifelse(
+        any_fail,
+        glue(
+          &quot;Samples shown in italics were marked for exclusion from &quot;,
+          &quot;downstream analysis as they identified a number of peaks beyond &quot;,
+          &quot;+/- {config$peaks$qc$outlier_threshold}-fold the median number of &quot;,
+          &quot;peaks amongst all samples within the relevant treatment group.&quot;,
+        ),
+        glue(
+          &quot;No samples were identified as failing QC based on the number of &quot;,
+          &quot;peaks identified relative to the highest quality sample.&quot;
+        )
+      ),
+      &quot;Any peaks passing the FDR cutoff, but which overlapped any black-listed&quot;,
+      &quot;regions were additionally excluded. The fragment length as estimated by&quot;,
+      &quot;`macs2 predictd` is given in the final column.&quot;,
+      case_when(
+        all(macs2_logs$paired_end) ~
+          &quot;All input files contained paired-end reads.*&quot;,
+        all(!macs2_logs$paired_end) ~
+          &quot;All input files contained single-end reads.*&quot;,
+        TRUE ~
+          &quot;Input files were a mixture of paired and single-end reads*&quot;
+      ),
+      .sep = &quot; &quot;
+    )
+  )</code></pre>
+<table style="width:100%;">
+<caption><em>Summary of results for <code>macs2 callpeak</code> on
+individual AR samples. Total peaks indicates the number retained after
+applying the FDR threshold of 5% during the peak calling process. No
+samples were identified as failing QC based on the number of peaks
+identified relative to the highest quality sample. Any peaks passing the
+FDR cutoff, but which overlapped any black-listed regions were
+additionally excluded. The fragment length as estimated by
+<code>macs2 predictd</code> is given in the final column. All input
+files contained single-end reads.</em></caption>
+<colgroup>
+<col width="15%" />
+<col width="12%" />
+<col width="17%" />
+<col width="15%" />
+<col width="17%" />
+<col width="21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Sample</th>
+<th align="left">Label</th>
+<th align="right">Total Peaks</th>
+<th align="right">Reads</th>
+<th align="right">Read Length</th>
+<th align="right">Fragment Length</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">SRR8315174</td>
+<td align="left">E2_1</td>
+<td align="right">962</td>
+<td align="right">16,929,689</td>
+<td align="right">71</td>
+<td align="right">81</td>
+</tr>
+<tr class="even">
+<td align="left">SRR8315175</td>
+<td align="left">E2_2</td>
+<td align="right">4,523</td>
+<td align="right">19,412,922</td>
+<td align="right">73</td>
+<td align="right">189</td>
+</tr>
+<tr class="odd">
+<td align="left">SRR8315176</td>
+<td align="left">E2_3</td>
+<td align="right">573</td>
+<td align="right">13,930,124</td>
+<td align="right">72</td>
+<td align="right">78</td>
+</tr>
+<tr class="even">
+<td align="left">SRR8315177</td>
+<td align="left">E2DHT_1</td>
+<td align="right">22,219</td>
+<td align="right">17,173,150</td>
+<td align="right">71</td>
+<td align="right">187</td>
+</tr>
+<tr class="odd">
+<td align="left">SRR8315178</td>
+<td align="left">E2DHT_2</td>
+<td align="right">20,032</td>
+<td align="right">17,715,794</td>
+<td align="right">69</td>
+<td align="right">203</td>
+</tr>
+<tr class="even">
+<td align="left">SRR8315179</td>
+<td align="left">E2DHT_3</td>
+<td align="right">13,160</td>
+<td align="right">17,729,490</td>
+<td align="right">70</td>
+<td align="right">178</td>
+</tr>
+</tbody>
+</table>
+<div id="library-sizes" class="section level3">
+<h3>Library Sizes</h3>
+<pre class="r"><code>macs2_logs %&gt;%
+  ggplot(
+    aes(label, n_tags_treatment, fill = qc)
+  ) +
+  geom_col(position = &quot;dodge&quot;) +
+  geom_hline(
+    aes(yintercept = mn),
+    data = . %&gt;%
+      group_by(treat) %&gt;%
+      summarise(mn = mean(n_tags_treatment)),
+    linetype = 2,
+    col = &quot;grey&quot;
+  ) +
+  facet_grid(~treat, scales = &quot;free_x&quot;, space = &quot;free_x&quot;) +
+  scale_y_continuous(expand = expansion(c(0, 0.05)), labels = comma) +
+  scale_fill_manual(values = colours$qc) +
+  labs(
+    x = &quot;Sample&quot;,
+    y = &quot;Library Size&quot;,
+    fill = &quot;QC&quot;
+  ) +
+  ggtitle(
+    glue(&quot;{target}: Library Sizes&quot;)
+  )</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-macs2-libsize-individual-1.png" alt="*Library sizes for each AR sample. The horizontal line indicates the mean library size for each treatment group. Any samples marked for exclusion as described above will be indicated with an (F)*" width="960" />
+<p class="caption">
+<em>Library sizes for each AR sample. The horizontal line indicates the
+mean library size for each treatment group. Any samples marked for
+exclusion as described above will be indicated with an (F)</em>
+</p>
+</div>
+</div>
+<div id="peaks-detected" class="section level3">
+<h3>Peaks Detected</h3>
+<pre class="r"><code>suppressWarnings(
+  macs2_logs %&gt;%
+    ggplot(
+      aes(label, total_peaks, fill = qc)
+    ) +
+    geom_col() +
+    geom_label(
+      aes(x = label, y = total_peaks, label = lab, colour = qc),
+      data = . %&gt;%
+        dplyr::filter(total_peaks &gt; 0) %&gt;% 
+        mutate(
+          lab = comma(total_peaks, accuracy = 1),
+          total = total_peaks
+        ),
+      inherit.aes = FALSE,
+      show.legend = FALSE
+    ) +
+    facet_grid(~treat, scales = &quot;free_x&quot;, space = &quot;free_x&quot;) +
+    scale_y_continuous(expand = expansion(c(0, 0.05)), labels = comma) +
+    scale_fill_manual(values = colours$qc) +
+    scale_colour_manual(values = colours$qc) +
+    labs(
+      x = &quot;Sample&quot;,
+      y = &quot;Total Peaks&quot;,
+      fill = &quot;QC&quot;
+    ) +
+    ggtitle(
+      glue(&quot;{target}: Number of Peaks&quot;)
+    )
+)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-macs2-peaks-individual-1.png" alt="*Peaks identified for each AR sample. The number of peaks passing the inclusion criteria for `macs2 callpeak` (FDR &lt; 0.05) are provided. Any samples marked for exclusion are coloured as indicated in the figure legend.*" width="960" />
+<p class="caption">
+<em>Peaks identified for each AR sample. The number of peaks passing the
+inclusion criteria for <code>macs2 callpeak</code> (FDR &lt; 0.05) are
+provided. Any samples marked for exclusion are coloured as indicated in
+the figure legend.</em>
+</p>
+</div>
+</div>
+<div id="frip" class="section level3">
+<h3>FRIP</h3>
+<pre class="r"><code>samples$sample %&gt;%
+  bplapply(
+    function(x) {
+      gr &lt;- individual_peaks[[x]]
+      rip &lt;- 0
+      if (length(gr) &gt; 0) {
+        sbp &lt;- ScanBamParam(which = gr)
+        rip &lt;- sum(countBam(bfl[[x]], param = sbp)$records)
+      }
+      tibble(
+        name = x,
+        reads_in_peaks = rip
+      )
+    }
+  ) %&gt;%
+  bind_rows() %&gt;%
+  left_join(macs2_logs, by = &quot;name&quot;) %&gt;%
+  mutate(
+    frip = reads_in_peaks / n_tags_treatment
+  ) %&gt;%
+  ggplot(
+    aes(label, frip, fill = qc)
+  ) +
+  geom_col() +
+  geom_hline(yintercept = 0.01, colour = &quot;grey&quot;, linetype = 2) +
+  facet_grid(~treat, scales = &quot;free_x&quot;, space = &quot;free&quot;) +
+  scale_y_continuous(labels = percent, expand = expansion(c(0, 0.05))) +
+  scale_fill_manual(values = colours$qc) +
+  labs(
+    x = &quot;Sample&quot;,
+    y = &quot;Fraction of Reads In Peaks&quot;,
+    fill = &quot;QC&quot;
+  ) +
+  ggtitle(
+    glue(&quot;{target}: Fraction Of Reads In Peaks&quot;)
+  )</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-frip-1.png" alt="*Fraction of Reads In Peaks for each sample. Higher values indicate more reads specifically associated with the ChIP target (AR). The common-use minimum value for an acceptable sample (1%) is shown as a dashed horizontal line*" width="960" />
+<p class="caption">
+<em>Fraction of Reads In Peaks for each sample. Higher values indicate
+more reads specifically associated with the ChIP target (AR). The
+common-use minimum value for an acceptable sample (1%) is shown as a
+dashed horizontal line</em>
+</p>
+</div>
+</div>
+<div id="cross-correlations" class="section level3">
+<h3>Cross Correlations</h3>
+<pre class="r"><code>file.path(macs2_path, &quot;cross_correlations.tsv&quot;) %&gt;% 
+  read_tsv() %&gt;% 
+  left_join(samples, by = &quot;sample&quot;) %&gt;% 
+  ggplot(aes(fl, correlation, colour = treat)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(se = FALSE, method = &#39;gam&#39;, formula = y ~ s(x, bs = &quot;cs&quot;)) +
+  geom_vline(
+    aes(xintercept = fragment_length),
+    data = macs2_logs,
+    colour = &quot;grey40&quot;, linetype = 2
+  ) +
+  facet_grid(as.formula(paste(&quot;treat ~&quot;, rep_col))) +
+  scale_colour_manual(values = colours$treat[treat_levels]) +
+  scale_x_continuous(
+    breaks = seq(0, 5*max(macs2_logs$fragment_length), by = 200)
+  ) +
+  labs(
+    x = &quot;Distance (bp)&quot;,
+    y = &quot;Cross Correlation&quot;,
+    colour = &quot;Treat&quot;
+  ) +
+  ggtitle(
+    glue(&quot;{target}: Cross Correlations&quot;)
+  )</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot_correlation-1.png" alt="*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample. For speed, only the first 5 chromosomes were used for sample-specific estimates.*" width="960" />
+<p class="caption">
+<em>Cross Correlaton between alignments up to 1kb apart. The dashed,
+grey, vertical line is the fragment length estimated by
+<code>macs2 callpeak</code> for each sample. For speed, only the first 5
+chromosomes were used for sample-specific estimates.</em>
+</p>
+</div>
+</div>
+<div id="gc-content" class="section level3">
+<h3>GC Content</h3>
+<pre class="r"><code>ys &lt;- 5e5
+yieldSize(bfl) &lt;- ys</code></pre>
+<pre class="r"><code>bfl %&gt;% 
+  bplapply(
+    function(x){
+      seq &lt;- scanBam(x, param = ScanBamParam(what = &quot;seq&quot;))[[1]]$seq
+      freq &lt;- letterFrequency(seq, letters = &quot;GC&quot;) / width(seq)
+      list(freq[,1])
+    }
+  ) %&gt;% 
+  as_tibble() %&gt;% 
+  pivot_longer(
+    cols = everything(), 
+    names_to = &quot;name&quot;,
+    values_to = &quot;freq&quot;
+  ) %&gt;% 
+  left_join(macs2_logs, by = &quot;name&quot;) %&gt;% 
+  unnest(freq) %&gt;% 
+  ggplot(aes(label, freq, fill = qc)) +
+  geom_boxplot(alpha = 0.8) +
+  geom_hline(
+    aes(yintercept = med),
+    data = . %&gt;% 
+      group_by(treat) %&gt;% 
+      summarise(med = median(freq)),
+    linetype = 2,
+    colour = rgb(0.2, 0.2, 0.8)
+  ) +
+  facet_grid(~treat, scales = &quot;free_x&quot;, space = &quot;free_x&quot;) +
+  scale_y_continuous(labels = percent) +
+  scale_fill_manual(values = colours$qc) +
+  labs(
+    x = &quot;Sample&quot;,
+    y = &quot;GC content&quot;,
+    fill = &quot;QC&quot;
+  ) +
+  ggtitle(
+    glue(&quot;{target}: GC Content&quot;)
+  )</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-gc-content-1.png" alt="*GC content for each bam file, taking the first 500,000 alignments from each sample. QC status is based on the number of peaks identified (see table above)*" width="960" />
+<p class="caption">
+<em>GC content for each bam file, taking the first 500,000 alignments
+from each sample. QC status is based on the number of peaks identified
+(see table above)</em>
+</p>
+</div>
+</div>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<div id="individual-replicates" class="section level3 tabset">
+<h3 class="tabset">Individual Replicates</h3>
+<p>Replicates within treatment groups are only shown where at least one
+peak was detected. For two or three replicates, Euler (Venn) Diagrams
+were generated using the <code>python</code> package
+<code>matplotlib-venn</code>. Peak numbers may differ from above as
+those shown below are overlapping peaks which have been merged across
+replicates</p>
+<p>In the case of four or more replicates, the package
+<code>ComplexUpset</code> was used to create UpSet plots <span
+class="citation">(<a href="#ref-Upset2014" role="doc-biblioref">Lex et
+al. 2014</a>)</span>, with colours indicating QC status.</p>
+<pre class="r"><code>replicates_by_treat &lt;- individual_peaks %&gt;%
+  unlist() %&gt;% 
+  splitAsList(.$treat) %&gt;% 
+  .[vapply(., length, integer(1)) &gt; 1] %&gt;% 
+  lapply(select, sample) %&gt;% 
+  lapply(reduceMC) %&gt;% 
+  lapply(as_tibble) %&gt;% 
+  lapply(unnest, sample) %&gt;% 
+  lapply(mutate, detected = 1) %&gt;% 
+  lapply(left_join, dplyr::select(samples, sample, label), by = &quot;sample&quot;) %&gt;%
+  lapply(dplyr::select, -sample) %&gt;% 
+  lapply(function(x) {
+    split(x, x$label) %&gt;% 
+      lapply(pull, &quot;range&quot;)
+    }
+  )</code></pre>
+<div id="all-samples" class="section level4">
+<h4>All Samples</h4>
+<pre class="r"><code>df &lt;- individual_peaks %&gt;% 
+  makeConsensus(var = &quot;qValue&quot;) %&gt;% 
+  as_tibble() %&gt;% 
+  mutate(qValue = vapply(qValue, median, numeric(1))) %&gt;% 
+  rename_with(
+      function(x) dplyr::filter(samples, sample == x)$label,
+      all_of(samples$sample)
+  )
+ql &lt;- samples$label %&gt;% 
+  lapply(
+    function(x) upset_query(
+      set = x, 
+      fill = colours$treat[as.character(dplyr::filter(samples, label == x)$treat)]
+    )
+  )
+lb &lt;- samples %&gt;% 
+  arrange(treat, !!sym(rep_col)) %&gt;% 
+  pull(&quot;label&quot;) %&gt;% 
+  rev()
+size &lt;- get_size_mode(&#39;exclusive_intersection&#39;)
+df %&gt;% 
+  upset(
+    intersect = lb,
+    base_annotations = list(
+      `Peaks in Intersection` = intersection_size(
+        text_mapping = aes(label = comma(!!size)),
+        bar_number_threshold = 1, text_colors = &quot;black&quot;, 
+        text = list(size = 3, angle = 90, vjust = 0.5, hjust = -0.1)
+      ) +
+        scale_y_continuous(expand = expansion(c(0, 0.2)), label = comma) +
+        theme(
+          panel.grid = element_blank(), 
+          axis.line = element_line(colour = &quot;grey20&quot;),
+          panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+        )
+    ),
+    annotations = list(
+      qValue = ggplot(mapping = aes(y = qValue)) +
+        geom_boxplot(na.rm = TRUE, outlier.colour = rgb(0, 0, 0, 0.2)) +
+        coord_cartesian(ylim = c(0, quantile(df$qValue, 0.99))) +
+        scale_y_continuous(expand = expansion(c(0, 0.05))) +
+        ylab(expr(paste(&quot;Macs2 &quot;, q[med]))) +
+        theme(
+          panel.grid = element_blank(), 
+          axis.line = element_line(colour = &quot;grey20&quot;),
+          panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+        )
+    ),
+    set_sizes = (
+      upset_set_size() +
+        geom_text(
+          aes(label = comma(after_stat(count))), 
+          hjust = 1.1, stat = &#39;count&#39;, size = 3
+        ) +
+        scale_y_reverse(expand = expansion(c(0.2, 0)), label = comma) +
+        ylab(glue(&quot;Macs2 Peaks (FDR &lt; {config$peaks$macs2$fdr})&quot;)) +
+        theme(
+          panel.grid = element_blank(), 
+          axis.line = element_line(colour = &quot;grey20&quot;),
+          panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+        )
+    ),
+    queries = ql,
+    min_size = 10,
+    n_intersections = 50,
+    sort_sets = FALSE
+  ) +
+  theme(
+    panel.grid = element_blank(), 
+    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA),
+    axis.line = element_line(colour = &quot;grey20&quot;)
+  ) +
+  labs(x = &quot;Intersection&quot;) +
+  patchwork::plot_layout(heights = c(2, 3, 2))</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/all-reps-upset-1.png" alt="*UpSet plot showing all samples including those which failed prior QC steps. Any potential sample mislabelling will show up clearly here as samples from each group should show a preference to overlap other samples within the same treatment group. Intersections are only included if 10 or more sites are present. The top panel shows a boxplot of the median $q$-values produced by `macs2 callpeak` for each peak in the intersection. The y-axis for this panel is truncated at the 99^th^ percentile of values. Only intersections with 10 or more peaks are shown.*" width="960" />
+<p class="caption">
+<em>UpSet plot showing all samples including those which failed prior QC
+steps. Any potential sample mislabelling will show up clearly here as
+samples from each group should show a preference to overlap other
+samples within the same treatment group. Intersections are only included
+if 10 or more sites are present. The top panel shows a boxplot of the
+median <span class="math inline">\(q\)</span>-values produced by
+<code>macs2 callpeak</code> for each peak in the intersection. The
+y-axis for this panel is truncated at the 99<sup>th</sup> percentile of
+values. Only intersections with 10 or more peaks are shown.</em>
+</p>
+</div>
+<pre class="r"><code>## First find the python executable
+which_py &lt;- c(
+  file.path(Sys.getenv(&quot;CONDA_PREFIX&quot;), &quot;bin&quot;, &quot;python3&quot;),
+  Sys.which(&quot;python3&quot;)
+) %&gt;% 
+  .[file.exists(.)] %&gt;% 
+  .[1]
+stopifnot(length(which_py) == 1)
+rep_col &lt;- hcl.colors(3, palette = &quot;Zissou&quot;, rev = TRUE)
+htmltools::tagList(
+  names(replicates_by_treat) %&gt;% 
+    lapply(
+      function(i) {
+        x &lt;- replicates_by_treat[[i]]
+        fig_out &lt;- file.path(fig_path, glue(&quot;{i}_replicates.{fig_type}&quot;))
+        if (length(x) == 1) {
+          fig_fun(
+            fig_out, 
+            width = knitr::opts_chunk$get(&quot;fig.width&quot;),
+            height = ifelse(
+              length(x) &lt; 3,
+              knitr::opts_chunk$get(&quot;fig.height&quot;) * 0.8,
+              knitr::opts_chunk$get(&quot;fig.height&quot;) * 0.8
+            )
+          )
+          grid.newpage()
+          draw.single.venn(length(x[[1]]), category = names(x))
+          dev.off()
+        }
+        ## Euler diagrams for 2-3 replicates.
+        if (length(x) == 2) {
+          a12 &lt;- sum(duplicated(unlist(x)))
+          a1 &lt;- length(x[[1]]) - a12 
+          a2 &lt;- length(x[[2]]) - a12
+          args &lt;- glue(
+            here::here(&quot;workflow&quot;, &quot;scripts&quot;, &quot;plot_venn.py &quot;),
+            &quot;-a1 {a1} -a2 {a2} -a12 {a12} &quot;,
+            &quot;-s1 &#39;{names(x)[[1]]}&#39; -s2 &#39;{names(x)[[2]]}&#39; &quot;, 
+            &quot;-c1 &#39;{rep_col[[1]]}&#39; -c2 &#39;{rep_col[[3]]}&#39; &quot;,
+            &quot;-ht {knitr::opts_chunk$get(&#39;fig.height&#39;)} &quot;, 
+            &quot;-w {knitr::opts_chunk$get(&#39;fig.width&#39;)} &quot;, 
+            &quot;-o &#39;{fig_out}&#39;&quot;
+          )
+          system2(which_py, args)
+        }
+        if (length(x) == 3) {
+          a123 &lt;- sum(table(unlist(x)) == 3)
+          a12 &lt;- sum(table(unlist(x[1:2])) == 2) - a123
+          a13 &lt;- sum(table(unlist(x[c(1, 3)])) == 2) - a123
+          a23 &lt;- sum(table(unlist(x[c(2, 3)])) == 2) - a123
+          a1 &lt;- length(x[[1]]) - (a12 + a13 + a123)
+          a2 &lt;- length(x[[2]]) - (a12 + a23 + a123)
+          a3 &lt;- length(x[[3]]) - (a13 + a23 + a123)
+          args &lt;- glue(
+            here::here(&quot;workflow&quot;, &quot;scripts&quot;, &quot;plot_venn.py &quot;),
+            &quot;-a1 {a1} -a2 {a2} -a12 {a12} -a3 {a3} &quot;,
+            &quot;-a13 {a13} -a23 {a23} -a123 {a123} &quot;,
+            &quot;-s1 &#39;{names(x)[[1]]}&#39; -s2 &#39;{names(x)[[2]]}&#39; -s3 &#39;{names(x)[[3]]}&#39; &quot;, 
+            &quot;-c1 &#39;{rep_col[[1]]}&#39; -c2 &#39;{rep_col[[2]]}&#39; -c3 &#39;{rep_col[[3]]}&#39; &quot;,
+            &quot;-ht {knitr::opts_chunk$get(&#39;fig.height&#39;)} &quot;, 
+            &quot;-w {knitr::opts_chunk$get(&#39;fig.width&#39;)} &quot;, 
+            &quot;-o &#39;{fig_out}&#39;&quot;
+          )
+          system2(which_py, args)
+        }
+        ## An UpSet plot for &gt; 3 replicates
+        if (length(x) &gt; 3) {
+          fig_fun(
+            fig_out, 
+            width = knitr::opts_chunk$get(&quot;fig.width&quot;),
+            height = knitr::opts_chunk$get(&quot;fig.height&quot;)
+          )
+          grid.newpage()
+          ## Prep the data for ComplexUpset
+          df &lt;- individual_peaks[dplyr::filter(samples, treat == i)$sample] %&gt;% 
+            makeConsensus(var = &quot;qValue&quot;) %&gt;% 
+            mutate(qValue = vapply(qValue, median, numeric(1))) %&gt;% 
+            as_tibble() %&gt;% 
+            dplyr::rename_with(
+              function(x) setNames(samples$label, samples$sample)[x],
+              any_of(samples$sample)
+            )
+          ## Highlight samples by QC
+          ql &lt;- samples %&gt;% 
+            dplyr::filter(treat == i) %&gt;% 
+            pull(&#39;label&#39;) %&gt;% 
+            lapply(
+              function(x) upset_query(
+                set = x, 
+                fill = colours$qc[as.character(dplyr::filter(samples, treat == i, label == x)$qc)]
+              )
+            )
+          ## And plot
+          p &lt;- df %&gt;% 
+            upset(
+              intersect = rev(dplyr::filter(samples, treat == i)$label),
+              base_annotations = list(
+                `Peaks in Intersection` = intersection_size(
+                  text_mapping = aes(label = comma(!!size)),
+                  bar_number_threshold = 1, text_colors = &quot;black&quot;, 
+                  text = list(size = 3, angle = 90, vjust = 0.5, hjust = -0.1)
+                ) +
+                  scale_y_continuous(expand = expansion(c(0, 0.2)), label = comma) +
+                  theme(
+                    panel.grid = element_blank(), 
+                    axis.line = element_line(colour = &quot;grey20&quot;),
+                    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+                  )
+              ),
+              annotations = list(
+                qValue = ggplot(mapping = aes(y = qValue)) +
+                  geom_boxplot(na.rm = TRUE, outlier.colour = rgb(0, 0, 0, 0.2)) +
+                  coord_cartesian(ylim = c(0, quantile(df$qValue, 0.99))) +
+                  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+                  ylab(expr(paste(&quot;Macs2 &quot;, q[med]))) +
+                  theme(
+                    panel.grid = element_blank(), 
+                    axis.line = element_line(colour = &quot;grey20&quot;),
+                    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+                  )
+              ),
+              set_sizes = (
+                upset_set_size() +
+                  geom_text(
+                    aes(label = comma(after_stat(count))), 
+                    hjust = 1.1, stat = &#39;count&#39;, size = 3
+                  ) +
+                  scale_y_reverse(expand = expansion(c(0.2, 0)), label = comma) +
+                  ylab(glue(&quot;Macs2 Peaks (FDR &lt; {config$peaks$macs2$fdr})&quot;)) +
+                  theme(
+                    panel.grid = element_blank(), 
+                    axis.line = element_line(colour = &quot;grey20&quot;),
+                    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+                  )
+              ),
+              queries = ql,
+              min_size = 10,
+              sort_sets = FALSE
+            ) +
+            patchwork::plot_layout(heights = c(2, 3, 2))
+          print(p)
+          dev.off()
+        }
+        
+        ## Define the caption
+        cp &lt;- htmltools::tags$em(
+          glue(
+            &quot;
+            Number of {target} peaks detected by macs2 callpeak in each {i} 
+            replicate and the number of peaks shared between replicates. 
+            Replicates which passed/failed QC are show in the specified colours.
+            &quot;
+          )
+        )
+        
+        ## Create html tags
+        fig_link &lt;- str_extract(fig_out, &quot;assets.+&quot;)
+        htmltools::div(
+          htmltools::div(
+            id = glue(&quot;{i}-replicates&quot;),
+            class=&quot;section level4&quot;,
+            htmltools::h4(i),
+            htmltools::div(
+              class = &quot;figure&quot;, style = &quot;text-align: center&quot;,
+              htmltools::img(src = fig_link, width = 960),
+              htmltools::p(
+                class = &quot;caption&quot;, htmltools::tags$em(cp)
+              )
+            )
+          )
+        )
+      }
+    )
+)</code></pre>
+<div>
+<div id="E2-replicates" class="section level4">
+<h4>E2</h4>
+<div class="figure" style="text-align: center">
+<img src="assets/AR/E2_replicates.png" width="960"/>
+<p class="caption">
+<em>
+<em>Number of AR peaks detected by macs2 callpeak in each E2 
+replicate and the number of peaks shared between replicates. 
+Replicates which passed/failed QC are show in the specified colours.</em>
+</em>
+</p>
+</div>
+</div>
+</div>
+<div>
+<div id="E2DHT-replicates" class="section level4">
+<h4>E2DHT</h4>
+<div class="figure" style="text-align: center">
+<img src="assets/AR/E2DHT_replicates.png" width="960"/>
+<p class="caption">
+<em>
+<em>Number of AR peaks detected by macs2 callpeak in each E2DHT 
+replicate and the number of peaks shared between replicates. 
+Replicates which passed/failed QC are show in the specified colours.</em>
+</em>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="oracle-peaks" class="section level3">
+<h3>Oracle Peaks</h3>
+<pre class="r"><code>oracle_peaks &lt;- treat_levels %&gt;%
+  sapply(
+    function(x) {
+      gr &lt;- file.path(macs2_path, glue(&quot;{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
+        importPeaks(seqinfo = sq, blacklist = blacklist) %&gt;% 
+        unlist()
+      k &lt;- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
+      if (k &gt; 0) {
+        samp &lt;- dplyr::filter(macs2_logs, treat == x, qc != &quot;fail&quot;)$name
+        gr$n_reps &lt;- countOverlaps(gr, individual_peaks[samp]) 
+        gr$keep &lt;- gr$n_reps &gt;= k
+      } else {
+        gr &lt;- GRanges(seqinfo = sq)
+      }
+      gr
+    },
+    simplify = FALSE
+  ) %&gt;%
+  GRangesList() 
+consensus_peaks &lt;- oracle_peaks %&gt;% 
+  endoapply(subset, keep) %&gt;% 
+  endoapply(mutate, centre = start + peak) %&gt;% 
+  makeConsensus(
+    var = c(&quot;score&quot;, &quot;signalValue&quot;, &quot;pValue&quot;, &quot;qValue&quot;, &quot;centre&quot;)
+  ) %&gt;% 
+  mutate(
+    score = vapply(score, median, numeric(1)),
+    signalValue = vapply(signalValue, median, numeric(1)),
+    pValue = vapply(pValue, median, numeric(1)),
+    qValue = vapply(qValue, median, numeric(1)),
+    centre = vapply(centre, median, numeric(1)),
+    region = bestOverlap(
+      ., 
+      lapply(gene_regions, select, region) %&gt;% 
+        GRangesList() %&gt;% 
+        unlist(),
+      var = &quot;region&quot;
+    ) %&gt;% 
+      factor(levels = regions)
+  ) 
+if (has_features) {
+  consensus_peaks$Feature &lt;- bestOverlap(
+    consensus_peaks, external_features, 
+    var = &quot;feature&quot;, missing = &quot;no_feature&quot;
+  ) %&gt;% 
+    factor(levels = names(colours$features)) %&gt;% 
+    fct_relabel(str_sep_to_title)
+}</code></pre>
+<p>A set of treatment-specific AR <em>oracle peaks</em> was defined for
+each condition by comparing the peaks detected when merging all
+treatment-specific samples, against those detected within each
+replicate. Replicates which failed the previous QC steps are omitted
+from this step. Oracle peaks which overlapped a peak in more than 50% of
+the <em>individual replicates passing QC</em> in each treatment group,
+were retained.</p>
+<pre class="r"><code>oracle_peaks %&gt;%
+  lapply(
+    function(x) {
+      tibble(
+        detected_peaks = length(x),
+        retained = sum(x$keep),
+        `% retained` = percent(retained / detected_peaks, 0.1),
+        median_width = median(width(x))
+      )
+    }
+  ) %&gt;% 
+  bind_rows(.id = &quot;treat&quot;) %&gt;% 
+  mutate(treat = factor(treat, levels = treat_levels)) %&gt;% 
+  group_by(treat) %&gt;% 
+  rename_all(str_sep_to_title) %&gt;% 
+  dplyr::rename(`% Retained` = ` Retained`) %&gt;% 
+  pander(
+    justify = &quot;lrrrr&quot;,
+    caption = glue(
+      &quot;Oracle peaks detected by merging samples within each treatment group.&quot;,
+      &quot;Peaks were only retained if detected in at least&quot;,
+      &quot;{percent(config$peaks$qc$min_prop_reps)} of the retained samples for each&quot;, &quot;treatment group, as described above.&quot;,
+      .sep = &quot; &quot;
+    )
+  )</code></pre>
+<table style="width:89%;">
+<caption>Oracle peaks detected by merging samples within each treatment
+group. Peaks were only retained if detected in at least 50% of the
+retained samples for each treatment group, as described above.</caption>
+<colgroup>
+<col width="11%" />
+<col width="23%" />
+<col width="15%" />
+<col width="18%" />
+<col width="20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Treat</th>
+<th align="right">Detected Peaks</th>
+<th align="right">Retained</th>
+<th align="right">% Retained</th>
+<th align="right">Median Width</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">E2</td>
+<td align="right">8,755</td>
+<td align="right">1,038</td>
+<td align="right">11.9%</td>
+<td align="right">284</td>
+</tr>
+<tr class="even">
+<td align="left">E2DHT</td>
+<td align="right">16,444</td>
+<td align="right">15,798</td>
+<td align="right">96.1%</td>
+<td align="right">305</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="consensus-peaks" class="section level3 tabset">
+<h3 class="tabset">Consensus Peaks</h3>
+<pre class="r"><code>vd &lt;- oracle_peaks %&gt;%
+    lapply(
+      function(x) {
+        as.character(
+          subsetByOverlaps(
+            consensus_peaks, 
+            subset(x, keep)
+          )
+        )
+      }
+    ) %&gt;%
+    setNames(treat_levels) %&gt;%
+    .[vapply(., length, integer(1)) &gt; 0] </code></pre>
+<p>In addition to the oracle peaks, a set of 15,804 treatment-agnostic
+AR <strong>consensus peaks</strong> were defined. Consensus ranges were
+the <em>union</em> of all overlapping ranges defined and retained in one
+or more sets of oracle peaks. Resulting values for the
+<code>score</code>, <code>signalValue</code>, <code>pValue</code> and
+<code>qValue</code> were calculated as the <em>median</em> across all
+treatments. <em>Peak summits</em> were taken as the median position of
+all summits which comprise the consensus peak.</p>
+<div id="venn-diagram" class="section level4">
+<h4>Venn Diagram</h4>
+<pre class="r"><code>fig_name &lt;- glue(&quot;{target}_common_peaks.{fig_type}&quot;)
+fig_out &lt;- file.path(fig_path, fig_name)
+## An empty file to keep snakemake happy if &gt; 3 treatments
+file.create(fig_out) 
+if (length(vd) ==1) {
+  fig_fun(filename = fig_out, width = 8, height = 3)
+  grid.newpage()
+  draw.single.venn(
+    area = length(vd[[1]]), category = names(vd)[[1]], 
+    fill = colours$treat[names(vd)], alpha = 0.3
+  )
+  dev.off()
+}
+if (length(vd) == 2) {
+  a1 &lt;- length(setdiff(vd[[1]], vd[[2]]))
+  a2 &lt;- length(setdiff(vd[[2]], vd[[1]]))
+  a12 &lt;- sum(duplicated(unlist(vd)))
+  args &lt;- glue(
+    here::here(&quot;workflow&quot;, &quot;scripts&quot;, &quot;plot_venn.py &quot;),
+    &quot;-a1 {a1} -a2 {a2} -a12 {a12} &quot;,
+    &quot;-s1 &#39;{names(vd)[[1]]}&#39; -s2 &#39;{names(vd)[[2]]}&#39; &quot;, 
+    &quot;-c1 &#39;{colours$treat[[names(vd)[[1]]]]}&#39; &quot;,
+    &quot;-c2 &#39;{colours$treat[[names(vd)[[2]]]]}&#39; &quot;,
+    &quot;-ht {knitr::opts_chunk$get(&#39;fig.height&#39;)} &quot;, 
+    &quot;-w {knitr::opts_chunk$get(&#39;fig.width&#39;)} &quot;, 
+    &quot;-o &#39;{fig_out}&#39;&quot;
+  )
+  system2(which_py, args)
+}
+if (length(vd) == 3) {
+  a123 &lt;- sum(table(unlist(vd)) == 3)
+  a12 &lt;- sum(table(unlist(vd[1:2])) == 2) - a123
+  a13 &lt;- sum(table(unlist(vd[c(1, 3)])) == 2) - a123
+  a23 &lt;- sum(table(unlist(vd[c(2, 3)])) == 2) - a123
+  a1 &lt;- length(vd[[1]]) - (a12 + a13 + a123)
+  a2 &lt;- length(vd[[2]]) - (a12 + a23 + a123)
+  a3 &lt;- length(vd[[3]]) - (a13 + a23 + a123)
+  args &lt;- glue(
+    here::here(&quot;workflow&quot;, &quot;scripts&quot;, &quot;plot_venn.py &quot;),
+    &quot;-a1 {a1} -a2 {a2} -a12 {a12} -a3 {a3} &quot;,
+    &quot;-a13 {a13} -a23 {a23} -a123 {a123} &quot;,
+    &quot;-s1 &#39;{names(vd)[[1]]}&#39; -s2 &#39;{names(vd)[[2]]}&#39; -s3 &#39;{names(vd)[[3]]}&#39; &quot;, 
+    &quot;-c1 &#39;{colours$treat[[names(vd)[[1]]]]}&#39; &quot;,
+    &quot;-c2 &#39;{colours$treat[[names(vd)[[2]]]]}&#39; &quot;,
+    &quot;-c3 &#39;{colours$treat[[names(vd)[[3]]]]}&#39; &quot;,
+    &quot;-ht {knitr::opts_chunk$get(&#39;fig.height&#39;)} &quot;, 
+    &quot;-w {knitr::opts_chunk$get(&#39;fig.width&#39;)} &quot;, 
+    &quot;-o &#39;{fig_out}&#39;&quot;
+  )
+  system2(which_py, args)
+} </code></pre>
+<div class="figure">
+<img src="assets/AR/AR_common_peaks.png" alt="" />
+<p class="caption"><em>Number of AR consensus peaks which overlap oracle
+peaks defined within each condition.</em></p>
+</div>
+</div>
+<div id="distance-to-tss" class="section level4">
+<h4>Distance to TSS</h4>
+<pre class="r"><code>a &lt;- consensus_peaks %&gt;% 
+  join_nearest(
+    mutate(tss, tss = start)
+  ) %&gt;% 
+  mutate(d = start + width/2 - tss) %&gt;% 
+  as_tibble() %&gt;% 
+  ggplot(aes(d / 1e3)) +
+  geom_density() +
+  coord_cartesian(xlim = c(-100, 100)) +
+  labs(
+    x = &quot;Distance to Nearest TSS (kb)&quot;,
+    y = &quot;Density&quot;
+  )
+b &lt;- consensus_peaks %&gt;% 
+  join_nearest(
+    mutate(tss, tss = start)
+  ) %&gt;% 
+  mutate(d = start + width/2 - tss) %&gt;%
+  as_tibble() %&gt;% 
+  select(d) %&gt;% 
+  arrange(abs(d)) %&gt;% 
+  mutate(
+    q = seq_along(d) / nrow(.)
+  ) %&gt;% 
+  ggplot(aes(abs(d) / 1e3, q)) +
+  geom_line() +
+  geom_vline(
+    xintercept = max(unlist(params$gene_regions$promoters)) / 1e3, 
+    linetype = 2, colour = &quot;grey40&quot;
+  ) +
+  coord_cartesian(xlim = c(0, 100)) +
+  labs(
+    x = &quot;Distance to Nearest TSS (kb)&quot;,
+    y = &quot;Quantile&quot;
+  ) +
+  scale_y_continuous(labels = percent, breaks = seq(0, 1, by = 0.2)) +
+  scale_x_continuous(breaks = seq(0, 100, by = 20))
+plot_grid(a, b, labels = c(&quot;A&quot;, &quot;B&quot;))</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-consensus-dist-to-tss-hist-1.png" alt="*Distances from the centre of the AR consensus peak to the transcription start-site shown as A) a histogram, and B) as a cumulative distribution. The vertical dashed line indicates the range considered to be a promoter during annotation preparation. 344 of the 15,804 AR consensus peaks (2.2%) directly overlapped a TSS.*" width="960" />
+<p class="caption">
+<em>Distances from the centre of the AR consensus peak to the
+transcription start-site shown as A) a histogram, and B) as a cumulative
+distribution. The vertical dashed line indicates the range considered to
+be a promoter during annotation preparation. 344 of the 15,804 AR
+consensus peaks (2.2%) directly overlapped a TSS.</em>
+</p>
+</div>
+</div>
+<div id="gene-centric-regions" class="section level4">
+<h4>Gene-Centric Regions</h4>
+<pre class="r"><code>consensus_peaks %&gt;% 
+  plotPie(fill = &quot;region&quot;) +
+  scale_fill_manual(
+    values = colours$regions %&gt;%
+      setNames(regions[names(.)])
+  ) +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-region-overlap-1.png" alt="*Proportions of AR consensus peaks which overlap gene-centric features.*" width="768" />
+<p class="caption">
+<em>Proportions of AR consensus peaks which overlap gene-centric
+features.</em>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="highly-ranked-peaks" class="section level2 tabset">
+<h2 class="tabset">Highly Ranked Peaks</h2>
+<pre class="r"><code>grl_to_plot &lt;- vector(&quot;list&quot;, length(treat_levels) + 1) %&gt;%
+  setNames(c(&quot;consensus&quot;, treat_levels))
+grl_to_plot$consensus &lt;- consensus_peaks %&gt;%
+  as_tibble() %&gt;%
+  arrange(desc(score)) %&gt;%
+  dplyr::slice(1) %&gt;%
+  colToRanges(&quot;range&quot;, seqinfo = sq)
+grl_to_plot[treat_levels] &lt;- treat_levels %&gt;% 
+  lapply(
+    function(x) {
+      if (length(oracle_peaks[[x]]) == 0) return(NULL)
+      tbl &lt;- oracle_peaks[[x]] %&gt;% 
+        filter(keep) %&gt;% 
+        filter_by_non_overlaps(
+          unlist(oracle_peaks[setdiff(treat_levels, x)])
+        ) %&gt;% 
+        filter_by_non_overlaps(grl_to_plot$consensus) %&gt;% 
+        as_tibble() 
+      if (nrow(tbl) == 0) return(NULL)
+      tbl %&gt;% 
+        arrange(desc(score)) %&gt;% 
+        dplyr::slice(1) %&gt;% 
+        colToRanges(&quot;range&quot;, seqinfo = sq)
+    }
+  )
+grl_to_plot &lt;- grl_to_plot %&gt;% 
+  .[vapply(., length, integer(1)) &gt; 0] %&gt;% 
+  lapply(setNames, NULL) %&gt;% 
+  GRangesList() %&gt;% 
+  unlist() %&gt;% 
+  distinctMC(.keep_all = TRUE) %&gt;% 
+  splitAsList(names(.)) %&gt;% 
+  endoapply(function(x) x[1,]) %&gt;% 
+  .[intersect(c(&quot;consensus&quot;, treat_levels), names(.))]</code></pre>
+<pre class="r"><code>## The coverage
+bwfl &lt;- list2(
+  &quot;{target}&quot; := file.path(macs2_path, glue(&quot;{treat_levels}_merged_treat_pileup.bw&quot;)) %&gt;% 
+  BigWigFileList() %&gt;% 
+  setNames(treat_levels)
+)
+## The features track
+feat_gr &lt;- gene_regions %&gt;% 
+  lapply(granges) %&gt;% 
+  GRangesList()
+feature_colours &lt;- colours$regions
+if (has_features) {
+  feat_gr &lt;- list(Regions = feat_gr)
+  feat_gr$Features &lt;- splitAsList(external_features, external_features$feature)
+  feature_colours &lt;- list(
+    Regions = unlist(colours$regions),
+    Features = unlist(colours$features)
+  )
+}
+## The genes track defaults to transcript models
+hfgc_genes &lt;- read_rds(
+  here::here(&quot;output&quot;, &quot;annotations&quot;, &quot;trans_models.rds&quot;)
+)
+gene_col &lt;- &quot;grey&quot;
+## If RNA-Seq data is present, the genes track switches to Up/Down etc
+if (nrow(rnaseq)){
+  rna_lfc_col &lt;- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), &quot;logfc&quot;)][1]
+  rna_fdr_col &lt;- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), &quot;fdr|adjp&quot;)][1]
+  if (!is.na(rna_lfc_col) &amp; !is.na(rna_fdr_col)) {
+    hfgc_genes &lt;- hfgc_genes %&gt;%
+      mutate(
+        status = case_when(
+          !gene %in% rnaseq$gene_id ~ &quot;Undetected&quot;,
+          gene %in% dplyr::filter(
+            rnaseq, !!sym(rna_lfc_col) &gt; 0, !!sym(rna_fdr_col) &lt; fdr_alpha
+          )$gene_id ~ &quot;Up&quot;,
+          gene %in% dplyr::filter(
+            rnaseq, !!sym(rna_lfc_col) &lt; 0, !!sym(rna_fdr_col) &lt; fdr_alpha
+          )$gene_id ~ &quot;Down&quot;,
+          gene %in% dplyr::filter(
+            rnaseq, !!sym(rna_fdr_col) &gt;= fdr_alpha
+          )$gene_id ~ &quot;Unchanged&quot;
+        )
+      ) %&gt;%
+      splitAsList(.$status) %&gt;%
+      lapply(select, -status) %&gt;%
+      GRangesList()
+    gene_col &lt;- colours$direction %&gt;%
+      setNames(str_to_title(names(.)))
+  }
+}
+## External Coverage (Optional)
+if (!is.null(config$external$coverage)) {
+  ext_cov_path &lt;- config$external$coverage %&gt;% 
+    lapply(unlist) %&gt;% 
+    lapply(function(x) setNames(here::here(x), names(x)))
+  bwfl &lt;- c(
+    bwfl[target],
+    config$external$coverage %&gt;% 
+      lapply(
+        function(x) {
+          BigWigFileList(here::here(unlist(x))) %&gt;% 
+            setNames(names(x))
+        }
+      )
+  )
+}
+line_col &lt;- lapply(bwfl, function(x) colours$treat[names(x)])
+y_lim &lt;- bwfl %&gt;%
+  lapply(
+    function(x) {
+      gr &lt;- unlist(grl_to_plot) %&gt;% 
+        resize(width = 30 * width(.), fix = &#39;center&#39;)
+      x %&gt;% 
+        lapply(import.bw, which = gr) %&gt;%
+        lapply(function(rng) c(0, max(rng$score))) %&gt;%
+        unlist() %&gt;%
+        range()
+    }
+  )</code></pre>
+<p>Coverage for a small set of highly ranked peaks are shown below.
+These are the most highly ranked Consensus Peak (by <code>score</code>)
+and any oracle peaks which are unique to each treatment group, after
+excluding the most highly ranked consensus peak.</p>
+<pre class="r"><code>htmltools::tagList(
+  mclapply(
+    seq_along(grl_to_plot),
+    function(x) {
+      nm &lt;- names(grl_to_plot)[[x]]
+      ## Export the figure
+      fig_out &lt;- file.path(
+        fig_path,
+        nm %&gt;% 
+          str_replace_all(&quot; &quot;, &quot;_&quot;) %&gt;% 
+          paste0(&quot;_topranked.&quot;, fig_type)
+      )
+      fig_fun(
+        filename = fig_out,
+        width = knitr::opts_current$get(&quot;fig.width&quot;), 
+        height = knitr::opts_current$get(&quot;fig.height&quot;)
+      )
+      ## Automatically collapse Transcripts if more than 10
+      ct &lt;- FALSE
+      gh &lt;- 1
+      if (length(subsetByOverlaps(all_gr$transcript, grl_to_plot[[x]])) &gt; 20) {
+        ct &lt;- &quot;meta&quot;
+        gh &lt;- 0.5
+      }
+      ## Generate the plot
+      plotHFGC(
+        grl_to_plot[[x]],
+        features = feat_gr, featcol = feature_colours, featsize = 1 + has_features,
+        genes = hfgc_genes, genecol = gene_col,
+        coverage = bwfl, linecol = line_col,
+        cytobands = bands_df,
+        rotation.title = 90,
+        zoom = 30,
+        ylim = y_lim,
+        collapseTranscripts = ct, genesize = gh,
+        col.title = &quot;black&quot;, background.title = &quot;white&quot;, 
+        showAxis = FALSE
+      )
+      dev.off()
+      
+      ## Define the caption
+      gr &lt;- join_nearest(grl_to_plot[[x]], all_gr$gene, distance = TRUE)
+      d &lt;- gr$distance
+      gn &lt;- gr$gene_name
+      peak_desc &lt;- ifelse(
+        nm == &quot;consensus&quot;,
+        &quot;consensus peak by combined score across all treatments.&quot;,
+        paste(
+          &quot;oracle-peak unique to the merged&quot;, nm, &quot;samples.&quot;
+        )
+      )
+      cp &lt;- htmltools::tags$em(
+        glue(
+          &quot;The most highly ranked {peak_desc} &quot;,
+          ifelse(
+            d == 0,
+            paste(&#39;The peak directly overlaps&#39;, gn),
+            paste0(&quot;The nearest gene was &quot;, gn, &quot;, &quot;, round(d/1e3, 1), &quot;kb away&quot;)
+          ),
+          ifelse(
+            (nrow(rnaseq) &gt; 0) &amp; (gn %in% genes_gr$gene_name),
+            glue(&quot; which was detected in the RNA-Seq data.&quot;),
+            glue(&quot;.&quot;)
+          ),
+          &quot;
+          Y-axes for each coverage track are set to the most highly ranked peak
+          across all conditions.
+          &quot;
+        )
+      )
+      
+      ## Create html tags
+      fig_link &lt;- str_extract(fig_out, &quot;assets.+&quot;)
+      htmltools::div(
+        htmltools::div(
+          id = nm %&gt;% 
+            str_replace_all(&quot; &quot;, &quot;-&quot;) %&gt;% 
+            str_to_lower() %&gt;% 
+            paste0(&quot;-topranked&quot;),
+          class=&quot;section level3&quot;,
+          htmltools::h3(
+            ifelse(
+              nm == &quot;consensus&quot;,
+              &quot;Consensus Peaks&quot;,
+              paste(&quot;Oracle Peaks:&quot;, nm)
+            )
+          ),
+          htmltools::div(
+            class = &quot;figure&quot;, style = &quot;text-align: center&quot;,
+            htmltools::img(src = fig_link, width = 960),
+            htmltools::p(
+              class = &quot;caption&quot;, htmltools::tags$em(cp)
+            )
+          )
+        )
+      )
+    },
+    mc.cores = min(length(grl_to_plot), threads)
+  )
+)  </code></pre>
+<div>
+<div id="consensus-topranked" class="section level3">
+<h3>Consensus Peaks</h3>
+<div class="figure" style="text-align: center">
+<img src="assets/AR/consensus_topranked.png" width="960"/>
+<p class="caption">
+<em>
+<em>The most highly ranked consensus peak by combined score across all treatments. The peak directly overlaps ZBTB16.
+Y-axes for each coverage track are set to the most highly ranked peak
+across all conditions.</em>
+</em>
+</p>
+</div>
+</div>
+</div>
+<div>
+<div id="e2-topranked" class="section level3">
+<h3>Oracle Peaks: E2</h3>
+<div class="figure" style="text-align: center">
+<img src="assets/AR/E2_topranked.png" width="960"/>
+<p class="caption">
+<em>
+<em>The most highly ranked oracle-peak unique to the merged E2 samples. The peak directly overlaps PPP2R2B.
+Y-axes for each coverage track are set to the most highly ranked peak
+across all conditions.</em>
+</em>
+</p>
+</div>
+</div>
+</div>
+<div>
+<div id="e2dht-topranked" class="section level3">
+<h3>Oracle Peaks: E2DHT</h3>
+<div class="figure" style="text-align: center">
+<img src="assets/AR/E2DHT_topranked.png" width="960"/>
+<p class="caption">
+<em>
+<em>The most highly ranked oracle-peak unique to the merged E2DHT samples. The nearest gene was LYPLAL1-AS1, 47.3kb away.
+Y-axes for each coverage track are set to the most highly ranked peak
+across all conditions.</em>
+</em>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="data-export" class="section level2">
+<h2>Data Export</h2>
+<pre class="r"><code>all_out &lt;- list(
+  consensus_peaks_bed = file.path(macs2_path, &quot;consensus_peaks.bed&quot;),
+  oracle_peaks_rds = file.path(macs2_path, &quot;oracle_peaks.rds&quot;),
+  renv = file.path(
+    here::here(&quot;output/envs&quot;), 
+    glue(&quot;{target}_macs2_summary.RData&quot;)
+  )
+) %&gt;% 
+  c(
+    sapply(
+      names(oracle_peaks), 
+      function(x) {
+        file.path(macs2_path, glue(&quot;{x}_oracle_peaks.bed&quot;))
+      },
+      simplify = FALSE
+    ) %&gt;% 
+      setNames(
+        glue(&quot;{names(.)}_oracle_peaks_bed&quot;)
+      )
+  )
+export(consensus_peaks, all_out$consensus_peaks)
+oracle_peaks %&gt;%
+  lapply(subset, keep) %&gt;%
+  lapply(select, -keep) %&gt;%
+  GRangesList() %&gt;%
+  write_rds(all_out$oracle_peaks, compress = &quot;gz&quot;)
+names(oracle_peaks) %&gt;% 
+  lapply(
+    function(x) {
+      id &lt;- glue(&quot;{x}_oracle_peaks_bed&quot;)
+      ## Create an empty file
+      file.create(all_out[[id]])
+      oracle_peaks[[x]] %&gt;% 
+        subset(keep) %&gt;% 
+        select(score, signalValue, pValue, qValue, peak) %&gt;% 
+        export(all_out[[id]], format = &quot;narrowPeak&quot;)
+    }
+  )
+if (!dir.exists(dirname(all_out$renv))) dir.create(dirname(all_out$renv))
+save.image(all_out$renv)</code></pre>
+<p>During this workflow the following files were exported:</p>
+<ul>
+<li><strong>consensus_peaks_bed</strong>:
+output/macs2/AR/consensus_peaks.bed</li>
+<li><strong>oracle_peaks_rds</strong>:
+output/macs2/AR/oracle_peaks.rds</li>
+<li><strong>renv</strong>: output/envs/AR_macs2_summary.RData</li>
+<li><strong>E2_oracle_peaks_bed</strong>:
+output/macs2/AR/E2_oracle_peaks.bed</li>
+<li><strong>E2DHT_oracle_peaks_bed</strong>:
+output/macs2/AR/E2DHT_oracle_peaks.bed</li>
+</ul>
+<!-- end of list -->
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-EwelsMultiQC2016" class="csl-entry">
+Ewels, Philip, Måns Magnusson, Sverker Lundin, and Max Käller. 2016.
+<span>“<span class="nocase">MultiQC: summarize analysis results for
+multiple tools and samples in a single report</span>.”</span>
+<em>Bioinformatics</em> 32 (19): 3047–48. <a
+href="https://doi.org/10.1093/bioinformatics/btw354">https://doi.org/10.1093/bioinformatics/btw354</a>.
+</div>
+<div id="ref-Landt01092012" class="csl-entry">
+Landt, Stephen G., Georgi K. Marinov, Anshul Kundaje, Pouya Kheradpour,
+Florencia Pauli, Serafim Batzoglou, Bradley E. Bernstein, et al. 2012.
+<span>“ChIP-Seq Guidelines and Practices of the ENCODE and modENCODE
+Consortia.”</span> <em>Genome Research</em> 22 (9): 1813–31. <a
+href="https://doi.org/10.1101/gr.136184.111">https://doi.org/10.1101/gr.136184.111</a>.
+</div>
+<div id="ref-Upset2014" class="csl-entry">
+Lex, Alexander, Nils Gehlenborg, Hendrik Strobelt, Romain Vuillemot, and
+Hanspeter Pfister. 2014. <span>“UpSet: Visualization of Intersecting
+Sets.”</span> <em>IEEE Transactions on Visualization and Computer
+Graphics</em> 20 (12): 1983–92. <a
+href="https://doi.org/10.1109/TVCG.2014.2346248">https://doi.org/10.1109/TVCG.2014.2346248</a>.
+</div>
+<div id="ref-LunSmythCsaw2014" class="csl-entry">
+Lun, Aaron T L, and Gordon K Smyth. 2014. <span>“<span>D</span>e Novo
+Detection of Differentially Bound Regions for
+<span>C</span>h<span>I</span><span>P</span>-Seq Data Using Peaks and
+Windows: Controlling Error Rates Correctly.”</span> <em>Nucleic Acids
+Res.</em> 42 (11): e95.
+</div>
+<div id="ref-WardNgsReports2019" class="csl-entry">
+Ward, Christopher M, Thu-Hien To, and Stephen M Pederson. 2019.
+<span>“<span class="nocase">ngsReports: a Bioconductor package for
+managing FastQC reports and other NGS related log files</span>.”</span>
+<em>Bioinformatics</em> 36 (8): 2587–88. <a
+href="https://doi.org/10.1093/bioinformatics/btz937">https://doi.org/10.1093/bioinformatics/btz937</a>.
+</div>
+<div id="ref-Zhang18798982" class="csl-entry">
+Zhang, Y., T. Liu, C. A. Meyer, J. Eeckhoute, D. S. Johnson, B. E.
+Bernstein, C. Nusbaum, et al. 2008. <span>“<span
+class="nocase"><span>M</span>odel-based analysis of
+<span>C</span>h<span>I</span><span>P</span>-<span>S</span>eq
+(<span>M</span><span>A</span><span>C</span><span>S</span>)</span>.”</span>
+<em>Genome Biol</em> 9 (9): R137.
+</div>
+</div>
+<br>
+<button type="button" class="btn btn-default btn-sessioninfo" data-toggle="collapse" data-target="#sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+Session information </button>
+</p>
+<div id="sessioninfo" class="collapse">
+<p><strong>R version 4.2.2 (2022-10-31)</strong></p>
+<p><strong>Platform:</strong> x86_64-conda-linux-gnu (64-bit)</p>
+<p><strong>locale:</strong> <em>LC_CTYPE=en_AU.UTF-8</em>,
+<em>LC_NUMERIC=C</em>, <em>LC_TIME=en_AU.UTF-8</em>,
+<em>LC_COLLATE=en_AU.UTF-8</em>, <em>LC_MONETARY=en_AU.UTF-8</em>,
+<em>LC_MESSAGES=en_AU.UTF-8</em>, <em>LC_PAPER=en_AU.UTF-8</em>,
+<em>LC_NAME=C</em>, <em>LC_ADDRESS=C</em>, <em>LC_TELEPHONE=C</em>,
+<em>LC_MEASUREMENT=en_AU.UTF-8</em> and <em>LC_IDENTIFICATION=C</em></p>
+<p><strong>attached base packages:</strong> <em>parallel</em>,
+<em>grid</em>, <em>stats4</em>, <em>stats</em>, <em>graphics</em>,
+<em>grDevices</em>, <em>utils</em>, <em>datasets</em>, <em>methods</em>
+and <em>base</em></p>
+<p><strong>other attached packages:</strong>
+<em>extraChIPs(v.1.2.4)</em>, <em>SummarizedExperiment(v.1.28.0)</em>,
+<em>Biobase(v.2.58.0)</em>, <em>MatrixGenerics(v.1.10.0)</em>,
+<em>matrixStats(v.1.0.0)</em>, <em>ggside(v.0.2.2)</em>,
+<em>Rsamtools(v.2.14.0)</em>, <em>Biostrings(v.2.66.0)</em>,
+<em>XVector(v.0.38.0)</em>, <em>BiocParallel(v.1.32.5)</em>,
+<em>rlang(v.1.1.1)</em>, <em>cowplot(v.1.1.1)</em>,
+<em>VennDiagram(v.1.7.3)</em>, <em>futile.logger(v.1.4.3)</em>,
+<em>ComplexUpset(v.1.3.3)</em>, <em>ngsReports(v.2.0.0)</em>,
+<em>patchwork(v.1.1.2)</em>, <em>yaml(v.2.3.7)</em>,
+<em>plyranges(v.1.18.0)</em>, <em>scales(v.1.2.1)</em>,
+<em>pander(v.0.6.5)</em>, <em>glue(v.1.6.2)</em>,
+<em>rtracklayer(v.1.58.0)</em>, <em>GenomicRanges(v.1.50.0)</em>,
+<em>GenomeInfoDb(v.1.34.9)</em>, <em>IRanges(v.2.32.0)</em>,
+<em>S4Vectors(v.0.36.0)</em>, <em>BiocGenerics(v.0.44.0)</em>,
+<em>magrittr(v.2.0.3)</em>, <em>lubridate(v.1.9.2)</em>,
+<em>forcats(v.1.0.0)</em>, <em>stringr(v.1.5.0)</em>,
+<em>dplyr(v.1.1.2)</em>, <em>purrr(v.1.0.1)</em>,
+<em>readr(v.2.1.4)</em>, <em>tidyr(v.1.3.0)</em>,
+<em>tibble(v.3.2.1)</em>, <em>ggplot2(v.3.4.2)</em> and
+<em>tidyverse(v.2.0.0)</em></p>
+<p><strong>loaded via a namespace (and not attached):</strong>
+<em>utf8(v.1.2.3)</em>, <em>tidyselect(v.1.2.0)</em>,
+<em>RSQLite(v.2.3.1)</em>, <em>AnnotationDbi(v.1.60.0)</em>,
+<em>htmlwidgets(v.1.6.2)</em>, <em>munsell(v.0.5.0)</em>,
+<em>codetools(v.0.2-19)</em>, <em>interp(v.1.1-4)</em>,
+<em>DT(v.0.28)</em>, <em>withr(v.2.5.0)</em>,
+<em>colorspace(v.2.1-0)</em>, <em>filelock(v.1.0.2)</em>,
+<em>highr(v.0.10)</em>, <em>knitr(v.1.43)</em>,
+<em>rstudioapi(v.0.14)</em>, <em>labeling(v.0.4.2)</em>,
+<em>GenomeInfoDbData(v.1.2.9)</em>, <em>polyclip(v.1.10-4)</em>,
+<em>farver(v.2.1.1)</em>, <em>bit64(v.4.0.5)</em>,
+<em>rprojroot(v.2.0.3)</em>, <em>vctrs(v.0.6.3)</em>,
+<em>generics(v.0.1.3)</em>, <em>lambda.r(v.1.2.4)</em>,
+<em>xfun(v.0.39)</em>, <em>biovizBase(v.1.46.0)</em>,
+<em>timechange(v.0.2.0)</em>, <em>csaw(v.1.32.0)</em>,
+<em>BiocFileCache(v.2.6.0)</em>, <em>R6(v.2.5.1)</em>,
+<em>doParallel(v.1.0.17)</em>, <em>clue(v.0.3-64)</em>,
+<em>locfit(v.1.5-9.8)</em>, <em>AnnotationFilter(v.1.22.0)</em>,
+<em>bitops(v.1.0-7)</em>, <em>cachem(v.1.0.8)</em>,
+<em>DelayedArray(v.0.24.0)</em>, <em>vroom(v.1.6.3)</em>,
+<em>BiocIO(v.1.8.0)</em>, <em>nnet(v.7.3-19)</em>,
+<em>gtable(v.0.3.3)</em>, <em>ensembldb(v.2.22.0)</em>,
+<em>splines(v.4.2.2)</em>, <em>GlobalOptions(v.0.1.2)</em>,
+<em>lazyeval(v.0.2.2)</em>, <em>dichromat(v.2.0-0.1)</em>,
+<em>broom(v.1.0.5)</em>, <em>checkmate(v.2.2.0)</em>,
+<em>GenomicFeatures(v.1.50.2)</em>, <em>backports(v.1.4.1)</em>,
+<em>Hmisc(v.5.1-0)</em>, <em>EnrichedHeatmap(v.1.27.2)</em>,
+<em>tools(v.4.2.2)</em>, <em>jquerylib(v.0.1.4)</em>,
+<em>RColorBrewer(v.1.1-3)</em>, <em>ggdendro(v.0.1.23)</em>,
+<em>Rcpp(v.1.0.10)</em>, <em>base64enc(v.0.1-3)</em>,
+<em>progress(v.1.2.2)</em>, <em>zlibbioc(v.1.44.0)</em>,
+<em>RCurl(v.1.98-1.12)</em>, <em>prettyunits(v.1.1.1)</em>,
+<em>rpart(v.4.1.19)</em>, <em>deldir(v.1.0-9)</em>,
+<em>GetoptLong(v.1.0.5)</em>, <em>zoo(v.1.8-12)</em>,
+<em>ggrepel(v.0.9.3)</em>, <em>cluster(v.2.1.4)</em>,
+<em>here(v.1.0.1)</em>, <em>data.table(v.1.14.8)</em>,
+<em>futile.options(v.1.0.1)</em>, <em>circlize(v.0.4.15)</em>,
+<em>ProtGenerics(v.1.30.0)</em>, <em>hms(v.1.1.3)</em>,
+<em>evaluate(v.0.21)</em>, <em>XML(v.3.99-0.14)</em>,
+<em>jpeg(v.0.1-10)</em>, <em>gridExtra(v.2.3)</em>,
+<em>shape(v.1.4.6)</em>, <em>compiler(v.4.2.2)</em>,
+<em>biomaRt(v.2.54.0)</em>, <em>crayon(v.1.5.2)</em>,
+<em>htmltools(v.0.5.5)</em>, <em>mgcv(v.1.8-42)</em>,
+<em>tzdb(v.0.4.0)</em>, <em>Formula(v.1.2-5)</em>,
+<em>DBI(v.1.1.3)</em>, <em>tweenr(v.2.0.2)</em>,
+<em>formatR(v.1.14)</em>, <em>dbplyr(v.2.3.2)</em>,
+<em>ComplexHeatmap(v.2.14.0)</em>, <em>MASS(v.7.3-60)</em>,
+<em>GenomicInteractions(v.1.32.0)</em>, <em>rappdirs(v.0.3.3)</em>,
+<em>Matrix(v.1.5-4.1)</em>, <em>cli(v.3.6.1)</em>,
+<em>metapod(v.1.6.0)</em>, <em>Gviz(v.1.42.0)</em>,
+<em>igraph(v.1.4.2)</em>, <em>pkgconfig(v.2.0.3)</em>,
+<em>GenomicAlignments(v.1.34.0)</em>, <em>foreign(v.0.8-84)</em>,
+<em>plotly(v.4.10.2)</em>, <em>xml2(v.1.3.3)</em>,
+<em>InteractionSet(v.1.26.0)</em>, <em>foreach(v.1.5.2)</em>,
+<em>bslib(v.0.5.0)</em>, <em>VariantAnnotation(v.1.44.0)</em>,
+<em>digest(v.0.6.31)</em>, <em>rmarkdown(v.2.22)</em>,
+<em>htmlTable(v.2.4.1)</em>, <em>edgeR(v.3.40.0)</em>,
+<em>restfulr(v.0.0.15)</em>, <em>curl(v.5.0.1)</em>,
+<em>rjson(v.0.2.21)</em>, <em>nlme(v.3.1-162)</em>,
+<em>lifecycle(v.1.0.3)</em>, <em>jsonlite(v.1.8.5)</em>,
+<em>viridisLite(v.0.4.2)</em>, <em>limma(v.3.54.0)</em>,
+<em>BSgenome(v.1.66.3)</em>, <em>fansi(v.1.0.4)</em>,
+<em>pillar(v.1.9.0)</em>, <em>lattice(v.0.21-8)</em>,
+<em>KEGGREST(v.1.38.0)</em>, <em>fastmap(v.1.1.1)</em>,
+<em>httr(v.1.4.6)</em>, <em>png(v.0.1-8)</em>,
+<em>iterators(v.1.0.14)</em>, <em>bit(v.4.0.5)</em>,
+<em>ggforce(v.0.4.1)</em>, <em>stringi(v.1.7.12)</em>,
+<em>sass(v.0.4.6)</em>, <em>blob(v.1.2.4)</em>,
+<em>latticeExtra(v.0.6-30)</em> and <em>memoise(v.2.0.1)</em></p>
+</div>
+</div>
+
+<div class="footer">
+  Workflow developed by:<br>
+  Dr Stephen Pederson<br>
+  Dame Roma Mitchell Cancer Research Laboratories<br>
+  Adelaide Medical School, University of Adelaide, SA, Australia
+</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

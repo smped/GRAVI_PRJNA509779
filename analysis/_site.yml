@@ -1,0 +1,60 @@
+name: 'GRAVI: Gene Regulatory Analysis'
+output_dir: ../docs
+navbar:
+  title: GRAVI
+  left:
+  - icon: fa-home
+    text: Home
+    href: index.html
+  - text: Annotations
+    href: annotation_description.html
+  - text: MACS2 Peak Calling
+    menu:
+    - text: AR
+      href: AR_macs2_summary.html
+    - text: ER
+      href: ER_macs2_summary.html
+    - text: H3K27ac
+      href: H3K27ac_macs2_summary.html
+  - text: Differential Binding
+    menu:
+    - text: AR
+      menu:
+      - text: E2DHT Vs. E2
+        href: AR_E2_E2DHT_differential_binding.html
+    - text: ER
+      menu:
+      - text: E2DHT Vs. E2
+        href: ER_E2_E2DHT_differential_binding.html
+    - text: H3K27ac
+      menu:
+      - text: E2DHT Vs. E2
+        href: H3K27ac_E2_E2DHT_differential_binding.html
+  - text: Pairwise Comparisons
+    menu:
+    - text: AR-ER
+      menu:
+      - text: E2DHT Vs. E2 / E2DHT Vs. E2
+        href: AR_E2_E2DHT_ER_E2_E2DHT_pairwise_comparison.html
+    - text: AR-H3K27ac
+      menu:
+      - text: E2DHT Vs. E2 / E2DHT Vs. E2
+        href: AR_E2_E2DHT_H3K27ac_E2_E2DHT_pairwise_comparison.html
+    - text: ER-H3K27ac
+      menu:
+      - text: E2DHT Vs. E2 / E2DHT Vs. E2
+        href: ER_E2_E2DHT_H3K27ac_E2_E2DHT_pairwise_comparison.html
+  right:
+  - icon: fa-github
+    href: https://github.com/steveped/GRAVI
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+    self_contained: no
+    theme: sandstone
+    highlight: textmate
+    css: gravi.css
+    includes:
+      after_body: footer.html

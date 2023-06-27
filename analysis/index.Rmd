@@ -1,0 +1,142 @@
+---
+title: "Outline Of Analysis"
+editor_options:
+  chunk_output_type: console
+---
+
+```{r set-knitr-opts, echo=FALSE, child = here::here('workflow/modules/setup_chunk.Rmd')}
+```
+
+```{r packages}
+library(tidyverse)
+library(DiagrammeR)
+library(pander)
+library(yaml)
+library(scales)
+library(glue)
+source(
+  here::here("workflow/scripts/plot_dag_functions.R")
+)
+```
+
+```{r config}
+config <- here::here("config/config.yml") %>%
+  read_yaml()
+samples <- config$samples$file %>%
+  here::here() %>%
+  read_tsv()
+rep_col <- setdiff(
+  colnames(samples),
+  c("sample", "target", "treat", "input")
+)
+```
+
+```{r methods, echo=FALSE}
+db_method = list(
+  "ls-ql" = "using library-size normalisation followed by fitting of quasi-likelihood models",
+  "sq-lt" = "using smooth-quantile normalisation followed by limma-trend"
+)[[config$comparisons$method]]
+fc <- config$comparisons$fc
+```
+
+
+## Description
+
+This is a standardised workflow for beginning the comparison between two or ChIP targets, using BAM files as the starting point.
+Treatment groups and targets are specified using `config/config.yml`.
+
+## Workflow
+
+```{r plot-workflow, fig.height = 10, fig.width = 10, fig.cap = "*Summary of processing workflow. The primary data pipeline producing key outputs is shown in red, preparatory steps are shown in blue whilst steps involved in the collation of final output are in green.*"}
+here::here("workflow", "rules", "rulegraph.dot") %>%
+  readLines() %>%
+  rm_dot_node(node = "\"all\"") %>%
+  add_input_node(node = "Alignments\n(Bam Files)", col = "red", ignore = "(download|define|macs2|create|install)") %>%
+  change_node_colour("(index|macs2|annotations|bedgraph|compile|greylist|coverage)", "red") %>%
+  change_node_colour("(create|build|update)", "forestgreen") %>%
+  change_node_colour("(download|write|copy|install)", "blue") %>%
+  str_replace_all("_", "\n") %>%
+  str_replace_all("snakemake\ndag", "snakemake_dag") %>%
+  str_replace_all("fontsize=[0-9]+", "fontsize=16") %>%
+  str_replace_all("(.+graph.+)(\\];)", "\\1, rankdir = LR\\2") %>%
+  grViz()
+```
+
+## Targets
+
+```{r}
+samples %>% 
+  group_by(target, treat) %>%
+  summarise(n = dplyr::n(), .groups = "drop") %>% 
+  rename_all(str_to_title) %>% 
+  pander(
+    justify = "llr",
+    caption = "Summary of supplied ChIP targets and treatment groups"
+  )
+```
+
+## Differential Binding
+
+The specified comparisons are given below, where 'Vs.' can be interpreted as a '-' sign.
+This effectively makes the first listed group as the treatment and the second listed as the reference or control.
+Differential binding analysis will be performed for every ChIP target where both treatment groups are present.
+`r ifelse(config$comparisons$paired, glue("Samples will be nested __within {rep_col}__ as a potential source of correlation."), "")`
+
+`r pander(lapply(config$comparisons$contrasts, function(x) paste(rev(x), collapse = " Vs. ")))`
+
+Differential binding will be performed using `r db_method`.
+`r if (fc > 1) glue("Changes in signal below {percent(fc - 1)} will be considered as 'not of interest' when performing this analysis.")`
+
+
+## Pairwise Comparisons
+
+All combinations of the comparisons defined above will will be used to perform pairwise comparisons across ChIP targets and contrasts.
+
+## Settings
+
+### Genome
+
+- The genome build (`r config$genome$build`) was sourced from Gencode release `r config$genome$gencode`
+- Blacklisted sites were sourced from [https://github.com/boyle-lab/Blacklist/](ENCODE) for this specific genome build
+
+
+```{r extdata, echo = FALSE}
+ext_data <- config$external[map_int(config$external, length) > 0] %>% 
+  lapply(unlist) %>% 
+  lapply(basename)
+txt <- ifelse(
+  length(ext_data) > 0, 
+  "### External Data
+  
+  The external data provided was:
+  ", 
+  "No external data was included"
+)
+```
+
+`r txt`
+
+`r if (length(ext_data) > 0) pander(ext_data)`
+
+### Peak Detection
+
+Macs2 callpeak settings were default with the following exceptions:
+
+`r pander(config$peaks$macs2[!str_detect(names(config$peaks$macs2), "min_prop")])`
+
+Two additional QC settings were incorporated for peak filtering.
+
+- For a sample to pass initial QC, the number of identified peaks needs to be &lt; `r config$peaks$qc$outlier_threshold`-fold (or &gt; 1/`r config$peaks$qc$outlier_threshold`-fold ) the median number of peaks identified in each specific treatment group.
+`r if (config$peaks$qc$allow_zero) "- Samples with zero peaks were permitted given the possibility of cytoplasmic sequestering of ChIP targets under some conditions"`
+- For a peak to be included in the set of treatment-specific "Oracle Peaks", it needs to overlap an identified peak in at least `r percent(config$peaks$qc$min_prop_reps)` of samples passing the above QC steps
+
+
+<button type="button" class="btn btn-default btn-sessioninfo" data-toggle="collapse" data-target="#sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="sessioninfo" class="collapse">
+```{r session-info, echo=FALSE}
+pander::pander(sessionInfo())
+```
+</div>
