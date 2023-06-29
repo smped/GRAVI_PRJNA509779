@@ -2,7 +2,7 @@ rule update_extrachips:
 	input: os.path.join("workflow", "scripts", "update_extrachips.R")
 	output: os.path.join("output", rmd_hash + "_extrachips.updated")
 	params:
-	    version = "1.2.3"
+	    version = "1.5.5"
 	conda: "../envs/rmarkdown.yml"
 	threads: 1
 	log: log_path + "/rmarkdown/update_extrachips.log"
@@ -39,14 +39,6 @@ rule create_setup_chunk:
 	shell:
 		"""
 		Rscript --vanilla {input.r} {output.rmd} &>> {log}
-		"""
-
-rule create_here_file:
-	output: here_file
-	threads: 1
-	shell:
-		"""
-		touch {output}
 		"""
 
 rule compile_annotations_html:
