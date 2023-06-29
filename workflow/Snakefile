@@ -32,7 +32,19 @@ def get_here_file():
 ####################################
 ## Check all external files exist ##
 ####################################
-## Not yet done
+for i in config['external']:
+	f = config['external'][i]
+	if type(f) == str:
+		msg = "File " + f + " not found"
+		assert (os.path.isfile(f)), msg
+	if type(f) == dict:
+		for j in f:
+			for k in f[j]:
+				msg = "File " + f[j][k] + " not found"
+				assert(os.path.isfile(f[j][k])), msg
+
+
+
 
 def get_ucsc_genome(x):
 	map = pd.Series(['hg19', 'hg38'], index = ['GRCh37', 'GRCh38'])
