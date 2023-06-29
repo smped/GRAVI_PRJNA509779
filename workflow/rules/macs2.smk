@@ -95,7 +95,6 @@ rule macs2_qc:
 			sample = set(df[df.target == wildcards.target]['sample']),
 			suffix = ['bam', 'bam.bai']
 		),
-		blacklist = blacklist,
 		config = "config/config.yml",
 		extrachips = rules.update_extrachips.output,
 		indiv_macs2 = lambda wildcards: expand(
@@ -274,7 +273,6 @@ rule compile_macs2_summary_html:
 			sample = set(df[df.target == wildcards.target]['sample']),
 			suffix = ['bam', 'bam.bai']
 		),
-		blacklist = blacklist,
 		bw = lambda wildcards: expand(
 			os.path.join(
 				macs2_path, "{{target}}", "{treat}_merged_treat_pileup.{fl}"

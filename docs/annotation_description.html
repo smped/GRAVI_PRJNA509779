@@ -452,7 +452,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Annotations</h1>
-<h4 class="date">29 June, 2023</h4>
+<h4 class="date">30 June, 2023</h4>
 
 </div>
 
@@ -468,7 +468,8 @@ library(reactable)
 library(htmltools)
 library(plyranges)
 library(GenomicInteractions)
-library(extraChIPs)</code></pre>
+library(extraChIPs)
+library(GenomeInfoDb)</code></pre>
 <pre class="r"><code>panderOptions(&quot;big.mark&quot;, &quot;,&quot;)
 panderOptions(&quot;missing&quot;, &quot;&quot;)
 panderOptions(&quot;table.split.table&quot;, Inf)
@@ -527,9 +528,15 @@ information about the underlying genome, such as a
 </div>
 <div id="blacklisted-regions" class="section level2 tabset">
 <h2 class="tabset">Blacklisted Regions</h2>
-<pre class="r"><code>blacklist &lt;- file.path(annotation_path, &quot;blacklist.bed.gz&quot;) %&gt;%
-  import.bed(seqinfo = sq) %&gt;%
-  sort()</code></pre>
+<pre class="r"><code>gnm &lt;- str_to_lower(config$genome$build)
+if (gnm %in% c(&quot;grch37&quot;, &quot;grch38&quot;)) gnm &lt;- c(grch37 = &quot;hg19&quot;, grch38 = &quot;hg38&quot;)[gnm]
+bl &lt;- paste0(gnm, &quot;.blacklist&quot;)
+data(list = bl, package = &quot;GreyListChIP&quot;)
+blacklist &lt;- get(bl) %&gt;% 
+  sortSeqlevels() %&gt;%
+  subset(seqnames %in% seqlevels(sq)) %&gt;%
+  keepSeqlevels(seqlevels(sq))
+seqinfo(blacklist) &lt;- sq</code></pre>
 <div id="summary" class="section level3">
 <h3>Summary</h3>
 <pre class="r"><code>blacklist %&gt;% 
@@ -557,24 +564,22 @@ information about the underlying genome, such as a
     caption = glue(
       &quot;*Summary of genomic regions excluded in the blacklist. &quot;,
       &quot;The default set of blacklisted regions was used, as obtained from &quot;,
-      &quot;https://github.com/Boyle-Lab/Blacklist (ENCODE)*&quot;
+      &quot;the Biconductor package &#39;GreyListChIP&#39;.&quot;
     ),
     justify = &quot;lrrrrrr&quot;
   )</code></pre>
 <table>
-<caption><em>Summary of genomic regions excluded in the blacklist. The
-default set of blacklisted regions was used, as obtained from <a
-href="https://github.com/Boyle-Lab/Blacklist"
-class="uri">https://github.com/Boyle-Lab/Blacklist</a>
-(ENCODE)</em></caption>
+<caption>*Summary of genomic regions excluded in the blacklist. The
+default set of blacklisted regions was used, as obtained from the
+Biconductor package ‘GreyListChIP’.</caption>
 <colgroup>
-<col width="22%" />
-<col width="14%" />
-<col width="11%" />
+<col width="25%" />
 <col width="13%" />
-<col width="11%" />
-<col width="14%" />
-<col width="11%" />
+<col width="12%" />
+<col width="12%" />
+<col width="10%" />
+<col width="13%" />
+<col width="10%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -589,22 +594,148 @@ class="uri">https://github.com/Boyle-Lab/Blacklist</a>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">High Signal Region</td>
-<td align="right">583</td>
-<td align="right">8.7%</td>
-<td align="right">269,778</td>
-<td align="right">1.1</td>
-<td align="right">13.4</td>
-<td align="right">30,590</td>
+<td align="left">(CATTC)n</td>
+<td align="right">6</td>
+<td align="right">0.0047056%</td>
+<td align="right">145.7</td>
+<td align="right">0.049</td>
+<td align="right">10.65</td>
+<td align="right">98.28</td>
 </tr>
 <tr class="even">
-<td align="left">Low Mappability</td>
-<td align="right">251</td>
-<td align="right">0.2%</td>
-<td align="right">5,192</td>
-<td align="right">1.4</td>
-<td align="right">5.8</td>
-<td align="right">361.7</td>
+<td align="left">(GAATG)n</td>
+<td align="right">2</td>
+<td align="right">0.0000086%</td>
+<td align="right">0.267</td>
+<td align="right">0.089</td>
+<td align="right">0.1335</td>
+<td align="right">0.178</td>
+</tr>
+<tr class="odd">
+<td align="left">(GAGTG)n</td>
+<td align="right">1</td>
+<td align="right">0.0000136%</td>
+<td align="right">0.422</td>
+<td align="right">0.422</td>
+<td align="right">0.422</td>
+<td align="right">0.422</td>
+</tr>
+<tr class="even">
+<td align="left">ACRO1</td>
+<td align="right">3</td>
+<td align="right">0.0001898%</td>
+<td align="right">5.877</td>
+<td align="right">1.85</td>
+<td align="right">2</td>
+<td align="right">2.027</td>
+</tr>
+<tr class="odd">
+<td align="left">ALR/Alpha</td>
+<td align="right">25</td>
+<td align="right">0.0096704%</td>
+<td align="right">299.4</td>
+<td align="right">0.143</td>
+<td align="right">9.015</td>
+<td align="right">77.79</td>
+</tr>
+<tr class="even">
+<td align="left">BSR/Beta</td>
+<td align="right">78</td>
+<td align="right">0.0257621%</td>
+<td align="right">797.5</td>
+<td align="right">0.109</td>
+<td align="right">8.203</td>
+<td align="right">38.38</td>
+</tr>
+<tr class="odd">
+<td align="left">centromeric_repeat</td>
+<td align="right">76</td>
+<td align="right">0.2906312%</td>
+<td align="right">8,997</td>
+<td align="right">0.156</td>
+<td align="right">33.68</td>
+<td align="right">1,400</td>
+</tr>
+<tr class="even">
+<td align="left">chrM</td>
+<td align="right">5</td>
+<td align="right">0.0002597%</td>
+<td align="right">8.038</td>
+<td align="right">0.2</td>
+<td align="right">1.46</td>
+<td align="right">3.411</td>
+</tr>
+<tr class="odd">
+<td align="left">High_Mappability_island</td>
+<td align="right">7</td>
+<td align="right">0.0004068%</td>
+<td align="right">12.59</td>
+<td align="right">0.537</td>
+<td align="right">1.089</td>
+<td align="right">5.922</td>
+</tr>
+<tr class="even">
+<td align="left">Low_mappability_island</td>
+<td align="right">100</td>
+<td align="right">0.0166324%</td>
+<td align="right">514.9</td>
+<td align="right">0.076</td>
+<td align="right">0.484</td>
+<td align="right">102.4</td>
+</tr>
+<tr class="odd">
+<td align="left">LSU-rRNA_Hsa</td>
+<td align="right">33</td>
+<td align="right">0.0006661%</td>
+<td align="right">20.62</td>
+<td align="right">0.134</td>
+<td align="right">0.418</td>
+<td align="right">3.812</td>
+</tr>
+<tr class="even">
+<td align="left">Satellite_repeat</td>
+<td align="right">36</td>
+<td align="right">0.0233701%</td>
+<td align="right">723.5</td>
+<td align="right">0.16</td>
+<td align="right">6.467</td>
+<td align="right">107.6</td>
+</tr>
+<tr class="odd">
+<td align="left">snRNA</td>
+<td align="right">2</td>
+<td align="right">0.0000666%</td>
+<td align="right">2.062</td>
+<td align="right">0.537</td>
+<td align="right">1.031</td>
+<td align="right">1.525</td>
+</tr>
+<tr class="even">
+<td align="left">SSU-rRNA_Hsa</td>
+<td align="right">11</td>
+<td align="right">0.0001807%</td>
+<td align="right">5.595</td>
+<td align="right">0.082</td>
+<td align="right">0.24</td>
+<td align="right">1.848</td>
+</tr>
+<tr class="odd">
+<td align="left">TAR1</td>
+<td align="right">20</td>
+<td align="right">0.0004048%</td>
+<td align="right">12.53</td>
+<td align="right">0.041</td>
+<td align="right">0.305</td>
+<td align="right">2.127</td>
+</tr>
+<tr class="even">
+<td align="left">telomeric_repeat</td>
+<td align="right">5</td>
+<td align="right">0.0008334%</td>
+<td align="right">25.8</td>
+<td align="right">1.351</td>
+<td align="right">2.008</td>
+<td align="right">18.04</td>
 </tr>
 </tbody>
 </table>
@@ -785,8 +916,8 @@ div(class = &quot;table&quot;,
 Colours used throughout the workflow for each region are indicated in the 
 first column, with other summary statistics making up the rest of the table.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5f6f13fa8ac6ed4ffb23" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-5f6f13fa8ac6ed4ffb23">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500bp)","Upstream Promoter (<5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91329,161506,183811,36501,12646],"Width":[210.742887,281.03238399999998,77.785742999999997,1309.464843,255.426929,961.22462599999994],"Mn":[2.3721621679423683,3.0771429009405553,0.48162757420776936,7.1239743160093782,6.9978063340730392,76.010171279455946],"% Genome":[0.068076501182933985,0.09078219290892961,0.025127212124387847,0.42299783495658366,0.082510835273039096,0.3105054235541258]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,329","161,506","183,811","36,501","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.08","0.48","7.12","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"f17975547b778b99a33e72aed33e84ab"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-33983c066d3cc8b1740e" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-33983c066d3cc8b1740e">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500bp)","Upstream Promoter (<5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91329,161506,183811,36501,12646],"Width":[210.742887,281.03238399999998,77.785742999999997,1309.464843,255.426929,961.22462599999994],"Mn":[2.3721621679423683,3.0771429009405553,0.48162757420776936,7.1239743160093782,6.9978063340730392,76.010171279455946],"% Genome":[0.068076501182933985,0.09078219290892961,0.025127212124387847,0.42299783495658366,0.082510835273039096,0.3105054235541258]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,329","161,506","183,811","36,501","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.08","0.48","7.12","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"f17975547b778b99a33e72aed33e84ab"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div id="summary-1" class="section level3">
@@ -796,6 +927,7 @@ first column, with other summary statistics making up the rest of the table.</em
   GRangesList() %&gt;% 
   unlist() %&gt;% 
   mutate(region = factor(region, levels = regions)) %&gt;% 
+  setNames(NULL) %&gt;%
   plotPie(
     fill = &quot;region&quot;, scale_by = &quot;width&quot;, show_total = FALSE, 
     category_size = 3.5
@@ -1067,8 +1199,8 @@ div(class = &quot;table&quot;,
 <div class="caption">
 <em>Summary of external features provided in the file enhancer_atlas_2.0_zr75.gtf.gz. All peaks and windows will be compared to these throughout the workflow. The colours defined for each feature is show as a guide on the left.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8743d5d90bf6cc81232b" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-8743d5d90bf6cc81232b">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.659999999996],"med":[1.1699999999999999],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"275437e7e50e3ab8a360215c7ea4fd8c"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1c4e9d1f0e71fc2e0db8" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-1c4e9d1f0e71fc2e0db8">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.659999999996],"med":[1.1699999999999999],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"275437e7e50e3ab8a360215c7ea4fd8c"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -1197,17 +1329,17 @@ Session information
 <em>stats</em>, <em>graphics</em>, <em>grDevices</em>, <em>utils</em>,
 <em>datasets</em>, <em>methods</em> and <em>base</em></p>
 <p><strong>other attached packages:</strong>
-<em>extraChIPs(v.1.2.4)</em>, <em>BiocParallel(v.1.32.5)</em>,
-<em>GenomicInteractions(v.1.32.0)</em>,
-<em>InteractionSet(v.1.26.0)</em>,
+<em>extraChIPs(v.1.5.5)</em>, <em>ggside(v.0.2.2)</em>,
+<em>BiocParallel(v.1.32.6)</em>, <em>GenomicInteractions(v.1.32.0)</em>,
+<em>InteractionSet(v.1.26.1)</em>,
 <em>SummarizedExperiment(v.1.28.0)</em>, <em>Biobase(v.2.58.0)</em>,
 <em>MatrixGenerics(v.1.10.0)</em>, <em>matrixStats(v.1.0.0)</em>,
 <em>plyranges(v.1.18.0)</em>, <em>htmltools(v.0.5.5)</em>,
 <em>reactable(v.0.4.4)</em>, <em>yaml(v.2.3.7)</em>,
 <em>scales(v.1.2.1)</em>, <em>pander(v.0.6.5)</em>,
 <em>glue(v.1.6.2)</em>, <em>rtracklayer(v.1.58.0)</em>,
-<em>GenomicRanges(v.1.50.0)</em>, <em>GenomeInfoDb(v.1.34.9)</em>,
-<em>IRanges(v.2.32.0)</em>, <em>S4Vectors(v.0.36.0)</em>,
+<em>GenomicRanges(v.1.50.2)</em>, <em>GenomeInfoDb(v.1.34.9)</em>,
+<em>IRanges(v.2.32.0)</em>, <em>S4Vectors(v.0.36.2)</em>,
 <em>BiocGenerics(v.0.44.0)</em>, <em>magrittr(v.2.0.3)</em>,
 <em>lubridate(v.1.9.2)</em>, <em>forcats(v.1.0.0)</em>,
 <em>stringr(v.1.5.0)</em>, <em>dplyr(v.1.1.2)</em>,
@@ -1216,75 +1348,74 @@ Session information
 <em>ggplot2(v.3.4.2)</em> and <em>tidyverse(v.2.0.0)</em></p>
 <p><strong>loaded via a namespace (and not attached):</strong>
 <em>utf8(v.1.2.3)</em>, <em>tidyselect(v.1.2.0)</em>,
-<em>RSQLite(v.2.3.1)</em>, <em>AnnotationDbi(v.1.60.0)</em>,
+<em>RSQLite(v.2.3.1)</em>, <em>AnnotationDbi(v.1.60.2)</em>,
 <em>htmlwidgets(v.1.6.2)</em>, <em>grid(v.4.2.2)</em>,
 <em>munsell(v.0.5.0)</em>, <em>codetools(v.0.2-19)</em>,
 <em>interp(v.1.1-4)</em>, <em>withr(v.2.5.0)</em>,
 <em>colorspace(v.2.1-0)</em>, <em>filelock(v.1.0.2)</em>,
 <em>highr(v.0.10)</em>, <em>knitr(v.1.43)</em>,
-<em>rstudioapi(v.0.14)</em>, <em>ggside(v.0.2.2)</em>,
-<em>labeling(v.0.4.2)</em>, <em>GenomeInfoDbData(v.1.2.9)</em>,
-<em>polyclip(v.1.10-4)</em>, <em>bit64(v.4.0.5)</em>,
-<em>farver(v.2.1.1)</em>, <em>rprojroot(v.2.0.3)</em>,
-<em>vctrs(v.0.6.3)</em>, <em>generics(v.0.1.3)</em>,
-<em>lambda.r(v.1.2.4)</em>, <em>xfun(v.0.39)</em>,
-<em>biovizBase(v.1.46.0)</em>, <em>timechange(v.0.2.0)</em>,
-<em>csaw(v.1.32.0)</em>, <em>BiocFileCache(v.2.6.0)</em>,
-<em>R6(v.2.5.1)</em>, <em>doParallel(v.1.0.17)</em>,
-<em>clue(v.0.3-64)</em>, <em>locfit(v.1.5-9.8)</em>,
-<em>AnnotationFilter(v.1.22.0)</em>, <em>bitops(v.1.0-7)</em>,
-<em>cachem(v.1.0.8)</em>, <em>DelayedArray(v.0.24.0)</em>,
-<em>BiocIO(v.1.8.0)</em>, <em>vroom(v.1.6.3)</em>,
-<em>nnet(v.7.3-19)</em>, <em>gtable(v.0.3.3)</em>,
-<em>ensembldb(v.2.22.0)</em>, <em>rlang(v.1.1.1)</em>,
-<em>GlobalOptions(v.0.1.2)</em>, <em>lazyeval(v.0.2.2)</em>,
-<em>dichromat(v.2.0-0.1)</em>, <em>broom(v.1.0.5)</em>,
-<em>checkmate(v.2.2.0)</em>, <em>GenomicFeatures(v.1.50.2)</em>,
-<em>crosstalk(v.1.2.0)</em>, <em>backports(v.1.4.1)</em>,
-<em>Hmisc(v.5.1-0)</em>, <em>EnrichedHeatmap(v.1.27.2)</em>,
-<em>tools(v.4.2.2)</em>, <em>ellipsis(v.0.3.2)</em>,
-<em>jquerylib(v.0.1.4)</em>, <em>RColorBrewer(v.1.1-3)</em>,
-<em>Rcpp(v.1.0.10)</em>, <em>base64enc(v.0.1-3)</em>,
-<em>progress(v.1.2.2)</em>, <em>zlibbioc(v.1.44.0)</em>,
-<em>RCurl(v.1.98-1.12)</em>, <em>prettyunits(v.1.1.1)</em>,
-<em>rpart(v.4.1.19)</em>, <em>deldir(v.1.0-9)</em>,
-<em>GetoptLong(v.1.0.5)</em>, <em>reactR(v.0.4.4)</em>,
-<em>ggrepel(v.0.9.3)</em>, <em>cluster(v.2.1.4)</em>,
-<em>here(v.1.0.1)</em>, <em>ComplexUpset(v.1.3.3)</em>,
-<em>data.table(v.1.14.8)</em>, <em>futile.options(v.1.0.1)</em>,
-<em>circlize(v.0.4.15)</em>, <em>ProtGenerics(v.1.30.0)</em>,
-<em>hms(v.1.1.3)</em>, <em>patchwork(v.1.1.2)</em>,
-<em>evaluate(v.0.21)</em>, <em>XML(v.3.99-0.14)</em>,
-<em>VennDiagram(v.1.7.3)</em>, <em>jpeg(v.0.1-10)</em>,
-<em>gridExtra(v.2.3)</em>, <em>shape(v.1.4.6)</em>,
-<em>compiler(v.4.2.2)</em>, <em>biomaRt(v.2.54.0)</em>,
-<em>crayon(v.1.5.2)</em>, <em>tzdb(v.0.4.0)</em>,
-<em>Formula(v.1.2-5)</em>, <em>DBI(v.1.1.3)</em>,
-<em>tweenr(v.2.0.2)</em>, <em>formatR(v.1.14)</em>,
-<em>dbplyr(v.2.3.2)</em>, <em>ComplexHeatmap(v.2.14.0)</em>,
-<em>MASS(v.7.3-60)</em>, <em>rappdirs(v.0.3.3)</em>,
-<em>Matrix(v.1.5-4.1)</em>, <em>cli(v.3.6.1)</em>,
-<em>parallel(v.4.2.2)</em>, <em>Gviz(v.1.42.0)</em>,
-<em>metapod(v.1.6.0)</em>, <em>igraph(v.1.4.2)</em>,
-<em>pkgconfig(v.2.0.3)</em>, <em>GenomicAlignments(v.1.34.0)</em>,
-<em>foreign(v.0.8-84)</em>, <em>xml2(v.1.3.3)</em>,
-<em>foreach(v.1.5.2)</em>, <em>bslib(v.0.5.0)</em>,
-<em>XVector(v.0.38.0)</em>, <em>VariantAnnotation(v.1.44.0)</em>,
-<em>digest(v.0.6.31)</em>, <em>Biostrings(v.2.66.0)</em>,
-<em>rmarkdown(v.2.22)</em>, <em>htmlTable(v.2.4.1)</em>,
-<em>edgeR(v.3.40.0)</em>, <em>restfulr(v.0.0.15)</em>,
-<em>curl(v.5.0.1)</em>, <em>Rsamtools(v.2.14.0)</em>,
-<em>rjson(v.0.2.21)</em>, <em>lifecycle(v.1.0.3)</em>,
-<em>jsonlite(v.1.8.5)</em>, <em>futile.logger(v.1.4.3)</em>,
-<em>limma(v.3.54.0)</em>, <em>BSgenome(v.1.66.3)</em>,
-<em>fansi(v.1.0.4)</em>, <em>pillar(v.1.9.0)</em>,
-<em>lattice(v.0.21-8)</em>, <em>KEGGREST(v.1.38.0)</em>,
-<em>fastmap(v.1.1.1)</em>, <em>httr(v.1.4.6)</em>,
-<em>png(v.0.1-8)</em>, <em>iterators(v.1.0.14)</em>,
-<em>bit(v.4.0.5)</em>, <em>ggforce(v.0.4.1)</em>,
-<em>stringi(v.1.7.12)</em>, <em>sass(v.0.4.6)</em>,
-<em>blob(v.1.2.4)</em>, <em>latticeExtra(v.0.6-30)</em> and
-<em>memoise(v.2.0.1)</em></p>
+<em>rstudioapi(v.0.14)</em>, <em>labeling(v.0.4.2)</em>,
+<em>GenomeInfoDbData(v.1.2.9)</em>, <em>polyclip(v.1.10-4)</em>,
+<em>bit64(v.4.0.5)</em>, <em>farver(v.2.1.1)</em>,
+<em>rprojroot(v.2.0.3)</em>, <em>vctrs(v.0.6.3)</em>,
+<em>generics(v.0.1.3)</em>, <em>lambda.r(v.1.2.4)</em>,
+<em>xfun(v.0.39)</em>, <em>biovizBase(v.1.46.0)</em>,
+<em>timechange(v.0.2.0)</em>, <em>csaw(v.1.32.0)</em>,
+<em>BiocFileCache(v.2.6.1)</em>, <em>R6(v.2.5.1)</em>,
+<em>doParallel(v.1.0.17)</em>, <em>clue(v.0.3-64)</em>,
+<em>locfit(v.1.5-9.8)</em>, <em>AnnotationFilter(v.1.22.0)</em>,
+<em>bitops(v.1.0-7)</em>, <em>cachem(v.1.0.8)</em>,
+<em>DelayedArray(v.0.24.0)</em>, <em>BiocIO(v.1.8.0)</em>,
+<em>vroom(v.1.6.3)</em>, <em>nnet(v.7.3-19)</em>,
+<em>gtable(v.0.3.3)</em>, <em>ensembldb(v.2.22.0)</em>,
+<em>rlang(v.1.1.1)</em>, <em>GlobalOptions(v.0.1.2)</em>,
+<em>lazyeval(v.0.2.2)</em>, <em>dichromat(v.2.0-0.1)</em>,
+<em>broom(v.1.0.5)</em>, <em>checkmate(v.2.2.0)</em>,
+<em>GenomicFeatures(v.1.50.4)</em>, <em>crosstalk(v.1.2.0)</em>,
+<em>backports(v.1.4.1)</em>, <em>Hmisc(v.5.1-0)</em>,
+<em>EnrichedHeatmap(v.1.28.1)</em>, <em>tools(v.4.2.2)</em>,
+<em>ellipsis(v.0.3.2)</em>, <em>jquerylib(v.0.1.4)</em>,
+<em>RColorBrewer(v.1.1-3)</em>, <em>Rcpp(v.1.0.10)</em>,
+<em>base64enc(v.0.1-3)</em>, <em>progress(v.1.2.2)</em>,
+<em>zlibbioc(v.1.44.0)</em>, <em>RCurl(v.1.98-1.12)</em>,
+<em>prettyunits(v.1.1.1)</em>, <em>rpart(v.4.1.19)</em>,
+<em>deldir(v.1.0-9)</em>, <em>GetoptLong(v.1.0.5)</em>,
+<em>reactR(v.0.4.4)</em>, <em>ggrepel(v.0.9.3)</em>,
+<em>cluster(v.2.1.4)</em>, <em>here(v.1.0.1)</em>,
+<em>ComplexUpset(v.1.3.3)</em>, <em>data.table(v.1.14.8)</em>,
+<em>futile.options(v.1.0.1)</em>, <em>circlize(v.0.4.15)</em>,
+<em>ProtGenerics(v.1.30.0)</em>, <em>hms(v.1.1.3)</em>,
+<em>patchwork(v.1.1.2)</em>, <em>evaluate(v.0.21)</em>,
+<em>XML(v.3.99-0.14)</em>, <em>VennDiagram(v.1.7.3)</em>,
+<em>jpeg(v.0.1-10)</em>, <em>gridExtra(v.2.3)</em>,
+<em>shape(v.1.4.6)</em>, <em>compiler(v.4.2.2)</em>,
+<em>biomaRt(v.2.54.1)</em>, <em>crayon(v.1.5.2)</em>,
+<em>tzdb(v.0.4.0)</em>, <em>Formula(v.1.2-5)</em>,
+<em>DBI(v.1.1.3)</em>, <em>tweenr(v.2.0.2)</em>,
+<em>formatR(v.1.14)</em>, <em>dbplyr(v.2.3.2)</em>,
+<em>ComplexHeatmap(v.2.14.0)</em>, <em>MASS(v.7.3-60)</em>,
+<em>rappdirs(v.0.3.3)</em>, <em>Matrix(v.1.5-4.1)</em>,
+<em>cli(v.3.6.1)</em>, <em>parallel(v.4.2.2)</em>,
+<em>Gviz(v.1.42.1)</em>, <em>metapod(v.1.6.0)</em>,
+<em>igraph(v.1.5.0)</em>, <em>pkgconfig(v.2.0.3)</em>,
+<em>GenomicAlignments(v.1.34.1)</em>, <em>foreign(v.0.8-84)</em>,
+<em>xml2(v.1.3.4)</em>, <em>foreach(v.1.5.2)</em>,
+<em>bslib(v.0.5.0)</em>, <em>XVector(v.0.38.0)</em>,
+<em>VariantAnnotation(v.1.44.1)</em>, <em>digest(v.0.6.32)</em>,
+<em>Biostrings(v.2.66.0)</em>, <em>rmarkdown(v.2.22)</em>,
+<em>htmlTable(v.2.4.1)</em>, <em>edgeR(v.3.40.2)</em>,
+<em>restfulr(v.0.0.15)</em>, <em>curl(v.5.0.1)</em>,
+<em>Rsamtools(v.2.14.0)</em>, <em>rjson(v.0.2.21)</em>,
+<em>lifecycle(v.1.0.3)</em>, <em>jsonlite(v.1.8.5)</em>,
+<em>futile.logger(v.1.4.3)</em>, <em>limma(v.3.54.2)</em>,
+<em>BSgenome(v.1.66.3)</em>, <em>fansi(v.1.0.4)</em>,
+<em>pillar(v.1.9.0)</em>, <em>lattice(v.0.21-8)</em>,
+<em>KEGGREST(v.1.38.0)</em>, <em>fastmap(v.1.1.1)</em>,
+<em>httr(v.1.4.6)</em>, <em>png(v.0.1-8)</em>,
+<em>iterators(v.1.0.14)</em>, <em>bit(v.4.0.5)</em>,
+<em>ggforce(v.0.4.1)</em>, <em>stringi(v.1.7.12)</em>,
+<em>sass(v.0.4.6)</em>, <em>blob(v.1.2.4)</em>,
+<em>latticeExtra(v.0.6-30)</em> and <em>memoise(v.2.0.1)</em></p>
 </div>
 </div>
 

@@ -1,20 +1,3 @@
-rule download_blacklist:
-	output: blacklist
-	params:
-		url = urllib.parse.urlunparse(
-			(
-				'https', 'raw.githubusercontent.com',
-				'Boyle-Lab/Blacklist/master/lists/' +
-				ucsc_build + "-blacklist.v2.bed.gz",
-				'', '', ''
-			)
-		)
-	log: log_path + "/downloads/download_blacklist.log"
-	shell:
-		"""
-		curl {params.url} --output {output} 2> {log}
-		"""
-
 rule create_annotations:
 	input:
 		bam = expand(os.path.join(bam_path, "{bam}.bam"), bam = indiv_pre),

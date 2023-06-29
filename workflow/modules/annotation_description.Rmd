@@ -19,6 +19,7 @@ library(htmltools)
 library(plyranges)
 library(GenomicInteractions)
 library(extraChIPs)
+library(GenomeInfoDb)
 ```
 
 
@@ -94,9 +95,15 @@ This `Seqinfo` object is added to all subsequent objects requiring information a
 ## Blacklisted Regions {.tabset}
 
 ```{r blacklist}
-blacklist <- file.path(annotation_path, "blacklist.bed.gz") %>%
-  import.bed(seqinfo = sq) %>%
-  sort()
+gnm <- str_to_lower(config$genome$build)
+if (gnm %in% c("grch37", "grch38")) gnm <- c(grch37 = "hg19", grch38 = "hg38")[gnm]
+bl <- paste0(gnm, ".blacklist")
+data(list = bl, package = "GreyListChIP")
+blacklist <- get(bl) %>% 
+  sortSeqlevels() %>%
+  subset(seqnames %in% seqlevels(sq)) %>%
+  keepSeqlevels(seqlevels(sq))
+seqinfo(blacklist) <- sq
 ```
 
 ### Summary
@@ -127,7 +134,7 @@ blacklist %>%
     caption = glue(
       "*Summary of genomic regions excluded in the blacklist. ",
       "The default set of blacklisted regions was used, as obtained from ",
-      "https://github.com/Boyle-Lab/Blacklist (ENCODE)*"
+      "the Biconductor package 'GreyListChIP'."
     ),
     justify = "lrrrrrr"
   )
@@ -292,6 +299,7 @@ gene_regions %>%
   GRangesList() %>% 
   unlist() %>% 
   mutate(region = factor(region, levels = regions)) %>% 
+  setNames(NULL) %>%
   plotPie(
     fill = "region", scale_by = "width", show_total = FALSE, 
     category_size = 3.5

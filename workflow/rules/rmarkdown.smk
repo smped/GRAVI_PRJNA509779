@@ -43,7 +43,6 @@ rule create_setup_chunk:
 
 rule compile_annotations_html:
   input:
-    blacklist = blacklist,
     extrachips = rules.update_extrachips.output,
     here = here_file,
     rmd = "workflow/modules/annotation_description.Rmd",

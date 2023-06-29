@@ -44,17 +44,6 @@ for i in config['external']:
 				assert(os.path.isfile(f[j][k])), msg
 
 
-
-
-def get_ucsc_genome(x):
-	map = pd.Series(['hg19', 'hg38'], index = ['GRCh37', 'GRCh38'])
-	if not x in map.keys():
-		print("The only currently supported genome builds are:")
-		print(*map.keys(), sep = ' & ')
-		sys.exit(1)
-	else:
-		return(map[x])
-
 # Define all contrasts
 # x will be config['comparisons']['contrasts']:
 def make_contrasts(x):
