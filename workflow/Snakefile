@@ -118,8 +118,6 @@ if type(fig_type) is list:
 ###############################
 ## These are required input for multiple steps
 gtf = config['external']['gtf']
-ucsc_build = get_ucsc_genome(config['genome']['build'])
-blacklist = os.path.join(annotation_path, "blacklist.bed.gz")
 chrom_sizes = os.path.join(annotation_path, "chrom.sizes")
 
 ##################################

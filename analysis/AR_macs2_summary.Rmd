@@ -96,10 +96,19 @@ stopifnot(nrow(samples) > 0)
 
 
 ```{r annotations}
+## Seqinfo
 sq <- read_rds(file.path(annotation_path, "seqinfo.rds"))
-blacklist <-  file.path(annotation_path, "blacklist.bed.gz") %>%
-  import.bed(seqinfo = sq) %>%
-  sort()
+## Blacklist
+gnm <- str_to_lower(config$genome$build)
+if (gnm %in% c("grch37", "grch38")) gnm <- c(grch37 = "hg19", grch38 = "hg38")[gnm]
+bl <- paste0(gnm, ".blacklist")
+data(list = bl, package = "GreyListChIP")
+blacklist <- get(bl) %>% 
+  sortSeqlevels() %>%
+  subset(seqnames %in% seqlevels(sq)) %>%
+  keepSeqlevels(seqlevels(sq))
+seqinfo(blacklist) <- sq
+## Gene Annotations
 all_gr <- file.path(annotation_path, "all_gr.rds") %>% 
   read_rds()
 genes_gr <- all_gr$gene
