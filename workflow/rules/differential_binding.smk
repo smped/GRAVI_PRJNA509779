@@ -6,12 +6,9 @@ rule make_greylist:
 		seqinfo = os.path.join(annotation_path, "seqinfo.rds")
 	output:
 		bed = os.path.join(annotation_path, "{ip_sample}_greylist.bed")
-	params:
-		git = git_add,
 	conda: "../envs/rmarkdown.yml"
 	log: log_path + "/scripts/{ip_sample}_make_greylist.log"
 	threads: 1
-	retries: git_tries
 	resources:
 		mem_mb = 16384
 	shell:
@@ -21,10 +18,6 @@ rule make_greylist:
 			{input.bam} \
 			{input.seqinfo} \
 			{output.bed} &>> {log}
-		
-		if [[ {params.git} == "True" ]]; then
-			git add {output.bed}
-		fi
 		"""
 
 rule create_differential_binding_rmd:
@@ -38,7 +31,6 @@ rule create_differential_binding_rmd:
 			rmd_path, "{target}_{ref}_{treat}_differential_binding.Rmd"
 		)
 	params:
-		git = git_add,
 		threads = lambda wildcards: min(
 			len(
 				df[
@@ -54,7 +46,6 @@ rule create_differential_binding_rmd:
 	conda: "../envs/rmarkdown.yml"
 	log: log_path + "/create_rmd/{target}_{ref}_{treat}_differential_binding.log"
 	threads: 1
-	retries: git_tries # Needed to subvert any issues with the git lock file
 	shell:
 		"""
 		## Create the generic markdown header
@@ -68,10 +59,6 @@ rule create_differential_binding_rmd:
 
 		## Add the remainder of the module as literal text
 		cat {input.db_mod} >> {output.rmd}
-
-		if [[ {params.git} == "True" ]]; then
-			git add {output.rmd}
-		fi
 		"""
 
 rule compile_differential_binding_html:
@@ -172,10 +159,6 @@ rule compile_differential_binding_html:
 			diff_path, "{target}", "{target}_{ref}_{treat}-filtered_windows.rds"
 		)
 	retries: 3
-	params:
-		git = git_add,
-		interval = random.uniform(0, 1),
-		tries = git_tries
 	conda: "../envs/rmarkdown.yml"
 	threads:
 		lambda wildcards: min(
@@ -197,19 +180,4 @@ rule compile_differential_binding_html:
 	shell:
 		"""
 		R -e "rmarkdown::render_site('{input.rmd}')" &>> {log}
-
-		if [[ {params.git} == "True" ]]; then
-			TRIES={params.tries}
-			while [[ -f .git/index.lock ]]
-			do
-				if [[ "$TRIES" == 0 ]]; then
-					echo "ERROR: Timeout while waiting for removal of git index.lock" &>> {log}
-					exit 1
-				fi
-				sleep {params.interval}
-				((TRIES--))
-			done
-			git add {output.html} {output.outs}
-			git add {output.fig_path}
-		fi
 		"""

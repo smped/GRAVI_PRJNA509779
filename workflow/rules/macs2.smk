@@ -245,14 +245,12 @@ rule create_macs2_summary_rmd:
 	output:
 		rmd = os.path.join(rmd_path, "{target}_macs2_summary.Rmd")
 	params:
-		git = git_add,
 		threads = lambda wildcards: min(
 			len(df[df['target'] == wildcards.target]),
 			max_threads
 		)
 	conda: "../envs/rmarkdown.yml"
 	threads: 1
-	retries: git_tries # Work around git lock file
 	log: log_path + "/create_rmd/create_{target}_macs2_summary.log"
 	shell:
 		"""
@@ -265,10 +263,6 @@ rule create_macs2_summary_rmd:
 
 		## Add the module directly as literal code
 		cat {input.module} >> {output.rmd}
-
-		if [[ {params.git} == "True" ]]; then
-			git add {output.rmd}
-		fi
 		"""
 
 
@@ -322,9 +316,6 @@ rule compile_macs2_summary_html:
 		),
 		venn = "docs/assets/{target}/{target}_common_peaks." + fig_type
 	params:
-		git = git_add,
-		interval = random.uniform(0, 1),
-		tries = git_tries,
 		asset_path = os.path.join("docs", "assets", "{target}")
 	conda: "../envs/rmarkdown.yml"
 	threads:
@@ -338,19 +329,4 @@ rule compile_macs2_summary_html:
 	shell:
 		"""
 		R -e "rmarkdown::render_site('{input.rmd}')" &>> {log}
-
-		if [[ {params.git} == "True" ]]; then
-			TRIES={params.tries}
-			while [[ -f .git/index.lock ]]
-			do
-				if [[ "$TRIES" == 0 ]]; then
-					echo "ERROR: Timeout while waiting for removal of git index.lock" &>> {log}
-					exit 1
-				fi
-				sleep {params.interval}
-				((TRIES--))
-			done
-			git add {output.html} {output.fig_path} {output.peaks}
-			git add {params.asset_path}
-		fi
 		"""

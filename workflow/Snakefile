@@ -51,24 +51,6 @@ def get_ucsc_genome(x):
 	else:
 		return(map[x])
 
-def check_git(x = "."):
-	is_installed = subprocess.run(
-    	['which', 'git'], universal_newlines=True, check=True,
-    	stdout=subprocess.PIPE
-	)
-	path = os.path.join(x, ".git")
-	repo_exists = os.path.isdir(path)
-	if is_installed and repo_exists:
-		ret_val = True
-		print(
-			"Viable git repository detected. Files will be added when created",
-			file = sys.stderr
-		)
-	else:
-		ret_val = False
-		print("No viable git repository detected", file = sys.stderr)
-	return(ret_val)
-
 # Define all contrasts
 # x will be config['comparisons']['contrasts']:
 def make_contrasts(x):
@@ -95,14 +77,6 @@ def make_pairwise(x):
 		ret_val.extend([p[0] + "_" + p[1]])
 	return(ret_val)
 
-
-
-###############################################################
-## Check whether Git is installed & the directory has a repo ##
-###############################################################
-# git_add = check_git(".")
-git_tries = 100
-git_add = False
 
 max_threads = workflow.cores
 
