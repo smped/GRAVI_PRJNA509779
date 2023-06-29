@@ -32,15 +32,7 @@ def get_here_file():
 ####################################
 ## Check all external files exist ##
 ####################################
-all_exist=True
-# if config['external']['rnaseq'] != '':
-# 	if not os.path.isfile(config['external']['rnaseq']):
-# 		all_exist=False
-# 		print(config['external']['rnaseq'] + " does not exist")
-
-
-if not all_exist:
-	sys.exit(1)
+## Not yet done
 
 def get_ucsc_genome(x):
 	map = pd.Series(['hg19', 'hg38'], index = ['GRCh37', 'GRCh38'])
@@ -124,13 +116,8 @@ if type(fig_type) is list:
 ## External Annotation Files ##
 ###############################
 ## These are required input for multiple steps
+gtf = config['external']['gtf']
 ucsc_build = get_ucsc_genome(config['genome']['build'])
-gtf = os.path.join(
-	annotation_path,
-	"gencode.v" + config['genome']['gencode'] + "lift" +
-	config['genome']['build'][-2:] +
-	".annotation.gtf.gz"
-)
 blacklist = os.path.join(annotation_path, "blacklist.bed.gz")
 chrom_sizes = os.path.join(annotation_path, "chrom.sizes")
 
