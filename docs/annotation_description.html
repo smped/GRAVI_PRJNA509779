@@ -452,7 +452,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Annotations</h1>
-<h4 class="date">26 June, 2023</h4>
+<h4 class="date">29 June, 2023</h4>
 
 </div>
 
@@ -785,8 +785,8 @@ div(class = &quot;table&quot;,
 Colours used throughout the workflow for each region are indicated in the 
 first column, with other summary statistics making up the rest of the table.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-58008d7f449e91bb6322" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-58008d7f449e91bb6322">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500bp)","Upstream Promoter (<5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91329,161506,183811,36501,12646],"Width":[210.742887,281.03238399999998,77.785742999999997,1309.464843,255.426929,961.22462599999994],"Mn":[2.3721621679423683,3.0771429009405553,0.48162757420776936,7.1239743160093782,6.9978063340730392,76.010171279455946],"% Genome":[0.068076501182933985,0.09078219290892961,0.025127212124387847,0.42299783495658366,0.082510835273039096,0.3105054235541258]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,329","161,506","183,811","36,501","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.08","0.48","7.12","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"f17975547b778b99a33e72aed33e84ab"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5f6f13fa8ac6ed4ffb23" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-5f6f13fa8ac6ed4ffb23">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500bp)","Upstream Promoter (<5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91329,161506,183811,36501,12646],"Width":[210.742887,281.03238399999998,77.785742999999997,1309.464843,255.426929,961.22462599999994],"Mn":[2.3721621679423683,3.0771429009405553,0.48162757420776936,7.1239743160093782,6.9978063340730392,76.010171279455946],"% Genome":[0.068076501182933985,0.09078219290892961,0.025127212124387847,0.42299783495658366,0.082510835273039096,0.3105054235541258]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,329","161,506","183,811","36,501","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.08","0.48","7.12","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"f17975547b778b99a33e72aed33e84ab"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div id="summary-1" class="section level3">
@@ -941,7 +941,136 @@ if (length(feat_path)&gt; 0) {
   mcols(external_features) &lt;- mcols(external_features)[keep_cols]
   has_features &lt;- TRUE
 }</code></pre>
-<p>No external features were supplied.</p>
+<pre class="r"><code>feat_col &lt;- colours$features
+feat_levels &lt;- unique(external_features$feature)
+missing_feat_col &lt;- setdiff(feat_levels, names(feat_col))
+if (length(missing_feat_col) &gt; 0) {
+  if (!&quot;no_feature&quot; %in% feat_levels)
+    missing_feat_col &lt;- c(missing_feat_col, &quot;no_feature&quot;)
+  n &lt;- length(missing_feat_col) 
+  feat_col[missing_feat_col] &lt;- hcl.colors(max(9, n), &quot;Spectral&quot;)[seq_len(n)]
+}
+colours$features &lt;- feat_col</code></pre>
+<p>External features were compared to the gene-centric annotations.</p>
+<pre class="r"><code>suppressWarnings(
+  external_features %&gt;% 
+    mutate(w = width) %&gt;% 
+    mcols() %&gt;% 
+    as_tibble() %&gt;% 
+    pivot_longer(
+      cols = all_of(names(regions)),
+      names_to = &quot;region&quot;, values_to = &quot;prop&quot;
+    ) %&gt;% 
+    group_by(feature, region) %&gt;% 
+    summarise(ol = sum(prop*w/1e6), .groups = &quot;drop&quot;) %&gt;% 
+    left_join(
+      external_features %&gt;%
+        group_by(feature) %&gt;% 
+        summarise(w = sum(width/1e6)) %&gt;%
+        as_tibble(),
+      by = &quot;feature&quot;
+    ) %&gt;% 
+    mutate(
+      p = ol / w,
+      Feature = factor(feature, levels = names(feat_col)) %&gt;% 
+        fct_relabel(str_sep_to_title),
+      region = factor(regions[region], levels = regions)
+    ) %&gt;% 
+    ggplot(
+      aes(fct_rev(region), p, fill = feature)
+    ) +
+    geom_col(colour = &quot;grey80&quot;) +
+    geom_label(
+      aes(label = percent(p, accuracy = 1)),
+      data = . %&gt;% 
+        group_by(region, feature, Feature) %&gt;% 
+        summarise(p = sum(p), .groups = &quot;drop&quot;),
+      alpha = 0.5,
+      nudge_y = 0.03
+    ) +
+    coord_flip() +
+    facet_grid(Feature~., scales = &quot;free_y&quot;, space = &quot;free&quot;) +
+    scale_y_continuous(labels = percent, expand = expansion(c(0, 0.05))) +
+    scale_fill_manual(values = feat_col) +
+    labs(x = &quot;&quot;, y = &quot;&quot;) +
+    theme(legend.position = &quot;none&quot;)
+)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="annotation_description_files/figure-html/plot-feature-by-region-1.png" alt="*The proportion of the ranges provided as external features in the file enhancer_atlas_2.0_zr75.gtf.gz, and which overlap the gene-centric regions defined above.*" width="960" />
+<p class="caption">
+<em>The proportion of the ranges provided as external features in the
+file enhancer_atlas_2.0_zr75.gtf.gz, and which overlap the gene-centric
+regions defined above.</em>
+</p>
+</div>
+<pre class="r"><code>cp &lt;- em(
+  glue(
+      &quot;Summary of external features provided in the file &quot;, 
+      &quot;{basename(config$external$feature)}. All peaks and windows will be &quot;, 
+      &quot;compared to these throughout the workflow. The colours defined for each &quot;,
+      &quot;feature is show as a guide on the left.&quot;
+    )
+)
+tbl &lt;- external_features %&gt;% 
+  group_by(feature) %&gt;% 
+  summarise(
+    N = n(),
+    Width = sum(width/1e3),
+    med = median(width/1e3),
+    range = glue(&quot;[{round(min(width/1e3), 1)}, {round(max(width/1e3), 1)}]&quot;)
+  ) %&gt;% 
+  as_tibble() %&gt;% 
+  mutate(
+    guide = unlist(feat_col)[feature],
+    feature = factor(feature, levels = names(feat_col)) %&gt;%
+      fct_relabel(str_sep_to_title)
+  ) %&gt;%
+  arrange(feature) %&gt;%
+  dplyr::select(guide, everything()) %&gt;% 
+  reactable(
+    filterable = FALSE, searchable = FALSE,
+    columns = list(
+      guide = colDef(
+        maxWidth = 40,
+        style = function(value) list(background= value),
+        cell = function(value) &quot;&quot;,
+        name = &quot;&quot;
+      ),
+      feature = colDef(
+        name = &quot;Feature&quot;,
+        footer = htmltools::tags$b(&quot;Total&quot;)
+      ),
+      N = colDef(
+        cell = function(value) comma(value, 1),
+        footer = htmltools::tags$b(comma(sum(.$N)))
+      ),
+      Width = colDef(
+        name = &quot;Total Width (kb)&quot;,
+        cell = function(value) comma(value, 1),
+        footer = htmltools::tags$b(comma(sum(.$Width), 1))
+      ),
+      med = colDef(
+        name = &quot;Median Width (kb)&quot;,
+        cell = function(value) sprintf(&quot;%.2f&quot;, value)
+      ),
+      range = colDef(name = &quot;Size Range (kb)&quot;, align = &quot;right&quot;)
+    )
+  )
+div(class = &quot;table&quot;,
+  div(class = &quot;table-header&quot;,
+      div(class = &quot;caption&quot;, cp),
+      tbl
+  )
+)</code></pre>
+<div class="table">
+<div class="table-header">
+<div class="caption">
+<em>Summary of external features provided in the file enhancer_atlas_2.0_zr75.gtf.gz. All peaks and windows will be compared to these throughout the workflow. The colours defined for each feature is show as a guide on the left.</em>
+</div>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8743d5d90bf6cc81232b" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8743d5d90bf6cc81232b">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.659999999996],"med":[1.1699999999999999],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"275437e7e50e3ab8a360215c7ea4fd8c"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
 </div>
 <div id="hic-data" class="section level1 tabset">
 <h1 class="tabset">HiC Data</h1>
@@ -1003,12 +1132,17 @@ simply add them to <code>config/rmarkdown.yml</code>.</p>
 <div id="treatment-groups" class="section level2">
 <h2>Treatment Groups</h2>
 <pre class="r"><code>.plotScheme(colours$treat, xlab = &quot;Treatment&quot;)</code></pre>
-<p><img src="annotation_description_files/figure-html/plot-treat-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="annotation_description_files/figure-html/plot-treat-1.png" width="480" style="display: block; margin: auto;" /></p>
 </div>
 <div id="regions" class="section level2">
 <h2>Regions</h2>
 <pre class="r"><code>.plotScheme(colours$regions, xlab = &quot;Regions&quot;)</code></pre>
 <p><img src="annotation_description_files/figure-html/plot-regions-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="features" class="section level2">
+<h2>Features</h2>
+<pre class="r"><code>.plotScheme(feat_col, xlab = &quot;Feature&quot;)</code></pre>
+<p><img src="annotation_description_files/figure-html/plot-feat-1.png" width="384" style="display: block; margin: auto;" /></p>
 </div>
 <div id="direction" class="section level2">
 <h2>Direction</h2>

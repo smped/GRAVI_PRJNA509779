@@ -20,10 +20,13 @@ genome:
   gencode: "33"
 
 external:
-  rnaseq:
-  features:
+  rnaseq: "data/external/ZR75_DHT_StrippedSerum_RNASeq_topTable.tsv"
+  features: "data/external/enhancer_atlas_2.0_zr75.gtf.gz"
   hic:
   coverage:
+    p300:
+      E2: "data/external/GSM4202320_ZR-75-1_p300_E2.bigwig"
+      E2DHT: "data/external/GSM4202321_ZR-75-1_p300_E2_DHT.bigwig"
 
 peaks:
   macs2:

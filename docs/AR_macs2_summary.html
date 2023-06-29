@@ -467,7 +467,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">AR: MACS2 Summary</h1>
-<h4 class="date">28 June, 2023</h4>
+<h4 class="date">29 June, 2023</h4>
 
 </div>
 
@@ -1595,6 +1595,53 @@ consensus peaks (2.2%) directly overlapped a TSS.</em>
 <p class="caption">
 <em>Proportions of AR consensus peaks which overlap gene-centric
 features.</em>
+</p>
+</div>
+</div>
+<div id="external-features" class="section level4">
+<h4>External Features</h4>
+<pre class="r"><code>consensus_peaks %&gt;% 
+  plotPie(fill = &quot;Feature&quot;, label_size = 4) +
+  scale_fill_manual(
+    values = colours$features %&gt;% setNames(str_sep_to_title(names(.)))
+  ) +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-feature-overlap-1.png" alt="*The total number of AR consensus peaks which overlap external features provided in enhancer_atlas_2.0_zr75.gtf.gz. If peaks map to multiple features, they are assigned to the one with the largest overlap.*" width="768" />
+<p class="caption">
+<em>The total number of AR consensus peaks which overlap external
+features provided in enhancer_atlas_2.0_zr75.gtf.gz. If peaks map to
+multiple features, they are assigned to the one with the largest
+overlap.</em>
+</p>
+</div>
+</div>
+<div id="external-features-and-gene-centric-regions"
+class="section level4">
+<h4>External Features And Gene-Centric Regions</h4>
+<pre class="r"><code>consensus_peaks %&gt;% 
+  subset(Feature != &quot;No Feature&quot;) %&gt;% 
+  as_tibble() %&gt;% 
+  droplevels() %&gt;% 
+  plotPie(fill = &quot;region&quot;, x = &quot;Feature&quot;, label_size = 4, label_alpha = 0.7) +
+  scale_fill_manual(
+    values = colours$regions %&gt;%
+      setNames(regions[names(.)])
+  ) +
+  labs(fill = &quot;Region&quot;) +
+  theme(
+    panel.grid = element_blank(),
+    panel.border = element_blank(),
+    axis.line.x = element_line(),
+    legend.position = &quot;top&quot;
+  )</code></pre>
+<div class="figure" style="text-align: center">
+<img src="AR_macs2_summary_files/figure-html/plot-feature-region-overlap-1.png" alt="*The total number of AR consensus peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*" width="960" />
+<p class="caption">
+<em>The total number of AR consensus peaks overlapping external features
+and gene-centric regions. If a peak overlaps multiple features or
+regions, it is assigned to be the one with the largest overlap. Any
+peaks which don’t overlap a feature have been excluded.</em>
 </p>
 </div>
 </div>
