@@ -348,11 +348,7 @@ consensus_peaks <- here::here(macs2_path, "consensus_peaks.bed") %>%
 
 
 ```{r bfl}
-bfl <- bam_path %>%
-  file.path(target, glue("{samples$sample}.bam")) %>%
-  c(
-    file.path(bam_path, "Input", glue("{unique(samples$input)}.bam"))
-  ) %>% 
+bfl <- file.path(bam_path, glue("{c(samples$sample, samples$input)}.bam")) %>% 
   BamFileList() %>%
   setNames(c(samples$sample, unique(samples$input)))
 ```

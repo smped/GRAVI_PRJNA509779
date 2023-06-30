@@ -43,7 +43,7 @@ all_out <- list(
 #### Seqinfo ####
 sq <- samples %>%
   mutate(
-    path = here::here(config$paths$bam, target, glue("{sample}.bam"))
+    path = here::here(config$paths$bam, glue("{sample}.bam"))
   ) %>%
   .[["path"]] %>%
   BamFileList() %>%

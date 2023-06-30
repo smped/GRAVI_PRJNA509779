@@ -1,7 +1,7 @@
 rule make_greylist:
 	input: 
-		bam = os.path.join(bam_path, "Input", "{ip_sample}.bam"),
-		bim = os.path.join(bam_path, "Input", "{ip_sample}.bam.bai"),
+		bam = os.path.join(bam_path, "{ip_sample}.bam"),
+		bim = os.path.join(bam_path, "{ip_sample}.bam.bai"),
 		r = os.path.join("workflow", "scripts", "make_greylist.R"),
 		seqinfo = os.path.join(annotation_path, "seqinfo.rds")
 	output:
@@ -65,7 +65,7 @@ rule compile_differential_binding_html:
 	input:
 		annotations = ALL_RDS,
 		aln = lambda wildcards: expand(
-			os.path.join(bam_path, "{{target}}", "{sample}.{suffix}"),
+			os.path.join(bam_path, "{sample}.{suffix}"),
 			sample = df['sample'][
 				(df['target'] == wildcards.target) &
 				(

@@ -1,6 +1,6 @@
 rule create_annotations:
 	input:
-		bam = expand(os.path.join(bam_path, "{bam}.bam"), bam = indiv_pre),
+		bam = expand(os.path.join(bam_path, "{bam}.bam"), bam = samples),
 		blacklist = blacklist,
 		config = ancient(os.path.join("config", "config.yml")),
 		extrachips = rules.update_extrachips.output,

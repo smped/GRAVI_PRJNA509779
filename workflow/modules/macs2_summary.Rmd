@@ -47,7 +47,7 @@ config <- read_yaml(
 )
 fdr_alpha <- config$comparisons$fdr
 params <- read_yaml(here::here("config", "params.yml"))
-bam_path <- here::here(config$paths$bam, target)
+bam_path <- here::here(config$paths$bam)
 macs2_path <- here::here("output", "macs2", target)
 annotation_path <- here::here("output", "annotations")
 colours <- read_rds(

@@ -125,9 +125,9 @@ macs2_logs %>%
 bam_path <- here::here(config$paths$bam)
 stopifnot(dir.exists(bam_path))
 bfl <- bam_path %>%
-  file.path(target, glue("{samples$sample}.bam")) %>%
+  file.path(glue("{samples$sample}.bam")) %>%
   c(
-    file.path(bam_path, "Input", glue("{unique(samples$input)}.bam"))
+    file.path(bam_path, glue("{unique(samples$input)}.bam"))
   ) %>%
   BamFileList() %>%
   setNames(c(samples$sample, unique(samples$input)))

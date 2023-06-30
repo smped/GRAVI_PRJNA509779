@@ -1,49 +1,44 @@
 def get_input_bam_from_sample_and_target(wildcards):
 	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
 	return expand(
-		os.path.join(bam_path, "Input", "{file}.bam"),
-		file = set(df[ind]['input'])
+		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['input'])
 	)
 
 def get_input_bai_from_sample_and_target(wildcards):
 	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
 	return expand(
-		os.path.join(bam_path, "Input", "{file}.bam.bai"),
-		file = set(df[ind]['input'])
+		os.path.join(bam_path, "{file}.bam.bai"), file = set(df[ind]['input'])
 	)
 
 def get_merged_bam_from_treat_and_target(wildcards):
 	ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
 	return expand(
-		os.path.join(bam_path, wildcards.target, "{file}.bam"),
-		file = set(df[ind]['sample'])
+		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['sample'])
 	)
 
 def get_merged_bai_from_treat_and_target(wildcards):
 	ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
 	return expand(
-		os.path.join(bam_path, wildcards.target, "{file}.bam.bai"),
-		file = set(df[ind]['sample'])
+		os.path.join(bam_path, "{file}.bam.bai"), file = set(df[ind]['sample'])
 	)
 
 def get_input_bam_from_treat_and_target(wildcards):
 	ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
 	return expand(
-		os.path.join(bam_path, "Input", "{file}.bam"),
-		file = set(df[ind]['input'])
+		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['input'])
 	)
 
 def get_input_bai_from_treat_and_target(wildcards):
 	ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
 	return expand(
-		os.path.join(bam_path, "Input", "{file}.bam.bai"),
+		os.path.join(bam_path, "{file}.bam.bai"),
 		file = set(df[ind]['input'])
 	)
 
 rule macs2_individual:
 	input:
-		bam = os.path.join(bam_path, "{target}", "{sample}.bam"),
-		bai = os.path.join(bam_path, "{target}", "{sample}.bam.bai"),
+		bam = os.path.join(bam_path, "{sample}.bam"),
+		bai = os.path.join(bam_path, "{sample}.bam.bai"),
 		control = get_input_bam_from_sample_and_target,
 		control_bai = get_input_bai_from_sample_and_target
 	output:
@@ -91,7 +86,7 @@ rule macs2_individual:
 rule macs2_qc:
 	input:
 		aln = lambda wildcards: expand(
-			os.path.join(bam_path, "{{target}}", "{sample}.{suffix}"),
+			os.path.join(bam_path, "{sample}.{suffix}"),
 			sample = set(df[df.target == wildcards.target]['sample']),
 			suffix = ['bam', 'bam.bai']
 		),
@@ -216,7 +211,7 @@ rule compile_macs2_summary_html:
 	input:
 		annotations = ALL_RDS,
 		aln = lambda wildcards: expand(
-			os.path.join(bam_path, "{{target}}", "{sample}.{suffix}"),
+			os.path.join(bam_path, "{sample}.{suffix}"),
 			sample = set(df[df.target == wildcards.target]['sample']),
 			suffix = ['bam', 'bam.bai']
 		),
