@@ -85,6 +85,7 @@ reqd_cols <- c(
   "transcript_id", "transcript_type", "transcript_name",
   "exon_id"
 )
+cat("Importing ", gtf, "\n")
 all_gtf <- gtf %>%
   import.gff(
     which = GRanges(sq), # Should fail if incompatible
@@ -100,18 +101,20 @@ all_gtf <- gtf %>%
   subset(seqnames %in% seqlevels(sq)) %>%
   keepSeqlevels(seqlevels(sq)) %>%
   splitAsList(f = .$type)
+cat("GTF imported successfully...\n")
 
-if (all(vapply(all_gtf, length, integer(0)) == 0))
+if (all(vapply(all_gtf, length, integer(1)) == 0))
   stop(
     "No valid ranges found in the provided GTF.\nPlease check for compatible ",
     "chromosome identifiers"
     )
-  
 seqinfo(all_gtf) <- sq
+
+cat("Exporting gene, transcript and exon-level objects\n")
 write_rds(all_gtf$gene, all_out$gtf_gene, compress = "gz")
 write_rds(all_gtf$transcript, all_out$gtf_trans, compress = "gz")
 write_rds(all_gtf$exon, all_out$gtf_exon, compress = "gz")
-cat("all_gtf.rds written successfully...\n")
+cat("All gtf_*.rds objects written successfully...\n")
 
 #### Transcript Models (Gviz) ####
 trans_models <- all_gtf$exon %>%
@@ -146,28 +149,21 @@ write_rds(tss, all_out$tss, compress = "gz")
 cat("TSS regions exported...\n")
 
 #### Promoters ####
+cat("Defining gene_regions...\n")
 gr_params <- params$gene_regions
 gene_regions <- defineRegions(
   genes = all_gtf$gene, transcripts = all_gtf$transcript, exons = all_gtf$exon,
   promoter = unlist(gr_params$promoter), upstream = gr_params$upstream,
   proximal = gr_params$intergenic
 )
-## Won't be needed in the next update
-# gene_regions <- endoapply(
-#   gene_regions, 
-#   function(x) {
-#     x$region <- vapply(x$region, unique, character(1))
-#     x
-#   }
-# )
 
 
 write_rds(gene_regions, all_out$gene_regions, compress = "gz")
+cat("Exporting gene_regions...\n")
 all_exist <- vapply(all_out, file.exists, logical(1))
-if (!all_exist) {
+if (!all(all_exist)) {
   nm <- names(all_exist)[!all_exist]
-  stop("Failed to create:\n", nm)
-
+  stop("\nFailed to create:\n\t", paste(nm, collapse = "\n\t"))
 }
 cat("Data export completed at", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
 

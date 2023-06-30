@@ -20,6 +20,7 @@ genome:
   gencode: "33"
 
 external:
+  blacklist: "data/external/blacklist.bed.gz"
   gtf: "data/external/gencode.v33lift37.annotation.gtf.gz"
   rnaseq: "data/external/ZR75_DHT_StrippedSerum_RNASeq_topTable.tsv"
   features: "data/external/enhancer_atlas_2.0_zr75.gtf.gz"

@@ -25,7 +25,8 @@ def get_merged_bai_from_treat_and_target(wildcards):
 def get_input_bam_from_treat_and_target(wildcards):
 	ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
 	return expand(
-		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['input'])
+		os.path.join(bam_path, "{file}.bam"),
+		file = set(df[ind]['input'])
 	)
 
 def get_input_bai_from_treat_and_target(wildcards):

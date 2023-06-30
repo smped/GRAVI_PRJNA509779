@@ -467,7 +467,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">H3K27ac: MACS2 Summary</h1>
-<h4 class="date">29 June, 2023</h4>
+<h4 class="date">30 June, 2023</h4>
 
 </div>
 
@@ -536,10 +536,11 @@ samples &lt;- samples %&gt;%
   ) %&gt;% 
   dplyr::filter(treat %in% treat_levels)
 stopifnot(nrow(samples) &gt; 0)</code></pre>
-<pre class="r"><code>sq &lt;- read_rds(file.path(annotation_path, &quot;seqinfo.rds&quot;))
-blacklist &lt;-  file.path(annotation_path, &quot;blacklist.bed.gz&quot;) %&gt;%
-  import.bed(seqinfo = sq) %&gt;%
-  sort()
+<pre class="r"><code>## Seqinfo
+sq &lt;- read_rds(file.path(annotation_path, &quot;seqinfo.rds&quot;))
+## Blacklist
+blacklist &lt;- import.bed(here::here(config$external$blacklist), seqinfo = sq)
+## Gene Annotations
 all_gr &lt;- file.path(annotation_path, &quot;all_gr.rds&quot;) %&gt;% 
   read_rds()
 genes_gr &lt;- all_gr$gene
@@ -2022,7 +2023,7 @@ class="nocase"><span>M</span>odel-based analysis of
 Session information </button>
 </p>
 <div id="sessioninfo" class="collapse">
-<p><strong>R version 4.2.2 (2022-10-31)</strong></p>
+<p><strong>R version 4.2.3 (2023-03-15)</strong></p>
 <p><strong>Platform:</strong> x86_64-conda-linux-gnu (64-bit)</p>
 <p><strong>locale:</strong> <em>LC_CTYPE=en_AU.UTF-8</em>,
 <em>LC_NUMERIC=C</em>, <em>LC_TIME=en_AU.UTF-8</em>,
@@ -2035,7 +2036,7 @@ Session information </button>
 <em>grDevices</em>, <em>utils</em>, <em>datasets</em>, <em>methods</em>
 and <em>base</em></p>
 <p><strong>other attached packages:</strong>
-<em>extraChIPs(v.1.2.4)</em>, <em>SummarizedExperiment(v.1.28.0)</em>,
+<em>extraChIPs(v.1.5.5)</em>, <em>SummarizedExperiment(v.1.28.0)</em>,
 <em>Biobase(v.2.58.0)</em>, <em>MatrixGenerics(v.1.10.0)</em>,
 <em>matrixStats(v.1.0.0)</em>, <em>ggside(v.0.2.2)</em>,
 <em>Rsamtools(v.2.14.0)</em>, <em>Biostrings(v.2.66.0)</em>,
@@ -2077,12 +2078,12 @@ and <em>base</em></p>
 <em>DelayedArray(v.0.24.0)</em>, <em>vroom(v.1.6.3)</em>,
 <em>BiocIO(v.1.8.0)</em>, <em>nnet(v.7.3-19)</em>,
 <em>gtable(v.0.3.3)</em>, <em>ensembldb(v.2.22.0)</em>,
-<em>splines(v.4.2.2)</em>, <em>GlobalOptions(v.0.1.2)</em>,
+<em>splines(v.4.2.3)</em>, <em>GlobalOptions(v.0.1.2)</em>,
 <em>lazyeval(v.0.2.2)</em>, <em>dichromat(v.2.0-0.1)</em>,
 <em>broom(v.1.0.5)</em>, <em>checkmate(v.2.2.0)</em>,
 <em>GenomicFeatures(v.1.50.2)</em>, <em>backports(v.1.4.1)</em>,
 <em>Hmisc(v.5.1-0)</em>, <em>EnrichedHeatmap(v.1.27.2)</em>,
-<em>tools(v.4.2.2)</em>, <em>jquerylib(v.0.1.4)</em>,
+<em>tools(v.4.2.3)</em>, <em>jquerylib(v.0.1.4)</em>,
 <em>RColorBrewer(v.1.1-3)</em>, <em>ggdendro(v.0.1.23)</em>,
 <em>Rcpp(v.1.0.10)</em>, <em>base64enc(v.0.1-3)</em>,
 <em>progress(v.1.2.2)</em>, <em>zlibbioc(v.1.44.0)</em>,
@@ -2095,7 +2096,7 @@ and <em>base</em></p>
 <em>ProtGenerics(v.1.30.0)</em>, <em>hms(v.1.1.3)</em>,
 <em>evaluate(v.0.21)</em>, <em>XML(v.3.99-0.14)</em>,
 <em>jpeg(v.0.1-10)</em>, <em>gridExtra(v.2.3)</em>,
-<em>shape(v.1.4.6)</em>, <em>compiler(v.4.2.2)</em>,
+<em>shape(v.1.4.6)</em>, <em>compiler(v.4.2.3)</em>,
 <em>biomaRt(v.2.54.0)</em>, <em>crayon(v.1.5.2)</em>,
 <em>htmltools(v.0.5.5)</em>, <em>mgcv(v.1.8-42)</em>,
 <em>tzdb(v.0.4.0)</em>, <em>Formula(v.1.2-5)</em>,
@@ -2105,16 +2106,16 @@ and <em>base</em></p>
 <em>GenomicInteractions(v.1.32.0)</em>, <em>rappdirs(v.0.3.3)</em>,
 <em>Matrix(v.1.5-4.1)</em>, <em>cli(v.3.6.1)</em>,
 <em>metapod(v.1.6.0)</em>, <em>Gviz(v.1.42.0)</em>,
-<em>igraph(v.1.4.2)</em>, <em>pkgconfig(v.2.0.3)</em>,
+<em>igraph(v.1.4.3)</em>, <em>pkgconfig(v.2.0.3)</em>,
 <em>GenomicAlignments(v.1.34.0)</em>, <em>foreign(v.0.8-84)</em>,
-<em>plotly(v.4.10.2)</em>, <em>xml2(v.1.3.3)</em>,
+<em>plotly(v.4.10.2)</em>, <em>xml2(v.1.3.4)</em>,
 <em>InteractionSet(v.1.26.0)</em>, <em>foreach(v.1.5.2)</em>,
 <em>bslib(v.0.5.0)</em>, <em>VariantAnnotation(v.1.44.0)</em>,
 <em>digest(v.0.6.31)</em>, <em>rmarkdown(v.2.22)</em>,
 <em>htmlTable(v.2.4.1)</em>, <em>edgeR(v.3.40.0)</em>,
 <em>restfulr(v.0.0.15)</em>, <em>curl(v.5.0.1)</em>,
 <em>rjson(v.0.2.21)</em>, <em>nlme(v.3.1-162)</em>,
-<em>lifecycle(v.1.0.3)</em>, <em>jsonlite(v.1.8.5)</em>,
+<em>lifecycle(v.1.0.3)</em>, <em>jsonlite(v.1.8.7)</em>,
 <em>viridisLite(v.0.4.2)</em>, <em>limma(v.3.54.0)</em>,
 <em>BSgenome(v.1.66.3)</em>, <em>fansi(v.1.0.4)</em>,
 <em>pillar(v.1.9.0)</em>, <em>lattice(v.0.21-8)</em>,

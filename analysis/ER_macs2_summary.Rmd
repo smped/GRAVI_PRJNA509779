@@ -62,7 +62,7 @@ config <- read_yaml(
 )
 fdr_alpha <- config$comparisons$fdr
 params <- read_yaml(here::here("config", "params.yml"))
-bam_path <- here::here(config$paths$bam, target)
+bam_path <- here::here(config$paths$bam)
 macs2_path <- here::here("output", "macs2", target)
 annotation_path <- here::here("output", "annotations")
 colours <- read_rds(
@@ -99,19 +99,11 @@ stopifnot(nrow(samples) > 0)
 ## Seqinfo
 sq <- read_rds(file.path(annotation_path, "seqinfo.rds"))
 ## Blacklist
-gnm <- str_to_lower(config$genome$build)
-if (gnm %in% c("grch37", "grch38")) gnm <- c(grch37 = "hg19", grch38 = "hg38")[gnm]
-bl <- paste0(gnm, ".blacklist")
-data(list = bl, package = "GreyListChIP")
-blacklist <- get(bl) %>% 
-  sortSeqlevels() %>%
-  subset(seqnames %in% seqlevels(sq)) %>%
-  keepSeqlevels(seqlevels(sq))
-seqinfo(blacklist) <- sq
+blacklist <- import.bed(here::here(config$external$blacklist), seqinfo = sq)
 ## Gene Annotations
-all_gr <- file.path(annotation_path, "all_gr.rds") %>% 
-  read_rds()
-genes_gr <- all_gr$gene
+gtf_gene <- read_rds(file.path(annotation_path, "gtf_gene.rds"))
+gtf_transcript <- read_rds(file.path(annotation_path, "gtf_transcript.rds"))
+
 external_features <- c()
 has_features <- FALSE
 if (!is.null(config$external$features)) {
@@ -133,7 +125,7 @@ if (length(rna_path) > 0) {
   if (str_detect(rna_path, "tsv$")) rnaseq <- read_tsv(rna_path)
   if (str_detect(rna_path, "csv$")) rnaseq <- read_csv(rna_path)
   if (!"gene_id" %in% colnames(rnaseq)) stop("Supplied RNA-Seq data must contain the column 'gene_id'")
-  genes_gr <- subset(genes_gr, gene_id %in% rnaseq$gene_id)
+  gtf_gene <- subset(gtf_gene, gene_id %in% rnaseq$gene_id)
 }
 tx_col <- intersect(c("tx_id", "transcript_id"), colnames(rnaseq))
 rna_gr_col <- ifelse(length(tx_col) > 0, "transcript_id", "gene_id")
@@ -1195,7 +1187,7 @@ htmltools::tagList(
       ## Automatically collapse Transcripts if more than 10
       ct <- FALSE
       gh <- 1
-      if (length(subsetByOverlaps(all_gr$transcript, grl_to_plot[[x]])) > 20) {
+      if (length(subsetByOverlaps(gtf_transcript, grl_to_plot[[x]])) > 20) {
         ct <- "meta"
         gh <- 0.5
       }
@@ -1216,7 +1208,7 @@ htmltools::tagList(
       dev.off()
       
       ## Define the caption
-      gr <- join_nearest(grl_to_plot[[x]], all_gr$gene, distance = TRUE)
+      gr <- join_nearest(grl_to_plot[[x]], gtf_gene, distance = TRUE)
       d <- gr$distance
       gn <- gr$gene_name
       peak_desc <- ifelse(
@@ -1235,7 +1227,7 @@ htmltools::tagList(
             paste0("The nearest gene was ", gn, ", ", round(d/1e3, 1), "kb away")
           ),
           ifelse(
-            (nrow(rnaseq) > 0) & (gn %in% genes_gr$gene_name),
+            (nrow(rnaseq) > 0) & (gn %in% gtf_gene$gene_name),
             glue(" which was detected in the RNA-Seq data."),
             glue(".")
           ),
