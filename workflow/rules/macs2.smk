@@ -1,14 +1,14 @@
-def get_input_bam_from_sample_and_target(wildcards):
-	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
-	return expand(
-		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['input'])
-	)
+# def get_input_bam_from_sample_and_target(wildcards):
+# 	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
+# 	return expand(
+# 		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['input'])
+# 	)
 
-def get_input_bai_from_sample_and_target(wildcards):
-	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
-	return expand(
-		os.path.join(bam_path, "{file}.bam.bai"), file = set(df[ind]['input'])
-	)
+# def get_input_bai_from_sample_and_target(wildcards):
+# 	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
+# 	return expand(
+# 		os.path.join(bam_path, "{file}.bam.bai"), file = set(df[ind]['input'])
+# 	)
 
 def get_merged_bam_from_treat_and_target(wildcards):
 	ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
@@ -40,27 +40,30 @@ rule macs2_individual:
 	input:
 		bam = os.path.join(bam_path, "{sample}.bam"),
 		bai = os.path.join(bam_path, "{sample}.bam.bai"),
-		control = get_input_bam_from_sample_and_target,
-		control_bai = get_input_bai_from_sample_and_target
+		control = lambda wildcards: expand(
+			os.path.join(bam_path, "{ctrl}.{suffix}"),
+			ctrl = set(df[df['sample'] == wildcards.sample]['input']),
+			suffix = ['bam', 'bam.bai']
+		),
 	output:
 		narrow_peaks = os.path.join(
-			macs2_path, "{target}", "{sample}_peaks.narrowPeak"
+			macs2_path, "{sample}", "{sample}_peaks.narrowPeak"
 		),
 		bedgraph = temp(
-			os.path.join(macs2_path, "{target}", "{sample}_treat_pileup.bdg")
+			os.path.join(macs2_path, "{sample}", "{sample}_treat_pileup.bdg")
 		),
-		log = os.path.join(macs2_path, "{target}", "{sample}_callpeak.log"),
-		summits = os.path.join(macs2_path, "{target}", "{sample}_summits.bed"),
+		log = os.path.join(macs2_path, "{sample}", "{sample}_callpeak.log"),
+		summits = os.path.join(macs2_path, "{sample}", "{sample}_summits.bed"),
 		other = temp(
 			expand(
-				os.path.join(macs2_path, "{{target}}", "{{sample}}{suffix}"),
+				os.path.join(macs2_path, "{{sample}}", "{{sample}}{suffix}"),
 				suffix = ['_model.r', '_peaks.xls', '_control_lambda.bdg']
 			)
 		)
-	log: log_path + "/macs2_individual/{target}/{sample}.log"
+	log: log_path + "/macs2_individual/{sample}.log"
 	conda: "../envs/macs2.yml"
 	params:
-		outdir = os.path.join(macs2_path, "{target}"),
+		outdir = os.path.join(macs2_path, "{sample}"),
 		prefix = "{sample}",
 		gsize = config['peaks']['macs2']['gsize'],
 		fdr = config['peaks']['macs2']['fdr'],
@@ -70,18 +73,17 @@ rule macs2_individual:
 		mem_mb = 8192
 	shell:
 		"""
-		echo -e "Running macs2 call peak on:\n{input.bam}" >> {log}
-		echo -e "The specified control sample is:\n{input.control}" >> {log}
 		macs2 callpeak \
 			-t {input.bam}\
-			-c {input.control} \
+			-c {input.control[0]} \
 			-f BAM \
 			-g {params.gsize} \
 			--keep-dup {params.keep_duplicates} \
 			-q {params.fdr} \
 			-n {params.prefix} \
 			--bdg --SPMR \
-			--outdir {params.outdir} 2> {output.log}
+			--outdir {params.outdir} 2> {log}
+		cp {log} {output.log}
 		"""
 
 rule macs2_qc:
@@ -95,7 +97,7 @@ rule macs2_qc:
 		config = "config/config.yml",
 		extrachips = rules.update_extrachips.output,
 		indiv_macs2 = lambda wildcards: expand(
-			os.path.join(macs2_path, "{{target}}", "{sample}_{suffix}"),
+			os.path.join(macs2_path, "{sample}", "{sample}_{suffix}"),
 			sample = set(df[df.target == wildcards.target]['sample']),
 			suffix = ['callpeak.log', 'peaks.narrowPeak']
 		),
@@ -229,7 +231,7 @@ rule compile_macs2_summary_html:
 		extrachips = rules.update_extrachips.output,
 		here = here_file,
 		indiv_macs2 = lambda wildcards: expand(
-			os.path.join(macs2_path, "{{target}}", "{sample}_{suffix}"),
+			os.path.join(macs2_path, "{sample}", "{sample}_{suffix}"),
 			sample = set(df[df.target == wildcards.target]['sample']),
 			suffix = ['callpeak.log', 'peaks.narrowPeak']
 		),

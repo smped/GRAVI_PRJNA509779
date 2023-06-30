@@ -106,18 +106,6 @@ rule compile_differential_binding_html:
 			target = targets
 		),
 		here = here_file,
-		indiv_bw = lambda wildcards: expand(
-			os.path.join(
-				macs2_path, "{{target}}", "{sample}_treat_pileup.bw"
-			),
-			sample = df['sample'][
-				(df['target'] == wildcards.target) &
-				(
-					(df['treat'] == wildcards.ref) |
-					(df['treat'] == wildcards.treat)
-				)
-			]
-		),
 		module = os.path.join("workflow", "modules", db_method + ".Rmd"),
 		rmd = os.path.join(
 			rmd_path, "{target}_{ref}_{treat}_differential_binding.Rmd"

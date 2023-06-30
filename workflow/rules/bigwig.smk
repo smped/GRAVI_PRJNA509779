@@ -1,15 +1,15 @@
 rule bedgraph_to_bigwig:
 	input:
 		bedgraph = os.path.join(
-			macs2_path, "{target}", "{sample}_treat_pileup.bdg"
+			macs2_path, "{path}", "{sample}_treat_pileup.bdg"
 		),
 		chrom_sizes = chrom_sizes
 	output:
 		bigwig = os.path.join(
-			macs2_path, "{target}", "{sample}_treat_pileup.bw"
+			macs2_path, "{path}", "{sample}_treat_pileup.bw"
 		)
 	conda: "../envs/bedgraph_to_bigwig.yml"
-	log: log_path + "/bedgraph_to_bigwig/{target}/{sample}.log"
+	log: log_path + "/bedgraph_to_bigwig/{path}/{sample}.log"
 	threads: 1
 	retries: 1
 	resources:
@@ -39,11 +39,11 @@ rule get_coverage_summary:
 	input: 
 		bw = rules.bedgraph_to_bigwig.output.bigwig,
 		blacklist = blacklist
-	output: os.path.join(macs2_path, "{target}", "{sample}_treat_pileup.summary")
+	output: os.path.join(macs2_path, "{path}", "{sample}_treat_pileup.summary")
 	params:
 		script = "workflow/scripts/get_bigwig_summary.R"
 	conda: "../envs/rmarkdown.yml"
-	log: log_path + "/get_coverage_summary/{target}/{sample}.log"
+	log: log_path + "/get_coverage_summary/{path}/{sample}.log"
 	threads: 1
 	resources:
 		mem_mb = 16384

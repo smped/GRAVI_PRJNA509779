@@ -151,7 +151,10 @@ ALL_OUTPUTS = []
 ## created
 ALL_RDS = expand(
 	os.path.join(annotation_path, "{file}.rds"),
-	file = ['all_gr', 'colours', 'gene_regions', 'seqinfo', 'trans_models','tss']
+	file = [
+		'colours', 'gene_regions', 'seqinfo', 'trans_models','tss', 'gtf_gene',
+		'gtf_transcript', 'gtf_exon'
+	]
 )
 ALL_OUTPUTS.extend(ALL_RDS)
 
@@ -205,12 +208,9 @@ ALL_OUTPUTS.extend(CONS_PEAKS)
 ###########################
 ## Peak Files from macs2 ##
 ###########################
-indiv_pre = df[['target', 'sample']].apply(
-	lambda row: '/'.join(row.values.astype(str)), axis=1
-)
 INDIV_PEAKS = expand(
-	os.path.join(macs2_path, "{path}_peaks.narrowPeak"),
-	path = indiv_pre
+	os.path.join(macs2_path, "{sample}", "{sample}_peaks.narrowPeak"),
+	sample = samples
 )
 ALL_OUTPUTS.extend(INDIV_PEAKS)
 merged_pre = set(
@@ -229,9 +229,8 @@ ALL_OUTPUTS.extend(MERGED_PEAKS)
 ## BigWig Files ##
 ##################
 INDIV_BW = expand(
-	os.path.join(macs2_path, "{path}_treat_pileup.{suffix}"),
-	path = indiv_pre,
-	suffix = ['bw']#, 'summary']
+	os.path.join(macs2_path, "{sample}", "{sample}_treat_pileup.bw"),
+	sample = samples
 )
 ALL_OUTPUTS.extend(INDIV_BW)
 MERGED_BW = expand(
