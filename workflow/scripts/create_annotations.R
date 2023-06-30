@@ -18,26 +18,24 @@ library(glue)
 library(plyranges)
 library(yaml)
 library(Rsamtools)
-library(BiocParallel)
 library(extraChIPs)
 
 args <- commandArgs(TRUE)
-gtf <- args[[1]]
-# threads <- args[[2]]
-# register(MulticoreParam(threads))
-
 config <- read_yaml(here::here("config", "config.yml"))
 params <- read_yaml(here::here("config", "params.yml"))
 samples <- here::here(config$samples$file) %>%
   read_tsv()
 
 #### Paths ####
-annotation_path <- here::here("output", "annotations")
+annotation_path <- here::here(args[[1]])
 if (!dir.exists(annotation_path)) dir.create(annotation_path, recursive = TRUE)
 all_out <- list(
   chrom_sizes = file.path(annotation_path, "chrom.sizes"),
   gene_regions = file.path(annotation_path, "gene_regions.rds"),
   gtf  = file.path(annotation_path, "all_gr.rds"),
+  gtf_gene = file.path(annotation_path, "gtf_gene.rds"),
+  gtf_trans = file.path(annotation_path, "gtf_transcript.rds"),
+  gtf_exon = file.path(annotation_path, "gtf_exon.rds"),
   seqinfo = file.path(annotation_path, "seqinfo.rds"),
   transcript_models = file.path(annotation_path, "trans_models.rds"),
   tss = file.path(annotation_path, "tss.rds")
@@ -71,6 +69,8 @@ sq %>%
 cat("chrom_sizes exported...\n")
 
 #### GTF ####
+gtf <- here::here(config$external$gtf)
+stopifnot(file.exists(gtf))
 reqd_cols <- c(
   "type",
   "gene_id", "gene_type", "gene_name",
@@ -93,19 +93,18 @@ all_gr <- gtf %>%
   keepSeqlevels(seqlevels(sq)) %>%
   splitAsList(f = .$type)
 seqinfo(all_gr) <- sq
-write_rds(all_gr, all_out$gtf, compress = "gz")
+write_rds(all_gr, all_out$gtf, compress = "gz") # Delete later
+write_rds(all_gr$gene, all_out$gtf_gene, compress = "gz")
+write_rds(all_gr$transcript, all_out$gtf_trans, compress = "gz")
+write_rds(all_gr$exon, all_out$gtf_exon, compress = "gz")
 cat("all_gr.rds written successfully...\n")
 
 #### Transcript Models (Gviz) ####
 trans_models <- all_gr$exon %>%
-  as_tibble(rangeAsChar = FALSE) %>%
-  group_by(transcript_id) %>%
-  mutate(exon = paste0(transcript_id, "_", seq_along(transcript_id))) %>%
-  makeGRangesFromDataFrame(keep.extra.columns = TRUE, seqinfo = sq) %>%
-  mutate(feature = as.character(type)) %>%
-  select(type, gene = gene_id, exon, transcript = transcript_id, symbol = gene_name) %>%
-  sort() %>%
-  setNames(.$transcript)
+  select(
+    type, gene = gene_id, exon = exon_id, transcript = transcript_id, 
+    symbol = gene_name
+  )
 write_rds(trans_models, all_out$transcript_models, compress = "gz")
 cat("trans_models.rds written successfully...\n")
 
@@ -133,149 +132,28 @@ write_rds(tss, all_out$tss, compress = "gz")
 cat("TSS regions exported...\n")
 
 #### Promoters ####
-prom_params <- params$gene_regions$promoters
-gene_regions <- list(
-  promoters = all_gr$transcript %>%
-    promoters(
-      upstream = prom_params$upstream,
-      downstream = prom_params$downstream
-    ) %>%
-    select(-ends_with("type"), -starts_with("exon")) %>%
-    reduceMC(ignore.strand = TRUE) %>%
-    mutate(
-      region = glue(
-        "Promoter (-{prom_params$upstream}/+{prom_params$downstream}bp)"
-      )
-    ) %>%
-    select(region, everything())
+gr_params <- params$gene_regions
+gene_regions <- defineRegions(
+  genes = all_gr$gene, transcripts = all_gr$transcript, exons = all_gr$exon,
+  promoter = unlist(gr_params$promoter), upstream = gr_params$upstream,
+  proximal = gr_params$intergenic
 )
-cat("Promoters defined...\n")
+## Won't be needed in the next update
+# gene_regions <- endoapply(
+#   gene_regions, 
+#   function(x) {
+#     x$region <- vapply(x$region, unique, character(1))
+#     x
+#   }
+# )
 
-#### Upstream Promoters ####
-cat("Began defining upstream promoters at ", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
-## Remove any which are shorter than 1% of the requested distance as these are likely
-## chopped by an exon
-min_width <- 0.01 * (params$gene_regions$upstream - params$gene_regions$promoters$upstream)
-gene_regions$upstream <- all_gr$transcript %>%
-  promoters(upstream = params$gene_regions$upstream, downstream = 0)  %>%
-  select(-ends_with("type"), -starts_with("exon")) %>%
-  setdiffMC(gene_regions$promoters, ignore.strand = TRUE)%>%
-  # Ignoring any exon overlaps ensures an upstream promoter is annotated as
-  # being more important than an exon, given that exons refer to RNA structure
-  # setdiffMC(all_gr$exon, ignore.strand = TRUE) %>%
-  reduceMC() %>%
-  subset(width > min_width) %>%
-  mutate(
-    region = glue("Upstream Promoter (<{params$gene_regions$upstream/1e3}kb)")
-  ) %>%
-  select(region, everything())
-  ## Some of these will possibly extend into other genes.
-  ## The only real solution is to cut any sections from the upstream ranges
-  ## which overlap other genes, whilst retaining those ranges which are internal
-  ## to the gene-of-origin. The only viable way to do that is to manually exclude
-  ## the gene-of-origin then take the setdiff. This will take an hour or two
-  # split(f = seq_along(.)) %>%
-  # bplapply(
-  #   function(x) {
-  #     gr <- subset(all_gr$gene, !gene_id %in% unlist(x$gene_id))
-  #     setdiffMC(x, gr, ignore.strand = TRUE)
-  #   },
-  #   BPPARAM = bpparam()
-  # ) %>%
-  # GRangesList() %>%
-  # unlist() %>%
-  # setNames(c())
-cat("Finished defining upstream promoters at ", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
 
-#### Exons ####
-gene_regions$exons <- all_gr$exon %>%
-  unstrand() %>%
-  select(-ends_with("type")) %>%
-  reduceMC() %>%
-  setdiffMC(
-    ## Exons overlapping promoter regions are assigned as promoters
-    lapply(gene_regions[c("promoters", "upstream")], granges) %>%
-      GRangesList() %>%
-      unlist
-  ) %>%
-  mutate(region = "Exon") %>%
-  select(region, everything())
-cat("Exons defined at ", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
-
-#### Introns ####
-gene_regions$introns <- all_gr$gene %>%
-  unstrand() %>%
-  select(-ends_with("type"), -starts_with("trans"), -starts_with("exon")) %>%
-  setdiffMC(
-    lapply(gene_regions[c("promoters", "upstream", "exons")], granges) %>%
-      GRangesList() %>%
-      unlist()
-  ) %>%
-  reduceMC() %>%
-  mutate(region = "Intron") %>%
-  select(region, everything())
-cat("Introns defined at", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
-
-#### Intergenic Distal ####
-suppressWarnings(
-  gene_regions$distal <- sq %>%
-    GRanges() %>%
-    setdiff(
-      all_gr$gene %>%
-        resize(
-          width  = width(.) + 2 * params$gene_regions$intergenic,
-          fix = 'center'
-        ) %>%
-        trim() %>%
-        unstrand()
-    ) %>%
-    mutate(
-      region = glue("Intergenic (>{params$gene_regions$intergenic/1e3}kb)")
-    )
-)
-cat("Distal Intergenic Regions defined at", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
-
-#### Intergenic Proximal ####
-gene_regions$proximal <- setdiff(
-  GRanges(sq),
-  lapply(
-    gene_regions[c("promoters", "upstream", "exons", "introns", "distal")],
-    granges
-  ) %>%
-    GRangesList() %>%
-    unlist()
-) %>%
-  join_nearest(all_gr$gene) %>%
-  mutate(
-    region = glue("Intergenic (<{params$gene_regions$intergenic/1e3}kb)"),
-  ) %>%
-  select(region, gene_id, gene_name)
-cat("Proximal Intergenic Regions defined at", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
-
-#### Final Tidy Up ####
-##Remove any columns which are just NA
-gene_regions <- gene_regions %>%
-  lapply(
-    function(x) {
-      keep <- vapply(
-        mcols(x),
-        function(y) {
-          if (!is(y, "list_OR_List")) {
-            if (all(is.na(y))) return(FALSE)
-          }
-          return(TRUE)
-        },
-        logical(1)
-      )
-      mcols(x) <- mcols(x)[keep]
-      x
-    }
-  )
-## Place in the correct order
-o <- c(
-  "promoters", "upstream", "exons", "introns", "proximal",  "distal"
-)
-gene_regions <- gene_regions[o]
 write_rds(gene_regions, all_out$gene_regions, compress = "gz")
+all_exist <- vapply(all_out, file.exists, logical(1))
+if (!all_exist) {
+  nm <- names(all_exist)[!all_exist]
+  stop("Failed to create:\n", nm)
+
+}
 cat("Data export completed at", format(Sys.time(), "%H:%M:%S, %d %b %Y\n"))
 
