@@ -17,3 +17,4 @@ success <- packageVersion("extraChIPs") >= reqd_version
 stopifnot(success)
 
 file.create(f)
+writeLines(reqd_version, con = f)
