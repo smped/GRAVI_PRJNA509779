@@ -60,6 +60,15 @@ sq <- samples %>%
 write_rds(sq, all_out$seqinfo)
 cat("Seqinfo exported...\n")
 
+#### Check the blacklist for compatibility
+blacklist <- here::here(config$external$blacklist) %>%
+  import.bed()
+sq_has_chr <- any(grepl("chr", seqlevels(sq)))
+bl_has_chr <- any(grepl("chr", seqlevels(blacklist)))
+if (sq_has_chr != bl_has_chr)
+  stop("Chromosome identifiers do not match between the blacklist & alignments")
+
+
 #### chrom_sizes ####
 ## For bedGraphToBigWig
 sq %>%
@@ -79,7 +88,7 @@ reqd_cols <- c(
 )
 all_gr <- gtf %>%
   import.gff(
-    which = GRanges(sq),
+    which = GRanges(sq), # Should fail if incompatible
     feature.type = c("gene", "transcript", "exon")
   ) %>%
   select(all_of(reqd_cols)) %>% # Will abort if any are missing
@@ -92,6 +101,13 @@ all_gr <- gtf %>%
   subset(seqnames %in% seqlevels(sq)) %>%
   keepSeqlevels(seqlevels(sq)) %>%
   splitAsList(f = .$type)
+
+if (all(vapply(all_gr, length, integer(0)) == 0))
+  stop(
+    "No valid ranges found in the provided GTF.\nPlease check for compatible ",
+    "chromosome identifiers"
+    )
+  
 seqinfo(all_gr) <- sq
 write_rds(all_gr, all_out$gtf, compress = "gz") # Delete later
 write_rds(all_gr$gene, all_out$gtf_gene, compress = "gz")
