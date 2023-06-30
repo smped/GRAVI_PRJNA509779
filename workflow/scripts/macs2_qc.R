@@ -63,8 +63,8 @@ outlier_thresh <- config$peaks$qc$outlier_threshold
 allow_zero <- as.logical(config$peaks$qc$allow_zero)
 
 annotation_path <- here::here("output", "annotations")
-macs2_path <- here::here("output", "macs2", target)
-if (!dir.exists(macs2_path)) dir.create(macs2_path)
+macs2_path <- here::here("output", "macs2")
+if (!dir.exists(macs2_path)) dir.create(file.path(macs2_path, target))
 
 sq <- read_rds(file.path(annotation_path, "seqinfo.rds"))
 blacklist <- import.bed(
@@ -74,14 +74,15 @@ blacklist <- import.bed(
 
 message("Loading peaks")
 individual_peaks <- file.path(
-  macs2_path, glue("{samples$sample}_peaks.narrowPeak")
+  macs2_path, samples$sample, glue("{samples$sample}_peaks.narrowPeak")
 ) %>%
   importPeaks(seqinfo = sq, blacklist = blacklist) %>%
   GRangesList() %>%
   setNames(samples$sample)
 
 message("Loading macs2_logs")
-macs2_logs <- file.path(macs2_path, glue("{samples$sample}_callpeak.log")) %>%
+macs2_logs <- macs2_path %>%
+  file.path(samples$sample, glue("{samples$sample}_callpeak.log")) %>%
   importNgsLogs() %>%
   dplyr::select(
     -contains("file"), -outputs, -n_reads, -alt_fragment_length
@@ -115,7 +116,7 @@ message("Writing qc_samples")
 macs2_logs %>%
   dplyr::select(sample = name, any_of(colnames(samples)), qc) %>%
   write_tsv(
-    file.path(macs2_path, "qc_samples.tsv")
+    file.path(macs2_path, target, "qc_samples.tsv")
   )
 
 ##################
@@ -179,4 +180,4 @@ read_corrs <- bfl[samples$sample] %>%
     names_to = "sample",
     values_to = "correlation"
   )
-write_tsv(read_corrs, file.path(macs2_path, "cross_correlations.tsv"))
+write_tsv(read_corrs, file.path(macs2_path, target, "cross_correlations.tsv"))

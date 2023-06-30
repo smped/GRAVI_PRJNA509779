@@ -111,7 +111,7 @@ rule macs2_qc:
 	threads: lambda wildcards: len(df[df['target'] == wildcards.target])
 	resources:
 		mem_mb = 8192
-	log: log_path + "/macs2_individual/{target}/{target}_macs2_qc.log"
+	log: log_path + "/macs2_qc/{target}_macs2_qc.log"
 	shell:
 		"""
 		## Run the QC script
@@ -161,13 +161,13 @@ rule macs2_merged:
 	shell:
 		"""
 		QC_PASS=$(egrep 'pass' {input.qc} | egrep {wildcards.treat} | cut -f1)
-		SAMPLES=$(for f in $QC_PASS; do echo {params.bamdir}/{wildcards.target}/$f.bam; done)
-		echo -e "The following passed qc:\n$SAMPLES\n" >> {log}
+		SAMPLES=$(for f in $QC_PASS; do echo {params.bamdir}/$f.bam; done)
+
 		## Get the input column
 		I=$(head -n1 {input.qc} | sed -r 's/\\t/\\n/g' | egrep -n '[Ii]nput' | sed -r 's/([0-9]+):[Ii]nput/\\1/g')
 		INPUT_PASS=$(egrep 'pass$' {input.qc} | egrep "{wildcards.treat}\s" | cut -f$I | uniq)
-		INPUT=$(for f in $INPUT_PASS; do echo {params.bamdir}/Input/$f.bam; done)
-		echo -e "Control:\n$INPUT" >> {log}
+		INPUT=$(for f in $INPUT_PASS; do echo {params.bamdir}/$f.bam; done)
+
 		macs2 callpeak \
 			-t $SAMPLES\
 			-c $INPUT \
@@ -177,7 +177,8 @@ rule macs2_merged:
 			-q {params.fdr} \
 			-n {params.prefix} \
 			--bdg --SPMR \
-			--outdir {params.outdir} 2> {output.log}
+			--outdir {params.outdir} 2> {log}
+		cp {log} {output.log}
 		"""
 
 
