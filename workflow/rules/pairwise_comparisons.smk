@@ -36,6 +36,7 @@ rule create_pairwise_comparisons_rmd:
 rule compile_pairwise_comparisons_html:
 	input:
 		annotations = ALL_RDS,
+		blacklist = blacklist,
 		config = "config/config.yml",
 		extrachips = rules.update_extrachips.output,
 		here = here_file,

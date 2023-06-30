@@ -42,6 +42,9 @@ for i in config['external']:
 			for k in f[j]:
 				msg = "File " + f[j][k] + " not found"
 				assert(os.path.isfile(f[j][k])), msg
+			
+		
+	
 
 
 # Define all contrasts
@@ -118,6 +121,7 @@ if type(fig_type) is list:
 ###############################
 ## These are required input for multiple steps
 gtf = config['external']['gtf']
+blacklist = config['external']['blacklist']
 chrom_sizes = os.path.join(annotation_path, "chrom.sizes")
 
 ##################################
@@ -244,6 +248,7 @@ rule all:
 include: "rules/samtools.smk"
 include: "rules/rmarkdown.smk"
 include: "rules/macs2.smk"
+include: "rules/bigwig.smk"
 include: "rules/annotations.smk"
 include: "rules/differential_binding.smk"
 include: "rules/pairwise_comparisons.smk"

@@ -15,17 +15,11 @@ config <- read_yaml(here::here("config", "config.yml"))
 sq <- read_rds(
   here::here("output/annotations/seqinfo.rds")
 )
+blacklist <- import.bed(
+  here::here(config$external$blacklist),
+  seqinfo = sq
+)
 
-gnm <- str_to_lower(config$genome$build)
-if (gnm %in% c("grch37", "grch38")) 
-  gnm <- c(grch37 = "hg19", grch38 = "hg38")[gnm]
-bl <- paste0(gnm, ".blacklist")
-data(list = bl, package = "GreyListChIP")
-blacklist <- get(bl) %>% 
-  sortSeqlevels() %>%
-  subset(seqnames %in% seqlevels(sq)) %>%
-  keepSeqlevels(seqlevels(sq))
-seqinfo(blacklist) <- sq
 
 gr <- sq %>%
   GRanges() %>%

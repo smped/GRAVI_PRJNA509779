@@ -123,6 +123,7 @@ cb <- config$genome$build %>%
 data(list = cb)
 bands_df <- get(cb)
 sq <- read_rds(file.path(annotation_path, "seqinfo.rds"))
+blacklist <- import.bed(here::here(config$external$blacklist), seqinfo = sq)
 
 all_gr <- file.path(annotation_path, "all_gr.rds") %>% 
   read_rds()
@@ -132,16 +133,6 @@ trans_models <- file.path(annotation_path, "trans_models.rds") %>%
 genes_gr <- all_gr$gene
 tss <- file.path(annotation_path, "tss.rds") %>% 
   read_rds()
-
-gnm <- str_to_lower(config$genome$build)
-if (gnm %in% c("grch37", "grch38")) gnm <- c(grch37 = "hg19", grch38 = "hg38")[gnm]
-bl <- paste0(gnm, ".blacklist")
-data(list = bl, package = "GreyListChIP")
-blacklist <- get(bl) %>% 
-  sortSeqlevels() %>%
-  subset(seqnames %in% seqlevels(sq)) %>%
-  keepSeqlevels(seqlevels(sq))
-seqinfo(blacklist) <- sq
 
 external_features <- c()
 has_features <- FALSE

@@ -75,6 +75,7 @@ rule compile_differential_binding_html:
 			],
 			suffix = ['bam', 'bam.bai']
 		),
+		blacklist = blacklist,
 		extrachips = rules.update_extrachips.output,
 		greylist = lambda wildcards: expand(
 			os.path.join(annotation_path, "{ip_sample}_greylist.bed"),
