@@ -31,11 +31,14 @@ theme_set(
   theme_bw() +
     theme(plot.title = element_text(hjust = 0.5))
 )
+source(here::here("workflow", "scripts", "custom_functions.R"))
 annotation_path <- here::here("output", "annotations")
 all_out <- list(
   chrom_sizes = file.path(annotation_path, "chrom.sizes"),
   gene_regions = file.path(annotation_path, "gene_regions.rds"),
-  gtf  = file.path(annotation_path, "all_gr.rds"),
+  gtf_gene = file.path(annotation_path, "gtf_gene.rds"),
+  gtf_transcript = file.path(annotation_path, "gtf_transcript.rds"),
+  gtf_exon = file.path(annotation_path, "gtf_exon.rds"),
   seqinfo = file.path(annotation_path, "seqinfo.rds"),
   transcript_models = file.path(annotation_path, "trans_models.rds"),
   tss = file.path(annotation_path, "tss.rds"),
@@ -43,20 +46,10 @@ all_out <- list(
 )
 ```
 
-```{r extra-funs}
-source(
-  here::here("workflow", "scripts", "custom_functions.R")
-)
-```
-
-
 ```{r config}
 config <- read_yaml(here::here("config", "config.yml"))
 params <- read_yaml(here::here("config", "params.yml"))
 colours <- read_yaml(here::here("config", "colours.yml"))
-```
-
-```{r treat_levels}
 treat_levels <- config$comparisons$contrasts %>% 
   unlist() %>% 
   unique()
@@ -165,16 +158,18 @@ blacklist %>%
 ## Basic Annotations
 
 ```{r load-gtf}
-all_gr <- read_rds(file.path(annotation_path, "all_gr.rds"))
+gtf_gene <- read_rds(file.path(annotation_path, "gtf_gene.rds"))
+gtf_transcript <- read_rds(file.path(annotation_path, "gtf_transcript.rds"))
+gtf_exon <- read_rds(file.path(annotation_path, "gtf_exon.rds"))
 ```
 
 - The complete set of genes, transcripts and exons was loaded from the supplied `gtf`, excluding mitochondrial features.
 - The previously generated `Seqinfo` was also placed as the foundation of this annotation object, ensuring this propagates through all subsequent objects
-- Version numbers were removed from all gene, transcript and exon identifiers for convenience, with the minimal set of columns (`r pander(colnames(mcols(all_gr$gene)))`) retained.
+- Version numbers were removed from all gene, transcript and exon identifiers for convenience, with the minimal set of columns (`r pander(colnames(mcols(gtf_gene)))`) retained.
 - Visualisation using the Bioconductor package `Gviz` requires a specific `GRanges` structure for gene and transcript models to be displayed.
 This object was created at this point so transcript models could be simply visualised throughout the workflow.
 
-In total this annotation build contained `r comma(length(all_gr$gene))` genes, `r comma(length(all_gr$transcript))` transcripts and `r comma(length(all_gr$exon))` exons.
+In total this annotation build contained `r comma(length(gtf_gene))` genes, `r comma(length(gtf_transcript))` transcripts and `r comma(length(gtf_exon))` exons.
 
 
 ## Gene-Centric Regions {.tabset}
@@ -303,12 +298,12 @@ gene_regions %>%
 ### Example
 
 ```{r example-id}
-id <- sort(all_gr$gene$gene_id)[[1]]
+id <- sort(gtf_gene$gene_id)[[1]]
 ```
 
 
-```{r plot-example, fig.height=7, fig.cap = paste("*12kb region surrounding", collapseGenes(subset(all_gr$gene, gene_id == id)$gene_name), "showing all annotated regions.*")}
-gr <- subset(all_gr$gene, gene_id == id) %>% 
+```{r plot-example, fig.height=7, fig.cap = paste("*12kb region surrounding", collapseGenes(subset(gtf_gene, gene_id == id)$gene_name), "showing all annotated regions.*")}
+gr <- subset(gtf_gene, gene_id == id) %>% 
   resize(width = width(.) + 2.4e4, fix = 'center') %>% 
   unstrand()
 ft <- gene_regions %>% 
@@ -321,10 +316,10 @@ ft <- gene_regions %>%
   subset(region != "TSS") %>% 
   sort()
 df <- list(
-  all_gr$transcript %>% 
+  gtf_transcript %>% 
     subsetByOverlaps(gr) %>% 
     as_tibble(rangeAsChar = FALSE),
-  all_gr$exon %>% 
+  gtf_exon %>% 
     subsetByOverlaps(gr) %>% 
     as_tibble(rangeAsChar = FALSE) 
 ) %>% 
@@ -361,10 +356,10 @@ df %>%
       y = as.integer(transcript_name),
       yend = as.integer(transcript_name)
     ),
-    data = all_gr$transcript %>% 
+    data = gtf_transcript %>% 
       subsetByOverlaps(gr) %>% 
       select(transcript_name) %>% 
-      setdiffMC(all_gr$exon) %>%
+      setdiffMC(gtf_exon) %>%
       as.data.frame() %>% 
       mutate(transcript_name = vctrs::vec_proxy(transcript_name)) %>% 
       unnest(transcript_name) %>% 

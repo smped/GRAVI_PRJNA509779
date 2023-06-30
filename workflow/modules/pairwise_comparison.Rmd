@@ -125,12 +125,12 @@ bands_df <- get(cb)
 sq <- read_rds(file.path(annotation_path, "seqinfo.rds"))
 blacklist <- import.bed(here::here(config$external$blacklist), seqinfo = sq)
 
-all_gr <- file.path(annotation_path, "all_gr.rds") %>% 
-  read_rds()
-id2gene <- setNames(all_gr$gene$gene_name, all_gr$gene$gene_id)
+gtf_gene <- read_rds(file.path(annotation_path, "gtf_gene.rds"))
+gtf_transcript <- read_rds(file.path(annotation_path, "gtf_transcript.rds"))
+gtf_exon <- read_rds(file.path(annotation_path, "gtf_exon.rds"))
+id2gene <- setNames(gtf_gene$gene_name, gtf_gene$gene_id)
 trans_models <- file.path(annotation_path, "trans_models.rds") %>% 
   read_rds() 
-genes_gr <- all_gr$gene
 tss <- file.path(annotation_path, "tss.rds") %>% 
   read_rds()
 
@@ -161,7 +161,7 @@ if (length(rna_path) > 0) {
   if (str_detect(rna_path, "tsv$")) rnaseq <- read_tsv(rna_path)
   if (str_detect(rna_path, "csv$")) rnaseq <- read_csv(rna_path)
   if (!"gene_id" %in% colnames(rnaseq)) stop("Supplied RNA-Seq data must contain the column 'gene_id'")
-  genes_gr <- subset(genes_gr, gene_id %in% rnaseq$gene_id)
+  gtf_gene <- subset(gtf_gene, gene_id %in% rnaseq$gene_id)
 }
 has_rnaseq <- as.logical(nrow(rnaseq))
 tx_col <- intersect(c("tx_id", "transcript_id"), colnames(rnaseq))
@@ -641,7 +641,7 @@ prom4mapping <- GRangesList(feat_prom, granges(gene_regions$promoters)) %>%
 all_windows <- all_windows %>% 
   select(any_of(c("region", "feature", "hic")), everything()) %>% 
   mapByFeature(
-    all_gr$gene, prom = prom4mapping, enh = feat_enh, gi = hic,
+    gtf_gene, prom = prom4mapping, enh = feat_enh, gi = hic,
     gr2gene = params$mapping$gr2gene, 
     prom2gene = params$mapping$prom2gene,
     enh2gene = params$mapping$enh2gene, gi2gene = params$mapping$gi2gene
@@ -1755,7 +1755,7 @@ htmltools::tagList(
         filename = img_out, width = 10, height = 8
       )
       ct <- FALSE
-      if (length(subsetByOverlaps(all_gr$transcript, grl_to_plot[[x]])) > 10)
+      if (length(subsetByOverlaps(gtf_transcript, grl_to_plot[[x]])) > 10)
         ct <- "meta"
       plotHFGC(
         grl_to_plot[[x]],
@@ -1901,7 +1901,7 @@ htmltools::tagList(
         filename = img_out, width = 10, height = 8
       )
       ct <- FALSE
-      if (length(subsetByOverlaps(all_gr$transcript, grl_to_plot[[x]])) > 10)
+      if (length(subsetByOverlaps(gtf_transcript, grl_to_plot[[x]])) > 10)
         ct <- "meta"
       plotHFGC(
         grl_to_plot[[x]],
@@ -1966,7 +1966,7 @@ if (is.null(max_gs_size) | is.na(max_gs_size)) max_gs_size <- Inf
 min_sig <- params$enrichment$min_sig
 if (is.null(min_sig) | is.na(min_sig)) min_sig <- 1
 
-all_ids <- genes_gr %>%
+all_ids <- gtf_gene %>%
   mutate(w = width) %>% 
   as_tibble() %>% 
   dplyr::select(gene_id, w) %>% 
@@ -1980,7 +1980,7 @@ all_ids <- genes_gr %>%
       enframe(name = "gene_id", value = "n_windows"),
     by = "gene_id"
   ) %>% 
-  dplyr::filter(gene_id %in% genes_gr$gene_id) %>% 
+  dplyr::filter(gene_id %in% gtf_gene$gene_id) %>% 
   mutate(
     n_windows = as.integer(ifelse(is.na(n_windows), 0, n_windows))
   )
@@ -2049,12 +2049,12 @@ comp_ids <- comps %>%
   ) %>% 
   lapply(unlist) %>% 
   lapply(unique) %>% 
-  lapply(intersect, genes_gr$gene_id) %>% 
+  lapply(intersect, gtf_gene$gene_id) %>% 
   setNames(comps)
 mapped_ids <- comp_ids %>% 
   unlist() %>% 
   unique()
-gene_lengths <- structure(width(all_gr$gene), names = all_gr$gene$gene_id)[mapped_ids]
+gene_lengths <- structure(width(gtf_gene), names = gtf_gene$gene_id)[mapped_ids]
 group_ids <- all_windows %>% 
   split(f = .$status) %>% 
   mclapply(
@@ -2069,7 +2069,7 @@ The first level of enrichment testing performed was to simply check the genes ma
 This will capture and describe the overall biological activity being jointly regulated.
 
 The genes in each section and intersection in the following Venn Diagram will then be analysed against the complete set of `r comma(length(unique(unlist(comp_ids))))` genes mapped to either `r glue_collapse(comps, last = ' or ')`.
-Firstly, all `r comma(length(mapped_ids))` genes mapped to a binding site were tested for enrichment in comparison to the set of `r comma(length(unique(genes_gr$gene_id)))` `r ifelse(has_rnaseq, "detected", "annotated")` genes.
+Firstly, all `r comma(length(mapped_ids))` genes mapped to a binding site were tested for enrichment in comparison to the set of `r comma(length(unique(gtf_gene$gene_id)))` `r ifelse(has_rnaseq, "detected", "annotated")` genes.
 For this analysis, gene width was used as a potential source of sampling bias and Wallenius' Non-Central Hypergeomteric was used as implemented in `goseq` [@YoungGoseq2010].
 
 The sets of genes mapped to each section of the Venn Diagram were then tested for enrichment in comparison to the larger set of `r comma(length(mapped_ids))` mapped genes.
@@ -2095,7 +2095,7 @@ do.call("draw.pairwise.venn", venn_params)
 #### Mapped Genes To Either `r glue_collapse(comps, last = " or ")`
 
 ```{r goseq-mapped-res, fig.show='hide'}
-pwf_mapped <- all_gr$gene %>%
+pwf_mapped <- gtf_gene %>%
   mutate(w = width) %>%
   as_tibble() %>% 
   arrange(gene_id, desc(w)) %>%
@@ -2195,7 +2195,7 @@ cp <- glue(
   "
   All {comma(length(mapped_ids))} genes with a mapped binding window from 
   either comparison were compared to the complete set of 
-  {comma(length(unique(all_gr$gene$gene_id)))} annotated genes, in order to 
+  {comma(length(unique(gtf_gene$gene_id)))} annotated genes, in order to 
   ascertain which key gene-sets and pathways were likely to be targeted in either analysis. 
   ",
   ifelse(

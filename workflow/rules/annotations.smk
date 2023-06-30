@@ -11,8 +11,8 @@ rule create_annotations:
 		rds = expand(
 		  os.path.join(annotation_path, "{file}.rds"),
 		  file = [
-			'all_gr', 'gene_regions', 'gtf_gene', 'gtf_transcript', 'gtf_exon',
-			'tss', 'seqinfo', 'trans_models'
+			'gene_regions', 'gtf_gene', 'gtf_transcript', 'gtf_exon', 'seqinfo',
+			'tss', 'trans_models'
 			]
 		),
 		chrom_sizes = chrom_sizes

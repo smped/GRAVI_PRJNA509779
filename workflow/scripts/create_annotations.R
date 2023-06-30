@@ -32,7 +32,6 @@ if (!dir.exists(annotation_path)) dir.create(annotation_path, recursive = TRUE)
 all_out <- list(
   chrom_sizes = file.path(annotation_path, "chrom.sizes"),
   gene_regions = file.path(annotation_path, "gene_regions.rds"),
-  gtf  = file.path(annotation_path, "all_gr.rds"),
   gtf_gene = file.path(annotation_path, "gtf_gene.rds"),
   gtf_trans = file.path(annotation_path, "gtf_transcript.rds"),
   gtf_exon = file.path(annotation_path, "gtf_exon.rds"),
@@ -86,7 +85,7 @@ reqd_cols <- c(
   "transcript_id", "transcript_type", "transcript_name",
   "exon_id"
 )
-all_gr <- gtf %>%
+all_gtf <- gtf %>%
   import.gff(
     which = GRanges(sq), # Should fail if incompatible
     feature.type = c("gene", "transcript", "exon")
@@ -102,21 +101,20 @@ all_gr <- gtf %>%
   keepSeqlevels(seqlevels(sq)) %>%
   splitAsList(f = .$type)
 
-if (all(vapply(all_gr, length, integer(0)) == 0))
+if (all(vapply(all_gtf, length, integer(0)) == 0))
   stop(
     "No valid ranges found in the provided GTF.\nPlease check for compatible ",
     "chromosome identifiers"
     )
   
-seqinfo(all_gr) <- sq
-write_rds(all_gr, all_out$gtf, compress = "gz") # Delete later
-write_rds(all_gr$gene, all_out$gtf_gene, compress = "gz")
-write_rds(all_gr$transcript, all_out$gtf_trans, compress = "gz")
-write_rds(all_gr$exon, all_out$gtf_exon, compress = "gz")
-cat("all_gr.rds written successfully...\n")
+seqinfo(all_gtf) <- sq
+write_rds(all_gtf$gene, all_out$gtf_gene, compress = "gz")
+write_rds(all_gtf$transcript, all_out$gtf_trans, compress = "gz")
+write_rds(all_gtf$exon, all_out$gtf_exon, compress = "gz")
+cat("all_gtf.rds written successfully...\n")
 
 #### Transcript Models (Gviz) ####
-trans_models <- all_gr$exon %>%
+trans_models <- all_gtf$exon %>%
   select(
     type, gene = gene_id, exon = exon_id, transcript = transcript_id, 
     symbol = gene_name
@@ -139,7 +137,7 @@ cat("trans_models.rds written successfully...\n")
 # rna_col <- c(tx_col, "gene_id")[[1]]
 
 #### TSS ####
-tss <- all_gr$transcript %>%
+tss <- all_gtf$transcript %>%
   resize(width = 1) %>%
   reduceMC() %>%
   mutate(region = "TSS") %>%
@@ -150,7 +148,7 @@ cat("TSS regions exported...\n")
 #### Promoters ####
 gr_params <- params$gene_regions
 gene_regions <- defineRegions(
-  genes = all_gr$gene, transcripts = all_gr$transcript, exons = all_gr$exon,
+  genes = all_gtf$gene, transcripts = all_gtf$transcript, exons = all_gtf$exon,
   promoter = unlist(gr_params$promoter), upstream = gr_params$upstream,
   proximal = gr_params$intergenic
 )

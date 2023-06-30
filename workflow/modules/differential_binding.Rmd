@@ -101,10 +101,8 @@ stopifnot(
   colnames(bands_df) == c("chrom", "chromStart", "chromEnd", "name", "gieStain")
 )
 
-all_gr <- file.path(annotation_path, "all_gr.rds") %>% 
-  read_rds() 
-genes_gr <- all_gr$gene
-id2gene <- structure(genes_gr$gene_name, names = genes_gr$gene_id)
+gtf_gene <- read_rds(file.path(annotation_path, "gtf_gene.rds"))
+id2gene <- structure(gtf_gene$gene_name, names = gtf_gene$gene_id)
 trans_models <- file.path(annotation_path, "trans_models.rds") %>% 
   read_rds() 
 
@@ -130,7 +128,7 @@ if (length(rna_path) > 0) {
   if (str_detect(rna_path, "tsv$")) rnaseq <- read_tsv(rna_path)
   if (str_detect(rna_path, "csv$")) rnaseq <- read_csv(rna_path)
   if (!"gene_id" %in% colnames(rnaseq)) stop("Supplied RNA-Seq data must contain the column 'gene_id'")
-  genes_gr <- subset(genes_gr, gene_id %in% rnaseq$gene_id)
+  gtf_gene <- subset(gtf_gene, gene_id %in% rnaseq$gene_id)
   rna_lfc_col <- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), "logfc")][1]
   rna_fdr_col <- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), "fdr|adjp")][1]
 }
@@ -335,7 +333,7 @@ Beyond the simple analysis of differential binding, peaks are mapped to genes an
 
 Enrichment testing is performed using `goseq` [@YoungGoseq2010] with *no term accounting for sampling bias*, except when comparing genes mapped to any window.
 For this case **only**, gene width is used to capture any sampling bias and Wallenius' Non-Central Hypergeometric Distribution is used.
-As RNA-seq data `r ifelse(has_rnaseq, "was", "was not")` provided, the genes considered for enrichment analysis are the `r comma(length(unique(genes_gr$gene_id)))` `r ifelse(has_rnaseq, "genes considered as detected in the RNA-Seq data", "annotated genes")`.
+As RNA-seq data `r ifelse(has_rnaseq, "was", "was not")` provided, the genes considered for enrichment analysis are the `r comma(length(unique(gtf_gene$gene_id)))` `r ifelse(has_rnaseq, "genes considered as detected in the RNA-Seq data", "annotated genes")`.
 
 `r if (has_rnaseq) "## Incorporation with RNA-Seq"`
 
@@ -667,7 +665,7 @@ if (has_features) {
 }
 merged_results <- merged_results %>%
   mapByFeature(
-    genes = genes_gr, 
+    genes = gtf_gene, 
     prom = GRangesList(
       ## Add any external features which appear to be promoters
       ifelse(
@@ -1962,7 +1960,7 @@ msigdb <- msigdbr(species = "Homo sapiens") %>%
   ) %>% 
   dplyr::rename(gene_id = ensembl_gene, gene_name = gene_symbol) %>% # For easier integration 
   dplyr::select(-starts_with("human"), -contains("entrez")) %>% 
-  dplyr::filter(gene_id %in% genes_gr$gene_id) %>% 
+  dplyr::filter(gene_id %in% gtf_gene$gene_id) %>% 
   mutate(gs_url = str_extract(gs_url, "^[^|]+")) %>% 
   group_by(gs_name) %>% 
   mutate(n = dplyr::n()) %>% 
@@ -2082,7 +2080,7 @@ All network plots were generated using the `r net_layout` layout algorithm.
 
 
 ```{r goseq-mapped, fig.show='hide'}
-pwf_mapped <- genes_gr %>% 
+pwf_mapped <- gtf_gene %>% 
   mutate(w = width(.)) %>% 
   as_tibble() %>% 
   dplyr::select(gene_id, w) %>% 
@@ -2258,7 +2256,7 @@ tg_mapped %>%
 ## Windows With Differentially Bound `r target` {.tabset}
 
 ```{r goseq-diff, fig.show='hide'}
-pwf_diff <- tibble(gene_id  = unique(genes_gr$gene_id)) %>% 
+pwf_diff <- tibble(gene_id  = unique(gtf_gene$gene_id)) %>% 
   left_join(mapped_ids, by = "gene_id") %>% 
   dplyr::filter(!is.na(n_peaks)) %>% 
   mutate(diff = up|down) %>% 
@@ -2432,7 +2430,7 @@ tg_diff %>%
 ## Windows With Increased `r target` Binding {.tabset}
 
 ```{r goseq-up, fig.show='hide'}
-pwf_up <- tibble(gene_id  = unique(genes_gr$gene_id)) %>% 
+pwf_up <- tibble(gene_id  = unique(gtf_gene$gene_id)) %>% 
   left_join(mapped_ids, by = "gene_id") %>% 
   dplyr::filter(!is.na(n_peaks)) %>% 
   mutate(diff = up) %>% 
@@ -2607,7 +2605,7 @@ tg_up %>%
 ## Windows With Decreased `r target` Binding {.tabset}
 
 ```{r goseq-down, fig.show='hide'}
-pwf_down <- tibble(gene_id  = unique(genes_gr$gene_id)) %>% 
+pwf_down <- tibble(gene_id  = unique(gtf_gene$gene_id)) %>% 
   left_join(mapped_ids, by = "gene_id") %>% 
   dplyr::filter(!is.na(n_peaks)) %>% 
   mutate(diff = down) %>% 
@@ -2798,7 +2796,7 @@ merged_results %>%
   mutate(
     distance_to_gene = distance(
       GRanges(range),
-      setNames(genes_gr, genes_gr$gene_id)[gene_id]
+      setNames(gtf_gene, gtf_gene$gene_id)[gene_id]
     )
   ) %>% 
   write_csv(

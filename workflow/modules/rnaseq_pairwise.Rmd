@@ -6,7 +6,7 @@ library(cowplot)
 library(BiocParallel)
 library(metap)
 register(MulticoreParam(workers = threads))
-id2gene <- structure(all_gr$gene$gene_name, names = all_gr$gene$gene_id)
+id2gene <- structure(gtf_gene$gene_name, names = gtf_gene$gene_id)
 rna_status <- rnaseq %>% 
   mutate(
     de_status = case_when(
@@ -17,7 +17,7 @@ rna_status <- rnaseq %>%
   ) %>% 
   dplyr::select(gene_id, gene_name, de_status) %>% 
   bind_rows(
-    all_gr$gene %>% 
+    gtf_gene %>% 
       subset(!gene_id %in% rnaseq$gene_id) %>% 
       select(gene_id, gene_name) %>% 
       mcols() %>% 

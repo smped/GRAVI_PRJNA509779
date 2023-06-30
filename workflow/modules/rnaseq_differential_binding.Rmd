@@ -13,7 +13,7 @@ rna_status <- rnaseq %>%
   ) %>% 
   dplyr::select(gene_id, gene_name, de_status) %>% 
   bind_rows(
-    genes_gr %>% 
+    gtf_gene %>% 
       subset(!gene_id %in% rnaseq$gene_id) %>% 
       select(gene_id, gene_name) %>% 
       mcols() %>% 
@@ -268,7 +268,7 @@ de_genes_db_regions <- merged_results %>%
   mutate(
     dist2Gene = mapply(
       function(x, y) {
-        distance(GRanges(x), subset(genes_gr, gene_id == y)) 
+        distance(GRanges(x), subset(gtf_gene, gene_id == y)) 
       },
       x = range,
       y = gene_id
@@ -1968,10 +1968,10 @@ grl_to_plot <- top_diff_win$gene_id %>%
         granges() %>% 
         ## Restrict this to only sites within 5Mb of a gene
         subsetByOverlaps(
-          resize(subset(genes_gr, gene_id == x), width = 1e7, fix = 'center')
+          resize(subset(gtf_gene, gene_id == x), width = 1e7, fix = 'center')
         ) %>% 
         c(
-          granges(subset(genes_gr, gene_id == x))
+          granges(subset(gtf_gene, gene_id == x))
         ) %>% 
         unstrand() %>% 
         sort()
@@ -2051,7 +2051,7 @@ plotHFGC(
   grl_to_plot[[i]],
   hic = hic %>% 
      subsetByOverlaps(
-       subset(genes_gr, gene_id == names(grl_to_plot)[[i]])
+       subset(gtf_gene, gene_id == names(grl_to_plot)[[i]])
      ) %>% 
     subsetByOverlaps(
       subsetByOverlaps(merged_results, grl_to_plot[[i]])
@@ -2092,7 +2092,7 @@ plotHFGC(
   grl_to_plot[[i]],
   hic = hic %>% 
      subsetByOverlaps(
-       subset(genes_gr, gene_id == names(grl_to_plot)[[i]])
+       subset(gtf_gene, gene_id == names(grl_to_plot)[[i]])
      ) %>% 
     subsetByOverlaps(
       subsetByOverlaps(merged_results, grl_to_plot[[i]])
@@ -2133,7 +2133,7 @@ plotHFGC(
   grl_to_plot[[i]],
   hic = hic %>% 
      subsetByOverlaps(
-       subset(genes_gr, gene_id == names(grl_to_plot)[[i]])
+       subset(gtf_gene, gene_id == names(grl_to_plot)[[i]])
      ) %>% 
     subsetByOverlaps(
       subsetByOverlaps(merged_results, grl_to_plot[[i]])
@@ -2174,7 +2174,7 @@ plotHFGC(
   grl_to_plot[[i]],
   hic = hic %>% 
      subsetByOverlaps(
-       subset(genes_gr, gene_id == names(grl_to_plot)[[i]])
+       subset(gtf_gene, gene_id == names(grl_to_plot)[[i]])
      ) %>% 
     subsetByOverlaps(
       subsetByOverlaps(merged_results, grl_to_plot[[i]])
@@ -2215,7 +2215,7 @@ plotHFGC(
   grl_to_plot[[i]],
   hic = hic %>% 
      subsetByOverlaps(
-       subset(genes_gr, gene_id == names(grl_to_plot)[[i]])
+       subset(gtf_gene, gene_id == names(grl_to_plot)[[i]])
      ) %>% 
     subsetByOverlaps(
       subsetByOverlaps(merged_results, grl_to_plot[[i]])
