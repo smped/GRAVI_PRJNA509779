@@ -57,7 +57,7 @@ colours <- read_rds(
 ```
 
 ```{r read-samples}
-samples <-macs2_path %>%
+samples <- macs2_path %>%
   file.path(target, glue("{target}_qc_samples.tsv")) %>%
   read_tsv()
 treat_levels <- unique(samples$treat)
@@ -274,33 +274,26 @@ macs2_logs %>%
 ```{r plot-macs2-peaks-individual, fig.height=6, fig.cap = glue("*Peaks identified for each {target} sample. The number of peaks passing the inclusion criteria for `macs2 callpeak` (FDR < {config$peaks$macs2$fdr}) are provided. Any samples marked for exclusion are coloured as indicated in the figure legend.*")}
 suppressWarnings(
   macs2_logs %>%
-    ggplot(
-      aes(label, total_peaks, fill = qc)
-    ) +
+    ggplot(aes(label, total_peaks, fill = qc)) +
     geom_col() +
     geom_label(
       aes(x = label, y = total_peaks, label = lab, colour = qc),
       data = . %>%
         dplyr::filter(total_peaks > 0) %>% 
         mutate(
-          lab = comma(total_peaks, accuracy = 1),
-          total = total_peaks
+          lab = comma(total_peaks, accuracy = 1), total = total_peaks
         ),
-      inherit.aes = FALSE,
-      show.legend = FALSE
+      nudge_y = 0.03 * max(macs2_logs$total_peaks),
+      inherit.aes = FALSE, show.legend = FALSE
     ) +
     facet_grid(~treat, scales = "free_x", space = "free_x") +
     scale_y_continuous(expand = expansion(c(0, 0.05)), labels = comma) +
     scale_fill_manual(values = colours$qc) +
     scale_colour_manual(values = colours$qc) +
     labs(
-      x = "Sample",
-      y = "Total Peaks",
-      fill = "QC"
+      x = "Sample", y = "Total Peaks", fill = "QC"
     ) +
-    ggtitle(
-      glue("{target}: Number of Peaks")
-    )
+    ggtitle(glue("{target}: Number of Peaks"))
 )
 ```
 
@@ -317,39 +310,28 @@ samples$sample %>%
         sbp <- ScanBamParam(which = gr)
         rip <- sum(countBam(bfl[[x]], param = sbp)$records)
       }
-      tibble(
-        name = x,
-        reads_in_peaks = rip
-      )
+      tibble(name = x, reads_in_peaks = rip)
     }
   ) %>%
   bind_rows() %>%
   left_join(macs2_logs, by = "name") %>%
-  mutate(
-    frip = reads_in_peaks / n_tags_treatment
-  ) %>%
-  ggplot(
-    aes(label, frip, fill = qc)
-  ) +
+  mutate(frip = reads_in_peaks / n_tags_treatment) %>%
+  ggplot(aes(label, frip, fill = qc)) +
   geom_col() +
   geom_hline(yintercept = 0.01, colour = "grey", linetype = 2) +
   facet_grid(~treat, scales = "free_x", space = "free") +
   scale_y_continuous(labels = percent, expand = expansion(c(0, 0.05))) +
   scale_fill_manual(values = colours$qc) +
   labs(
-    x = "Sample",
-    y = "Fraction of Reads In Peaks",
-    fill = "QC"
+    x = "Sample", y = "Fraction of Reads In Peaks", fill = "QC"
   ) +
-  ggtitle(
-    glue("{target}: Fraction Of Reads In Peaks")
-  )
+  ggtitle(glue("{target}: Fraction Of Reads In Peaks"))
 ```
 
 
 ### Cross Correlations
 
-```{r plot_correlation, fig.height=6, fig.cap = glue("*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample. For speed, only the first 5 chromosomes were used for sample-specific estimates.*")}
+```{r plot_correlation, fig.height=6, fig.cap = glue("*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample, with labels indicating the approximate point of the highest correlation, as representative of the average fragment length. For speed, only the first 5 chromosomes were used for sample-specific estimates.*")}
 macs2_path %>%
   file.path(target, glue("{target}_cross_correlations.tsv")) %>% 
   read_tsv() %>% 
@@ -362,19 +344,22 @@ macs2_path %>%
     data = macs2_logs,
     colour = "grey40", linetype = 2
   ) +
+  geom_label(
+    aes(label = fl),
+    data = . %>% 
+      mutate(correlation = correlation + 0.03 * max(correlation)) %>% 
+      dplyr::filter(correlation == max(correlation), .by = sample),
+    show.legend = FALSE, alpha = 0.7
+  ) +
   facet_grid(as.formula(paste("treat ~", rep_col))) +
   scale_colour_manual(values = colours$treat[treat_levels]) +
   scale_x_continuous(
     breaks = seq(0, 5*max(macs2_logs$fragment_length), by = 200)
   ) +
   labs(
-    x = "Distance (bp)",
-    y = "Cross Correlation",
-    colour = "Treat"
+    x = "Distance (bp)", y = "Cross Correlation", colour = "Treat"
   ) +
-  ggtitle(
-    glue("{target}: Cross Correlations")
-  )
+  ggtitle(glue("{target}: Cross Correlations"))
 ```
 
 
