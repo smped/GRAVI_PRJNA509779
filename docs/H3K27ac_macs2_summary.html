@@ -467,7 +467,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">H3K27ac: MACS2 Summary</h1>
-<h4 class="date">30 June, 2023</h4>
+<h4 class="date">01 July, 2023</h4>
 
 </div>
 
@@ -509,14 +509,14 @@ source(here::here(&quot;workflow/scripts/custom_functions.R&quot;))</code></pre>
 )
 fdr_alpha &lt;- config$comparisons$fdr
 params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
-bam_path &lt;- here::here(config$paths$bam, target)
-macs2_path &lt;- here::here(&quot;output&quot;, &quot;macs2&quot;, target)
+bam_path &lt;- here::here(config$paths$bam)
+macs2_path &lt;- here::here(&quot;output&quot;, &quot;macs2&quot;)
 annotation_path &lt;- here::here(&quot;output&quot;, &quot;annotations&quot;)
 colours &lt;- read_rds(
   file.path(annotation_path, &quot;colours.rds&quot;)
 ) %&gt;% 
   lapply(unlist)</code></pre>
-<pre class="r"><code>samples &lt;-read_tsv(file.path(macs2_path, &quot;qc_samples.tsv&quot;))
+<pre class="r"><code>samples &lt;-read_tsv(file.path(macs2_path, target, &quot;qc_samples.tsv&quot;))
 treat_levels &lt;- unique(samples$treat)
 if (!is.null(config$comparisons$contrasts)) {
   ## Ensure levels respect those provided in contrasts
@@ -541,9 +541,9 @@ sq &lt;- read_rds(file.path(annotation_path, &quot;seqinfo.rds&quot;))
 ## Blacklist
 blacklist &lt;- import.bed(here::here(config$external$blacklist), seqinfo = sq)
 ## Gene Annotations
-all_gr &lt;- file.path(annotation_path, &quot;all_gr.rds&quot;) %&gt;% 
-  read_rds()
-genes_gr &lt;- all_gr$gene
+gtf_gene &lt;- read_rds(file.path(annotation_path, &quot;gtf_gene.rds&quot;))
+gtf_transcript &lt;- read_rds(file.path(annotation_path, &quot;gtf_transcript.rds&quot;))
+
 external_features &lt;- c()
 has_features &lt;- FALSE
 if (!is.null(config$external$features)) {
@@ -565,7 +565,7 @@ if (length(rna_path) &gt; 0) {
   if (str_detect(rna_path, &quot;tsv$&quot;)) rnaseq &lt;- read_tsv(rna_path)
   if (str_detect(rna_path, &quot;csv$&quot;)) rnaseq &lt;- read_csv(rna_path)
   if (!&quot;gene_id&quot; %in% colnames(rnaseq)) stop(&quot;Supplied RNA-Seq data must contain the column &#39;gene_id&#39;&quot;)
-  genes_gr &lt;- subset(genes_gr, gene_id %in% rnaseq$gene_id)
+  gtf_gene &lt;- subset(gtf_gene, gene_id %in% rnaseq$gene_id)
 }
 tx_col &lt;- intersect(c(&quot;tx_id&quot;, &quot;transcript_id&quot;), colnames(rnaseq))
 rna_gr_col &lt;- ifelse(length(tx_col) &gt; 0, &quot;transcript_id&quot;, &quot;gene_id&quot;)
@@ -593,7 +593,7 @@ if (fig_type %in% c(&quot;bmp&quot;, &quot;jpeg&quot;, &quot;png&quot;, &quot;ti
   BamFileList() %&gt;%
   setNames(samples$sample)</code></pre>
 <pre class="r"><code>individual_peaks &lt;- file.path(
-  macs2_path, glue(&quot;{samples$sample}_peaks.narrowPeak&quot;)
+  macs2_path, samples$sample, glue(&quot;{samples$sample}_peaks.narrowPeak&quot;)
 ) %&gt;%
   importPeaks(seqinfo = sq, blacklist = blacklist) %&gt;%
   endoapply(names_to_column, var = &quot;sample&quot;) %&gt;% 
@@ -603,7 +603,9 @@ if (fig_type %in% c(&quot;bmp&quot;, &quot;jpeg&quot;, &quot;png&quot;, &quot;ti
     treat = left_join(tibble(sample = sample), samples, by = &quot;sample&quot;)$treat
   ) %&gt;% 
   setNames(samples$sample)</code></pre>
-<pre class="r"><code>macs2_logs &lt;- file.path(macs2_path, glue(&quot;{samples$sample}_callpeak.log&quot;)) %&gt;%
+<pre class="r"><code>macs2_logs &lt;- file.path(
+    macs2_path, samples$sample, glue(&quot;{samples$sample}_callpeak.log&quot;)
+  ) %&gt;%
   importNgsLogs() %&gt;%
   dplyr::select(
     -contains(&quot;file&quot;), -outputs, -n_reads, -alt_fragment_length
@@ -918,7 +920,7 @@ dashed horizontal line</em>
 </div>
 <div id="cross-correlations" class="section level3">
 <h3>Cross Correlations</h3>
-<pre class="r"><code>file.path(macs2_path, &quot;cross_correlations.tsv&quot;) %&gt;% 
+<pre class="r"><code>file.path(macs2_path, target, &quot;cross_correlations.tsv&quot;) %&gt;% 
   read_tsv() %&gt;% 
   left_join(samples, by = &quot;sample&quot;) %&gt;% 
   ggplot(aes(fl, correlation, colour = treat)) +
@@ -1334,7 +1336,7 @@ Replicates which passed/failed QC are show in the specified colours.</em>
 <pre class="r"><code>oracle_peaks &lt;- treat_levels %&gt;%
   sapply(
     function(x) {
-      gr &lt;- file.path(macs2_path, glue(&quot;{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
+      gr &lt;- file.path(macs2_path, target, glue(&quot;{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
         importPeaks(seqinfo = sq, blacklist = blacklist) %&gt;% 
         unlist()
       k &lt;- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
@@ -1686,7 +1688,8 @@ grl_to_plot &lt;- grl_to_plot %&gt;%
   .[intersect(c(&quot;consensus&quot;, treat_levels), names(.))]</code></pre>
 <pre class="r"><code>## The coverage
 bwfl &lt;- list2(
-  &quot;{target}&quot; := file.path(macs2_path, glue(&quot;{treat_levels}_merged_treat_pileup.bw&quot;)) %&gt;% 
+  &quot;{target}&quot; := macs2_path %&gt;%
+  file.path(target, glue(&quot;{treat_levels}_merged_treat_pileup.bw&quot;)) %&gt;% 
   BigWigFileList() %&gt;% 
   setNames(treat_levels)
 )
@@ -1788,7 +1791,7 @@ excluding the most highly ranked consensus peak.</p>
       ## Automatically collapse Transcripts if more than 10
       ct &lt;- FALSE
       gh &lt;- 1
-      if (length(subsetByOverlaps(all_gr$transcript, grl_to_plot[[x]])) &gt; 20) {
+      if (length(subsetByOverlaps(gtf_transcript, grl_to_plot[[x]])) &gt; 20) {
         ct &lt;- &quot;meta&quot;
         gh &lt;- 0.5
       }
@@ -1809,7 +1812,7 @@ excluding the most highly ranked consensus peak.</p>
       dev.off()
       
       ## Define the caption
-      gr &lt;- join_nearest(grl_to_plot[[x]], all_gr$gene, distance = TRUE)
+      gr &lt;- join_nearest(grl_to_plot[[x]], gtf_gene, distance = TRUE)
       d &lt;- gr$distance
       gn &lt;- gr$gene_name
       peak_desc &lt;- ifelse(
@@ -1828,7 +1831,7 @@ excluding the most highly ranked consensus peak.</p>
             paste0(&quot;The nearest gene was &quot;, gn, &quot;, &quot;, round(d/1e3, 1), &quot;kb away&quot;)
           ),
           ifelse(
-            (nrow(rnaseq) &gt; 0) &amp; (gn %in% genes_gr$gene_name),
+            (nrow(rnaseq) &gt; 0) &amp; (gn %in% gtf_gene$gene_name),
             glue(&quot; which was detected in the RNA-Seq data.&quot;),
             glue(&quot;.&quot;)
           ),
@@ -1917,8 +1920,8 @@ across all conditions.</em>
 <div id="data-export" class="section level2">
 <h2>Data Export</h2>
 <pre class="r"><code>all_out &lt;- list(
-  consensus_peaks_bed = file.path(macs2_path, &quot;consensus_peaks.bed&quot;),
-  oracle_peaks_rds = file.path(macs2_path, &quot;oracle_peaks.rds&quot;),
+  consensus_peaks_bed = file.path(macs2_path, target, &quot;consensus_peaks.bed&quot;),
+  oracle_peaks_rds = file.path(macs2_path, target, &quot;oracle_peaks.rds&quot;),
   renv = file.path(
     here::here(&quot;output/envs&quot;), 
     glue(&quot;{target}_macs2_summary.RData&quot;)
@@ -1928,7 +1931,7 @@ across all conditions.</em>
     sapply(
       names(oracle_peaks), 
       function(x) {
-        file.path(macs2_path, glue(&quot;{x}_oracle_peaks.bed&quot;))
+        file.path(macs2_path, target, glue(&quot;{x}_oracle_peaks.bed&quot;))
       },
       simplify = FALSE
     ) %&gt;% 

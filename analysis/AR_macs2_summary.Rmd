@@ -63,7 +63,7 @@ config <- read_yaml(
 fdr_alpha <- config$comparisons$fdr
 params <- read_yaml(here::here("config", "params.yml"))
 bam_path <- here::here(config$paths$bam)
-macs2_path <- here::here("output", "macs2", target)
+macs2_path <- here::here("output", "macs2")
 annotation_path <- here::here("output", "annotations")
 colours <- read_rds(
   file.path(annotation_path, "colours.rds")
@@ -72,7 +72,7 @@ colours <- read_rds(
 ```
 
 ```{r read-samples}
-samples <-read_tsv(file.path(macs2_path, "qc_samples.tsv"))
+samples <-read_tsv(file.path(macs2_path, target, "qc_samples.tsv"))
 treat_levels <- unique(samples$treat)
 if (!is.null(config$comparisons$contrasts)) {
   ## Ensure levels respect those provided in contrasts
@@ -162,7 +162,7 @@ bfl <- bam_path %>%
 
 ```{r individual-peaks}
 individual_peaks <- file.path(
-  macs2_path, glue("{samples$sample}_peaks.narrowPeak")
+  macs2_path, samples$sample, glue("{samples$sample}_peaks.narrowPeak")
 ) %>%
   importPeaks(seqinfo = sq, blacklist = blacklist) %>%
   endoapply(names_to_column, var = "sample") %>% 
@@ -176,7 +176,9 @@ individual_peaks <- file.path(
 
 
 ```{r macs2-logs}
-macs2_logs <- file.path(macs2_path, glue("{samples$sample}_callpeak.log")) %>%
+macs2_logs <- file.path(
+    macs2_path, samples$sample, glue("{samples$sample}_callpeak.log")
+  ) %>%
   importNgsLogs() %>%
   dplyr::select(
     -contains("file"), -outputs, -n_reads, -alt_fragment_length
@@ -365,7 +367,7 @@ samples$sample %>%
 ### Cross Correlations
 
 ```{r plot_correlation, fig.height=6, fig.cap = glue("*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample. For speed, only the first 5 chromosomes were used for sample-specific estimates.*")}
-file.path(macs2_path, "cross_correlations.tsv") %>% 
+file.path(macs2_path, target, "cross_correlations.tsv") %>% 
   read_tsv() %>% 
   left_join(samples, by = "sample") %>% 
   ggplot(aes(fl, correlation, colour = treat)) +
@@ -735,7 +737,7 @@ htmltools::tagList(
 oracle_peaks <- treat_levels %>%
   sapply(
     function(x) {
-      gr <- file.path(macs2_path, glue("{x}_merged_peaks.narrowPeak")) %>%
+      gr <- file.path(macs2_path, target, glue("{x}_merged_peaks.narrowPeak")) %>%
         importPeaks(seqinfo = sq, blacklist = blacklist) %>% 
         unlist()
       k <- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
@@ -1082,7 +1084,8 @@ grl_to_plot <- grl_to_plot %>%
 ```{r prepare-plot-objects}
 ## The coverage
 bwfl <- list2(
-  "{target}" := file.path(macs2_path, glue("{treat_levels}_merged_treat_pileup.bw")) %>% 
+  "{target}" := macs2_path %>%
+  file.path(target, glue("{treat_levels}_merged_treat_pileup.bw")) %>% 
   BigWigFileList() %>% 
   setNames(treat_levels)
 )
@@ -1276,8 +1279,8 @@ htmltools::tagList(
 
 ```{r export, results='hide'}
 all_out <- list(
-  consensus_peaks_bed = file.path(macs2_path, "consensus_peaks.bed"),
-  oracle_peaks_rds = file.path(macs2_path, "oracle_peaks.rds"),
+  consensus_peaks_bed = file.path(macs2_path, target, "consensus_peaks.bed"),
+  oracle_peaks_rds = file.path(macs2_path, target, "oracle_peaks.rds"),
   renv = file.path(
     here::here("output/envs"), 
     glue("{target}_macs2_summary.RData")
@@ -1287,7 +1290,7 @@ all_out <- list(
     sapply(
       names(oracle_peaks), 
       function(x) {
-        file.path(macs2_path, glue("{x}_oracle_peaks.bed"))
+        file.path(macs2_path, target, glue("{x}_oracle_peaks.bed"))
       },
       simplify = FALSE
     ) %>% 

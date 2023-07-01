@@ -57,7 +57,7 @@ colours <- read_rds(
 ```
 
 ```{r read-samples}
-samples <-read_tsv(file.path(macs2_path, "qc_samples.tsv"))
+samples <-read_tsv(file.path(macs2_path, target, "qc_samples.tsv"))
 treat_levels <- unique(samples$treat)
 if (!is.null(config$comparisons$contrasts)) {
   ## Ensure levels respect those provided in contrasts

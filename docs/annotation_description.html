@@ -452,7 +452,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Annotations</h1>
-<h4 class="date">30 June, 2023</h4>
+<h4 class="date">01 July, 2023</h4>
 
 </div>
 
@@ -477,23 +477,23 @@ theme_set(
   theme_bw() +
     theme(plot.title = element_text(hjust = 0.5))
 )
+source(here::here(&quot;workflow&quot;, &quot;scripts&quot;, &quot;custom_functions.R&quot;))
 annotation_path &lt;- here::here(&quot;output&quot;, &quot;annotations&quot;)
 all_out &lt;- list(
   chrom_sizes = file.path(annotation_path, &quot;chrom.sizes&quot;),
   gene_regions = file.path(annotation_path, &quot;gene_regions.rds&quot;),
-  gtf  = file.path(annotation_path, &quot;all_gr.rds&quot;),
+  gtf_gene = file.path(annotation_path, &quot;gtf_gene.rds&quot;),
+  gtf_transcript = file.path(annotation_path, &quot;gtf_transcript.rds&quot;),
+  gtf_exon = file.path(annotation_path, &quot;gtf_exon.rds&quot;),
   seqinfo = file.path(annotation_path, &quot;seqinfo.rds&quot;),
   transcript_models = file.path(annotation_path, &quot;trans_models.rds&quot;),
   tss = file.path(annotation_path, &quot;tss.rds&quot;),
   colours = file.path(annotation_path, &quot;colours.rds&quot;)
 )</code></pre>
-<pre class="r"><code>source(
-  here::here(&quot;workflow&quot;, &quot;scripts&quot;, &quot;custom_functions.R&quot;)
-)</code></pre>
 <pre class="r"><code>config &lt;- read_yaml(here::here(&quot;config&quot;, &quot;config.yml&quot;))
 params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
-colours &lt;- read_yaml(here::here(&quot;config&quot;, &quot;colours.yml&quot;))</code></pre>
-<pre class="r"><code>treat_levels &lt;- config$comparisons$contrasts %&gt;% 
+colours &lt;- read_yaml(here::here(&quot;config&quot;, &quot;colours.yml&quot;))
+treat_levels &lt;- config$comparisons$contrasts %&gt;% 
   unlist() %&gt;% 
   unique()
 samples &lt;- here::here(config$samples$file) %&gt;%
@@ -643,7 +643,9 @@ Biconductor package ‘GreyListChIP’.</caption>
 <h1>Gene and Transcript Annotations</h1>
 <div id="basic-annotations" class="section level2">
 <h2>Basic Annotations</h2>
-<pre class="r"><code>all_gr &lt;- read_rds(file.path(annotation_path, &quot;all_gr.rds&quot;))</code></pre>
+<pre class="r"><code>gtf_gene &lt;- read_rds(file.path(annotation_path, &quot;gtf_gene.rds&quot;))
+gtf_transcript &lt;- read_rds(file.path(annotation_path, &quot;gtf_transcript.rds&quot;))
+gtf_exon &lt;- read_rds(file.path(annotation_path, &quot;gtf_exon.rds&quot;))</code></pre>
 <ul>
 <li>The complete set of genes, transcripts and exons was loaded from the
 supplied <code>gtf</code>, excluding mitochondrial features.</li>
@@ -782,8 +784,8 @@ div(class = &quot;table&quot;,
 Colours used throughout the workflow for each region are indicated in the 
 first column, with other summary statistics making up the rest of the table.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-673aeb02b3661e70afab" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-673aeb02b3661e70afab">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500bp)","Upstream Promoter (<5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91329,161506,183811,36501,12646],"Width":[210.742887,281.032384,77.785743,1309.464843,255.426929,961.224626],"Mn":[2.37216216794237,3.07714290094056,0.481627574207769,7.12397431600938,6.99780633407304,76.0101712794559],"% Genome":[0.068076501182934,0.0907821929089296,0.0251272121243878,0.422997834956584,0.0825108352730391,0.310505423554126]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,329","161,506","183,811","36,501","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.08","0.48","7.12","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"4c34145f2bc9387644aca0d86d719da4"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a3963a4e8943085aed5d" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a3963a4e8943085aed5d">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500)","Upstream Promoter (-5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91611,161434,183663,36482,12646],"Width":[210.742887,281.037327,77.78419,1309.46188,255.426502,961.224626],"Mn":[2.37216216794237,3.06772469463274,0.481832761376166,7.12969885061226,7.00143912066224,76.0101712794559],"% Genome":[0.068076501182934,0.0907837896515298,0.0251267104571295,0.422996877815511,0.0825106973387704,0.310505423554126]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,611","161,434","183,663","36,482","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.07","0.48","7.13","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"b4ce36624db3052304ccec7148db419e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div id="summary-1" class="section level3">
@@ -812,8 +814,8 @@ the annotation.</em>
 </div>
 <div id="example" class="section level3">
 <h3>Example</h3>
-<pre class="r"><code>id &lt;- sort(all_gr$gene$gene_id)[[1]]</code></pre>
-<pre class="r"><code>gr &lt;- subset(all_gr$gene, gene_id == id) %&gt;% 
+<pre class="r"><code>id &lt;- sort(gtf_gene$gene_id)[[1]]</code></pre>
+<pre class="r"><code>gr &lt;- subset(gtf_gene, gene_id == id) %&gt;% 
   resize(width = width(.) + 2.4e4, fix = &#39;center&#39;) %&gt;% 
   unstrand()
 ft &lt;- gene_regions %&gt;% 
@@ -826,10 +828,10 @@ ft &lt;- gene_regions %&gt;%
   subset(region != &quot;TSS&quot;) %&gt;% 
   sort()
 df &lt;- list(
-  all_gr$transcript %&gt;% 
+  gtf_transcript %&gt;% 
     subsetByOverlaps(gr) %&gt;% 
     as_tibble(rangeAsChar = FALSE),
-  all_gr$exon %&gt;% 
+  gtf_exon %&gt;% 
     subsetByOverlaps(gr) %&gt;% 
     as_tibble(rangeAsChar = FALSE) 
 ) %&gt;% 
@@ -866,10 +868,10 @@ df %&gt;%
       y = as.integer(transcript_name),
       yend = as.integer(transcript_name)
     ),
-    data = all_gr$transcript %&gt;% 
+    data = gtf_transcript %&gt;% 
       subsetByOverlaps(gr) %&gt;% 
       select(transcript_name) %&gt;% 
-      setdiffMC(all_gr$exon) %&gt;%
+      setdiffMC(gtf_exon) %&gt;%
       as.data.frame() %&gt;% 
       mutate(transcript_name = vctrs::vec_proxy(transcript_name)) %&gt;% 
       unnest(transcript_name) %&gt;% 
@@ -1065,8 +1067,8 @@ div(class = &quot;table&quot;,
 <div class="caption">
 <em>Summary of external features provided in the file enhancer_atlas_2.0_zr75.gtf.gz. All peaks and windows will be compared to these throughout the workflow. The colours defined for each feature is show as a guide on the left.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-73558e5cb1a63af5a106" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-73558e5cb1a63af5a106">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.66],"med":[1.17],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"95710736a46fcd95ff7e663bdcf3d11b"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-15cea30f2a857d602b65" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-15cea30f2a857d602b65">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.66],"med":[1.17],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"95710736a46fcd95ff7e663bdcf3d11b"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -1135,7 +1137,7 @@ simply add them to <code>config/rmarkdown.yml</code>.</p>
 <div id="regions" class="section level2">
 <h2>Regions</h2>
 <pre class="r"><code>.plotScheme(colours$regions, xlab = &quot;Regions&quot;)</code></pre>
-<p><img src="annotation_description_files/figure-html/plot-regions-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="annotation_description_files/figure-html/plot-regions-1.png" width="1344" style="display: block; margin: auto;" /></p>
 </div>
 <div id="features" class="section level2">
 <h2>Features</h2>
@@ -1165,8 +1167,12 @@ were exported:</p>
 GRAVI_PRJNA509779/output/annotations/chrom.sizes</li>
 <li><strong>gene_regions</strong>:
 GRAVI_PRJNA509779/output/annotations/gene_regions.rds</li>
-<li><strong>gtf</strong>:
-GRAVI_PRJNA509779/output/annotations/all_gr.rds</li>
+<li><strong>gtf_gene</strong>:
+GRAVI_PRJNA509779/output/annotations/gtf_gene.rds</li>
+<li><strong>gtf_transcript</strong>:
+GRAVI_PRJNA509779/output/annotations/gtf_transcript.rds</li>
+<li><strong>gtf_exon</strong>:
+GRAVI_PRJNA509779/output/annotations/gtf_exon.rds</li>
 <li><strong>seqinfo</strong>:
 GRAVI_PRJNA509779/output/annotations/seqinfo.rds</li>
 <li><strong>transcript_models</strong>:

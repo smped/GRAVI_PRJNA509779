@@ -100,7 +100,7 @@ stopifnot(dir.exists(bam_path))
 annotation_path <- here::here("output", "annotations")
 stopifnot(dir.exists(annotation_path))
 out_path <- here::here("output", "differential_binding", target)
-if (!dir.exists(out_path)) dir.create(out_path)
+if (!dir.exists(out_path)) dir.create(out_path, recursive = TRUE)
 ```
 
 
@@ -364,7 +364,8 @@ consensus_peaks <- here::here(macs2_path, "consensus_peaks.bed") %>%
 
 
 ```{r bfl}
-bfl <- file.path(bam_path, glue("{c(samples$sample, samples$input)}.bam")) %>% 
+bfl <- bam_path %>%
+  file.path(glue("{unique(c(samples$sample, samples$input))}.bam")) %>% 
   BamFileList() %>%
   setNames(c(samples$sample, unique(samples$input)))
 ```
@@ -391,11 +392,11 @@ bfl_summary <- bfl %>%
 		names_to = "stat",
 		values_to = "value"
 	) %>%
-	left_join(samples, by = "sample") %>% 
+	left_join(samples, by = "sample") %>%
 	mutate(
 		across(
 			all_of(c("target", "label", "treat")),
-			str_replace_na, replacement = "Input"
+      \(x) str_replace_na(x, replacement = "Input")
 		),
 		treat = factor(treat, levels = c("Input", treat_levels)),
 		label = fct_inorder(label)
@@ -665,6 +666,8 @@ merged_results <- merged_results %>%
     ) %>% 
       factor(levels = regions)
   )
+feat_prom <- GRanges()
+feat_enh <- GRanges()
 if (has_features) {
   merged_results <- merged_results %>% 
     mutate(
@@ -674,25 +677,20 @@ if (has_features) {
         factor(levels = names(colours$features)) %>% 
         fct_relabel(str_sep_to_title)
     )
+  if ("feature" %in% colnames(mcols(external_features))) {
+    feat_prom <- external_features %>%
+      subset(str_detect(feature, "[Pp]rom")) %>%
+      granges()
+    feat_enh <- external_features %>%
+      subset(str_detect(feature, "[Ee]nhanc")) %>%
+      granges()
+  }
 }
 merged_results <- merged_results %>%
   mapByFeature(
     genes = gtf_gene, 
-    prom = GRangesList(
-      ## Add any external features which appear to be promoters
-      ifelse(
-        "feature" %in% colnames(mcols(external_features)), 
-        list(granges(subset(external_features, str_detect(feature, "[Pp]rom")))), 
-        list(GRanges())
-      )[[1]], 
-      granges(gene_regions$promoters)) %>% 
-      unlist() %>% 
-      reduce(),
-    enh = ifelse(
-      "feature" %in% colnames(mcols(external_features)), 
-      list(granges(subset(external_features, str_detect(feature, "[Ee]nhanc")))), 
-      list(GRanges())
-    )[[1]],
+    prom = reduce(c(feat_prom, granges(gene_regions$promoter))),
+    enh = feat_enh,
     gi = hic, 
     gr2gene = params$mapping$gr2gene,
     prom2gene = params$mapping$prom2gene,

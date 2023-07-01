@@ -147,7 +147,7 @@ rule compile_differential_binding_html:
 		win = os.path.join(
 			diff_path, "{target}", "{target}_{ref}_{treat}-filtered_windows.rds"
 		)
-	retries: 3
+	retries: 1
 	conda: "../envs/rmarkdown.yml"
 	threads:
 		lambda wildcards: min(

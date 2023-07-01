@@ -635,25 +635,21 @@ if (has_features)
   str_sep_to_title()
 
 all_windows$hic <- NA
-if (has_hic)
-  all_windows$hic <- overlapsAny(all_windows, hic)
+if (has_hic) all_windows$hic <- overlapsAny(all_windows, hic)
 
 ## Define promoters for mapping
 feat_prom <- feat_enh <- GRanges()
 if (has_features) {
-  feat_prom <- ifelse(
-    "feature" %in% colnames(mcols(external_features)), 
-    list(granges(subset(external_features, str_detect(feature, "[Pp]rom")))), 
-    list(GRanges())
-  )[[1]]
-  feat_enh <- ifelse(
-    "feature" %in% colnames(mcols(external_features)), 
-    list(granges(subset(external_features, str_detect(feature, "[Ee]nhanc")))), 
-    list(GRanges())
-  )[[1]]
+  if ("feature" %in% colnames(mcols(external_features))) {
+    feat_prom <- external_features %>%
+      subset(str_detect(feature, "[Pp]rom")) %>%
+      granges()
+    feat_enh <- external_features %>%
+      subset(str_detect(feature, "[Ee]nhanc")) %>%
+      granges()
+  }
 }
-prom4mapping <- GRangesList(feat_prom, granges(gene_regions$promoters)) %>%
-  unlist() %>%
+prom4mapping <- c(feat_prom, granges(gene_regions$promoter)) %>%
   GenomicRanges::reduce()
 
 all_windows <- all_windows %>% 
