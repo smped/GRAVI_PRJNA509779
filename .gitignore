@@ -16,7 +16,6 @@ data/*
 *bw
 *filtered_windows.rds
 *gtf.gz
-*log
 *model.r
 *summits.bed
 *timestamp
