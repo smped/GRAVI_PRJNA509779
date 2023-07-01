@@ -1331,9 +1331,9 @@ Replicates which passed/failed QC are show in the specified colours.</em>
 </div>
 </div>
 </div>
-<div id="oracle-peaks" class="section level3">
-<h3>Oracle Peaks</h3>
-<pre class="r"><code>oracle_peaks &lt;- treat_levels %&gt;%
+<div id="treatment-peaks" class="section level3">
+<h3>Treatment Peaks</h3>
+<pre class="r"><code>treatment_peaks &lt;- treat_levels %&gt;%
   sapply(
     function(x) {
       gr &lt;- file.path(macs2_path, target, glue(&quot;{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
@@ -1352,7 +1352,7 @@ Replicates which passed/failed QC are show in the specified colours.</em>
     simplify = FALSE
   ) %&gt;%
   GRangesList() 
-consensus_peaks &lt;- oracle_peaks %&gt;% 
+union_peaks &lt;- treatment_peaks %&gt;% 
   endoapply(subset, keep) %&gt;% 
   endoapply(mutate, centre = start + peak) %&gt;% 
   makeConsensus(
@@ -1374,21 +1374,21 @@ consensus_peaks &lt;- oracle_peaks %&gt;%
       factor(levels = regions)
   ) 
 if (has_features) {
-  consensus_peaks$Feature &lt;- bestOverlap(
-    consensus_peaks, external_features, 
+  union_peaks$Feature &lt;- bestOverlap(
+    union_peaks, external_features, 
     var = &quot;feature&quot;, missing = &quot;no_feature&quot;
   ) %&gt;% 
     factor(levels = names(colours$features)) %&gt;% 
     fct_relabel(str_sep_to_title)
 }</code></pre>
-<p>A set of treatment-specific H3K27ac <em>oracle peaks</em> was defined
-for each condition by comparing the peaks detected when merging all
-treatment-specific samples, against those detected within each
-replicate. Replicates which failed the previous QC steps are omitted
-from this step. Oracle peaks which overlapped a peak in more than 50% of
-the <em>individual replicates passing QC</em> in each treatment group,
-were retained.</p>
-<pre class="r"><code>oracle_peaks %&gt;%
+<p>A set of treatment-specific H3K27ac peaks (i.e. <em>treatment
+peaks</em>) was defined for each condition by comparing the peaks
+detected when merging all treatment-specific samples, against those
+detected within each replicate. Replicates which failed the previous QC
+steps are omitted from this step. Treatment peaks which overlapped a
+peak in more than 50% of the <em>individual replicates passing QC</em>
+in each treatment group, were retained.</p>
+<pre class="r"><code>treatment_peaks %&gt;%
   lapply(
     function(x) {
       tibble(
@@ -1407,16 +1407,17 @@ were retained.</p>
   pander(
     justify = &quot;lrrrr&quot;,
     caption = glue(
-      &quot;Oracle peaks detected by merging samples within each treatment group.&quot;,
+      &quot;Treatment peaks detected by merging samples within each treatment group.&quot;,
       &quot;Peaks were only retained if detected in at least&quot;,
       &quot;{percent(config$peaks$qc$min_prop_reps)} of the retained samples for each&quot;, &quot;treatment group, as described above.&quot;,
       .sep = &quot; &quot;
     )
   )</code></pre>
 <table style="width:89%;">
-<caption>Oracle peaks detected by merging samples within each treatment
-group. Peaks were only retained if detected in at least 50% of the
-retained samples for each treatment group, as described above.</caption>
+<caption>Treatment peaks detected by merging samples within each
+treatment group. Peaks were only retained if detected in at least 50% of
+the retained samples for each treatment group, as described
+above.</caption>
 <colgroup>
 <col width="11%" />
 <col width="23%" />
@@ -1451,14 +1452,14 @@ retained samples for each treatment group, as described above.</caption>
 </tbody>
 </table>
 </div>
-<div id="consensus-peaks" class="section level3 tabset">
-<h3 class="tabset">Consensus Peaks</h3>
-<pre class="r"><code>vd &lt;- oracle_peaks %&gt;%
+<div id="union-peaks" class="section level3 tabset">
+<h3 class="tabset">Union Peaks</h3>
+<pre class="r"><code>vd &lt;- treatment_peaks %&gt;%
     lapply(
       function(x) {
         as.character(
           subsetByOverlaps(
-            consensus_peaks, 
+            union_peaks, 
             subset(x, keep)
           )
         )
@@ -1466,14 +1467,14 @@ retained samples for each treatment group, as described above.</caption>
     ) %&gt;%
     setNames(treat_levels) %&gt;%
     .[vapply(., length, integer(1)) &gt; 0] </code></pre>
-<p>In addition to the oracle peaks, a set of 49,998 treatment-agnostic
-H3K27ac <strong>consensus peaks</strong> were defined. Consensus ranges
-were the <em>union</em> of all overlapping ranges defined and retained
-in one or more sets of oracle peaks. Resulting values for the
-<code>score</code>, <code>signalValue</code>, <code>pValue</code> and
-<code>qValue</code> were calculated as the <em>median</em> across all
-treatments. <em>Peak summits</em> were taken as the median position of
-all summits which comprise the consensus peak.</p>
+<p>In addition to the treatment peaks, a set of 49,998
+treatment-agnostic H3K27ac <strong>union peaks</strong> were defined.
+Union ranges were the <em>union</em> of all overlapping ranges defined
+and retained in one or more sets of treatment peaks. Resulting values
+for the <code>score</code>, <code>signalValue</code>,
+<code>pValue</code> and <code>qValue</code> were calculated as the
+<em>median</em> across all treatments. <em>Peak summits</em> were taken
+as the median position of all summits which comprise the union peak.</p>
 <div id="venn-diagram" class="section level4">
 <h4>Venn Diagram</h4>
 <pre class="r"><code>fig_name &lt;- glue(&quot;{target}_common_peaks.{fig_type}&quot;)
@@ -1529,13 +1530,13 @@ if (length(vd) == 3) {
 } </code></pre>
 <div class="figure">
 <img src="assets/H3K27ac/H3K27ac_common_peaks.png" alt="" />
-<p class="caption"><em>Number of H3K27ac consensus peaks which overlap
-oracle peaks defined within each condition.</em></p>
+<p class="caption"><em>Number of H3K27ac union peaks which overlap
+treatment peaks defined within each condition.</em></p>
 </div>
 </div>
 <div id="distance-to-tss" class="section level4">
 <h4>Distance to TSS</h4>
-<pre class="r"><code>a &lt;- consensus_peaks %&gt;% 
+<pre class="r"><code>a &lt;- union_peaks %&gt;% 
   join_nearest(
     mutate(tss, tss = start)
   ) %&gt;% 
@@ -1548,7 +1549,7 @@ oracle peaks defined within each condition.</em></p>
     x = &quot;Distance to Nearest TSS (kb)&quot;,
     y = &quot;Density&quot;
   )
-b &lt;- consensus_peaks %&gt;% 
+b &lt;- union_peaks %&gt;% 
   join_nearest(
     mutate(tss, tss = start)
   ) %&gt;% 
@@ -1574,19 +1575,19 @@ b &lt;- consensus_peaks %&gt;%
   scale_x_continuous(breaks = seq(0, 100, by = 20))
 plot_grid(a, b, labels = c(&quot;A&quot;, &quot;B&quot;))</code></pre>
 <div class="figure" style="text-align: center">
-<img src="H3K27ac_macs2_summary_files/figure-html/plot-consensus-dist-to-tss-hist-1.png" alt="*Distances from the centre of the H3K27ac consensus peak to the transcription start-site shown as A) a histogram, and B) as a cumulative distribution. The vertical dashed line indicates the range considered to be a promoter during annotation preparation. 14,181 of the 49,998 H3K27ac consensus peaks (28.4%) directly overlapped a TSS.*" width="960" />
+<img src="H3K27ac_macs2_summary_files/figure-html/plot-union-dist-to-tss-hist-1.png" alt="*Distances from the centre of the H3K27ac union peak to the transcription start-site shown as A) a histogram, and B) as a cumulative distribution. The vertical dashed line indicates the range considered to be a promoter during annotation preparation. 14,181 of the 49,998 H3K27ac union peaks (28.4%) directly overlapped a TSS.*" width="960" />
 <p class="caption">
-<em>Distances from the centre of the H3K27ac consensus peak to the
+<em>Distances from the centre of the H3K27ac union peak to the
 transcription start-site shown as A) a histogram, and B) as a cumulative
 distribution. The vertical dashed line indicates the range considered to
 be a promoter during annotation preparation. 14,181 of the 49,998
-H3K27ac consensus peaks (28.4%) directly overlapped a TSS.</em>
+H3K27ac union peaks (28.4%) directly overlapped a TSS.</em>
 </p>
 </div>
 </div>
 <div id="gene-centric-regions" class="section level4">
 <h4>Gene-Centric Regions</h4>
-<pre class="r"><code>consensus_peaks %&gt;% 
+<pre class="r"><code>union_peaks %&gt;% 
   plotPie(fill = &quot;region&quot;) +
   scale_fill_manual(
     values = colours$regions %&gt;%
@@ -1594,25 +1595,25 @@ H3K27ac consensus peaks (28.4%) directly overlapped a TSS.</em>
   ) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <div class="figure" style="text-align: center">
-<img src="H3K27ac_macs2_summary_files/figure-html/plot-region-overlap-1.png" alt="*Proportions of H3K27ac consensus peaks which overlap gene-centric features.*" width="768" />
+<img src="H3K27ac_macs2_summary_files/figure-html/plot-region-overlap-1.png" alt="*Proportions of H3K27ac union peaks which overlap gene-centric features.*" width="768" />
 <p class="caption">
-<em>Proportions of H3K27ac consensus peaks which overlap gene-centric
+<em>Proportions of H3K27ac union peaks which overlap gene-centric
 features.</em>
 </p>
 </div>
 </div>
 <div id="external-features" class="section level4">
 <h4>External Features</h4>
-<pre class="r"><code>consensus_peaks %&gt;% 
+<pre class="r"><code>union_peaks %&gt;% 
   plotPie(fill = &quot;Feature&quot;, label_size = 4) +
   scale_fill_manual(
     values = colours$features %&gt;% setNames(str_sep_to_title(names(.)))
   ) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <div class="figure" style="text-align: center">
-<img src="H3K27ac_macs2_summary_files/figure-html/plot-feature-overlap-1.png" alt="*The total number of H3K27ac consensus peaks which overlap external features provided in enhancer_atlas_2.0_zr75.gtf.gz. If peaks map to multiple features, they are assigned to the one with the largest overlap.*" width="768" />
+<img src="H3K27ac_macs2_summary_files/figure-html/plot-feature-overlap-1.png" alt="*The total number of H3K27ac union peaks which overlap external features provided in enhancer_atlas_2.0_zr75.gtf.gz. If peaks map to multiple features, they are assigned to the one with the largest overlap.*" width="768" />
 <p class="caption">
-<em>The total number of H3K27ac consensus peaks which overlap external
+<em>The total number of H3K27ac union peaks which overlap external
 features provided in enhancer_atlas_2.0_zr75.gtf.gz. If peaks map to
 multiple features, they are assigned to the one with the largest
 overlap.</em>
@@ -1622,7 +1623,7 @@ overlap.</em>
 <div id="external-features-and-gene-centric-regions"
 class="section level4">
 <h4>External Features And Gene-Centric Regions</h4>
-<pre class="r"><code>consensus_peaks %&gt;% 
+<pre class="r"><code>union_peaks %&gt;% 
   subset(Feature != &quot;No Feature&quot;) %&gt;% 
   as_tibble() %&gt;% 
   droplevels() %&gt;% 
@@ -1639,9 +1640,9 @@ class="section level4">
     legend.position = &quot;top&quot;
   )</code></pre>
 <div class="figure" style="text-align: center">
-<img src="H3K27ac_macs2_summary_files/figure-html/plot-feature-region-overlap-1.png" alt="*The total number of H3K27ac consensus peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*" width="960" />
+<img src="H3K27ac_macs2_summary_files/figure-html/plot-feature-region-overlap-1.png" alt="*The total number of H3K27ac union peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*" width="960" />
 <p class="caption">
-<em>The total number of H3K27ac consensus peaks overlapping external
+<em>The total number of H3K27ac union peaks overlapping external
 features and gene-centric regions. If a peak overlaps multiple features
 or regions, it is assigned to be the one with the largest overlap. Any
 peaks which don’t overlap a feature have been excluded.</em>
@@ -1653,8 +1654,8 @@ peaks which don’t overlap a feature have been excluded.</em>
 <div id="highly-ranked-peaks" class="section level2 tabset">
 <h2 class="tabset">Highly Ranked Peaks</h2>
 <pre class="r"><code>grl_to_plot &lt;- vector(&quot;list&quot;, length(treat_levels) + 1) %&gt;%
-  setNames(c(&quot;consensus&quot;, treat_levels))
-grl_to_plot$consensus &lt;- consensus_peaks %&gt;%
+  setNames(c(&quot;union&quot;, treat_levels))
+grl_to_plot$union &lt;- union_peaks %&gt;%
   as_tibble() %&gt;%
   arrange(desc(score)) %&gt;%
   dplyr::slice(1) %&gt;%
@@ -1662,13 +1663,13 @@ grl_to_plot$consensus &lt;- consensus_peaks %&gt;%
 grl_to_plot[treat_levels] &lt;- treat_levels %&gt;% 
   lapply(
     function(x) {
-      if (length(oracle_peaks[[x]]) == 0) return(NULL)
-      tbl &lt;- oracle_peaks[[x]] %&gt;% 
+      if (length(treatment_peaks[[x]]) == 0) return(NULL)
+      tbl &lt;- treatment_peaks[[x]] %&gt;% 
         filter(keep) %&gt;% 
         filter_by_non_overlaps(
-          unlist(oracle_peaks[setdiff(treat_levels, x)])
+          unlist(treatment_peaks[setdiff(treat_levels, x)])
         ) %&gt;% 
-        filter_by_non_overlaps(grl_to_plot$consensus) %&gt;% 
+        filter_by_non_overlaps(grl_to_plot$union) %&gt;% 
         as_tibble() 
       if (nrow(tbl) == 0) return(NULL)
       tbl %&gt;% 
@@ -1685,7 +1686,7 @@ grl_to_plot &lt;- grl_to_plot %&gt;%
   distinctMC(.keep_all = TRUE) %&gt;% 
   splitAsList(names(.)) %&gt;% 
   endoapply(function(x) x[1,]) %&gt;% 
-  .[intersect(c(&quot;consensus&quot;, treat_levels), names(.))]</code></pre>
+  .[intersect(c(&quot;union&quot;, treat_levels), names(.))]</code></pre>
 <pre class="r"><code>## The coverage
 bwfl &lt;- list2(
   &quot;{target}&quot; := macs2_path %&gt;%
@@ -1768,9 +1769,9 @@ y_lim &lt;- bwfl %&gt;%
     }
   )</code></pre>
 <p>Coverage for a small set of highly ranked peaks are shown below.
-These are the most highly ranked Consensus Peak (by <code>score</code>)
-and any oracle peaks which are unique to each treatment group, after
-excluding the most highly ranked consensus peak.</p>
+These are the most highly ranked Union Peak (by <code>score</code>) and
+any treatment peaks which are unique to each treatment group, after
+excluding the most highly ranked union peak.</p>
 <pre class="r"><code>htmltools::tagList(
   mclapply(
     seq_along(grl_to_plot),
@@ -1816,10 +1817,10 @@ excluding the most highly ranked consensus peak.</p>
       d &lt;- gr$distance
       gn &lt;- gr$gene_name
       peak_desc &lt;- ifelse(
-        nm == &quot;consensus&quot;,
-        &quot;consensus peak by combined score across all treatments.&quot;,
+        nm == &quot;union&quot;,
+        &quot;union peak by combined score across all treatments.&quot;,
         paste(
-          &quot;oracle-peak unique to the merged&quot;, nm, &quot;samples.&quot;
+          &quot;treatment-peak unique to the merged&quot;, nm, &quot;samples.&quot;
         )
       )
       cp &lt;- htmltools::tags$em(
@@ -1853,9 +1854,9 @@ excluding the most highly ranked consensus peak.</p>
           class=&quot;section level3&quot;,
           htmltools::h3(
             ifelse(
-              nm == &quot;consensus&quot;,
-              &quot;Consensus Peaks&quot;,
-              paste(&quot;Oracle Peaks:&quot;, nm)
+              nm == &quot;union&quot;,
+              &quot;Union Peaks&quot;,
+              paste(&quot;Treatment Peaks:&quot;, nm)
             )
           ),
           htmltools::div(
@@ -1872,13 +1873,13 @@ excluding the most highly ranked consensus peak.</p>
   )
 )  </code></pre>
 <div>
-<div id="consensus-topranked" class="section level3">
-<h3>Consensus Peaks</h3>
+<div id="union-topranked" class="section level3">
+<h3>Union Peaks</h3>
 <div class="figure" style="text-align: center">
-<img src="assets/H3K27ac/consensus_topranked.png" width="960"/>
+<img src="assets/H3K27ac/union_topranked.png" width="960"/>
 <p class="caption">
 <em>
-<em>The most highly ranked consensus peak by combined score across all treatments. The peak directly overlaps SSH3 which was detected in the RNA-Seq data.
+<em>The most highly ranked union peak by combined score across all treatments. The peak directly overlaps SSH3 which was detected in the RNA-Seq data.
 Y-axes for each coverage track are set to the most highly ranked peak
 across all conditions.</em>
 </em>
@@ -1888,12 +1889,12 @@ across all conditions.</em>
 </div>
 <div>
 <div id="e2-topranked" class="section level3">
-<h3>Oracle Peaks: E2</h3>
+<h3>Treatment Peaks: E2</h3>
 <div class="figure" style="text-align: center">
 <img src="assets/H3K27ac/E2_topranked.png" width="960"/>
 <p class="caption">
 <em>
-<em>The most highly ranked oracle-peak unique to the merged E2 samples. The peak directly overlaps TIMM23 which was detected in the RNA-Seq data.
+<em>The most highly ranked treatment-peak unique to the merged E2 samples. The peak directly overlaps TIMM23 which was detected in the RNA-Seq data.
 Y-axes for each coverage track are set to the most highly ranked peak
 across all conditions.</em>
 </em>
@@ -1903,12 +1904,12 @@ across all conditions.</em>
 </div>
 <div>
 <div id="e2dht-topranked" class="section level3">
-<h3>Oracle Peaks: E2DHT</h3>
+<h3>Treatment Peaks: E2DHT</h3>
 <div class="figure" style="text-align: center">
 <img src="assets/H3K27ac/E2DHT_topranked.png" width="960"/>
 <p class="caption">
 <em>
-<em>The most highly ranked oracle-peak unique to the merged E2DHT samples. The peak directly overlaps DISP1 which was detected in the RNA-Seq data.
+<em>The most highly ranked treatment-peak unique to the merged E2DHT samples. The peak directly overlaps DISP1 which was detected in the RNA-Seq data.
 Y-axes for each coverage track are set to the most highly ranked peak
 across all conditions.</em>
 </em>
@@ -1920,8 +1921,8 @@ across all conditions.</em>
 <div id="data-export" class="section level2">
 <h2>Data Export</h2>
 <pre class="r"><code>all_out &lt;- list(
-  consensus_peaks_bed = file.path(macs2_path, target, &quot;consensus_peaks.bed&quot;),
-  oracle_peaks_rds = file.path(macs2_path, target, &quot;oracle_peaks.rds&quot;),
+  union_peaks_bed = file.path(macs2_path, target, &quot;union_peaks.bed&quot;),
+  treatment_peaks_rds = file.path(macs2_path, target, &quot;treatment_peaks.rds&quot;),
   renv = file.path(
     here::here(&quot;output/envs&quot;), 
     glue(&quot;{target}_macs2_summary.RData&quot;)
@@ -1929,29 +1930,29 @@ across all conditions.</em>
 ) %&gt;% 
   c(
     sapply(
-      names(oracle_peaks), 
+      names(treatment_peaks), 
       function(x) {
-        file.path(macs2_path, target, glue(&quot;{x}_oracle_peaks.bed&quot;))
+        file.path(macs2_path, target, glue(&quot;{x}_treatment_peaks.bed&quot;))
       },
       simplify = FALSE
     ) %&gt;% 
       setNames(
-        glue(&quot;{names(.)}_oracle_peaks_bed&quot;)
+        glue(&quot;{names(.)}_treatment_peaks_bed&quot;)
       )
   )
-export(consensus_peaks, all_out$consensus_peaks)
-oracle_peaks %&gt;%
+export(union_peaks, all_out$union_peaks)
+treatment_peaks %&gt;%
   lapply(subset, keep) %&gt;%
   lapply(select, -keep) %&gt;%
   GRangesList() %&gt;%
-  write_rds(all_out$oracle_peaks, compress = &quot;gz&quot;)
-names(oracle_peaks) %&gt;% 
+  write_rds(all_out$treatment_peaks, compress = &quot;gz&quot;)
+names(treatment_peaks) %&gt;% 
   lapply(
     function(x) {
-      id &lt;- glue(&quot;{x}_oracle_peaks_bed&quot;)
+      id &lt;- glue(&quot;{x}_treatment_peaks_bed&quot;)
       ## Create an empty file
       file.create(all_out[[id]])
-      oracle_peaks[[x]] %&gt;% 
+      treatment_peaks[[x]] %&gt;% 
         subset(keep) %&gt;% 
         select(score, signalValue, pValue, qValue, peak) %&gt;% 
         export(all_out[[id]], format = &quot;narrowPeak&quot;)
@@ -1961,15 +1962,15 @@ if (!dir.exists(dirname(all_out$renv))) dir.create(dirname(all_out$renv))
 save.image(all_out$renv)</code></pre>
 <p>During this workflow the following files were exported:</p>
 <ul>
-<li><strong>consensus_peaks_bed</strong>:
-output/macs2/H3K27ac/consensus_peaks.bed</li>
-<li><strong>oracle_peaks_rds</strong>:
-output/macs2/H3K27ac/oracle_peaks.rds</li>
+<li><strong>union_peaks_bed</strong>:
+output/macs2/H3K27ac/union_peaks.bed</li>
+<li><strong>treatment_peaks_rds</strong>:
+output/macs2/H3K27ac/treatment_peaks.rds</li>
 <li><strong>renv</strong>: output/envs/H3K27ac_macs2_summary.RData</li>
-<li><strong>E2_oracle_peaks_bed</strong>:
-output/macs2/H3K27ac/E2_oracle_peaks.bed</li>
-<li><strong>E2DHT_oracle_peaks_bed</strong>:
-output/macs2/H3K27ac/E2DHT_oracle_peaks.bed</li>
+<li><strong>E2_treatment_peaks_bed</strong>:
+output/macs2/H3K27ac/E2_treatment_peaks.bed</li>
+<li><strong>E2DHT_treatment_peaks_bed</strong>:
+output/macs2/H3K27ac/E2DHT_treatment_peaks.bed</li>
 </ul>
 <!-- end of list -->
 </div>

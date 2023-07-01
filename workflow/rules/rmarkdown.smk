@@ -112,13 +112,15 @@ rule compile_macs2_summary_html:
 		blacklist = blacklist,
 		bw = lambda wildcards: expand(
 			os.path.join(
-				macs2_path, "{{target}}", "{treat}_merged_treat_pileup.{fl}"
+				macs2_path, "{{target}}", 
+				"{{target}}_{treat}_merged_treat_pileup.bw"
 			),
-			treat = set(df[df.target == wildcards.target]['treat']),
-			fl = ['bw', 'summary']
+			treat = set(df[df.target == wildcards.target]['treat'])
 		),
 		config = "config/config.yml",
-		cors = os.path.join(macs2_path, "{target}", "cross_correlations.tsv"),
+		cors = os.path.join(
+			macs2_path, "{target}", "{target}_cross_correlations.tsv"
+		),
 		extrachips = rules.update_extrachips.output,
 		here = here_file,
 		indiv_macs2 = lambda wildcards: expand(
@@ -127,11 +129,13 @@ rule compile_macs2_summary_html:
 			suffix = ['callpeak.log', 'peaks.narrowPeak']
 		),
 		merged_macs2 = lambda wildcards: expand(
-			os.path.join(macs2_path, "{{target}}", "{treat}_merged_{suffix}"),
+			os.path.join(
+				macs2_path, "{{target}}", "{{target}}_{treat}_merged_{suffix}"
+			),
 			treat = set(df[df.target == wildcards.target]['treat']),
 			suffix = ['callpeak.log', 'peaks.narrowPeak']
 		),
-		qc = os.path.join(macs2_path, "{target}", "qc_samples.tsv"),
+		qc = os.path.join(macs2_path, "{target}", "{target}_qc_samples.tsv"),
 		rmd = os.path.join(rmd_path, "{target}_macs2_summary.Rmd"),
 		scripts = os.path.join("workflow", "scripts", "custom_functions.R"),
 		setup = rules.create_setup_chunk.output,
@@ -143,7 +147,7 @@ rule compile_macs2_summary_html:
 			os.path.join("docs", "{target}_macs2_summary_files", "figure-html")
 		),
 		peaks = expand(
-			os.path.join(macs2_path, "{{target}}", "{file}"),
+			os.path.join(macs2_path, "{{target}}", "{{target}}_{file}"),
 			file = ['union_peaks.bed', 'treatment_peaks.rds']
 		),
 		renv = temp(

@@ -64,7 +64,7 @@ if (length(unique(targets)) == 1) {
     )
 }
 n_targets = length(unique(names(pairs)))
-samples <- file.path(macs2_path, "qc_samples.tsv") %>% 
+samples <- file.path(macs2_path, glue("{targets}_qc_samples.tsv")) %>% 
   lapply(read_tsv) %>% 
   lapply(mutate_all, as.character) %>% 
   bind_rows() %>% 
@@ -243,11 +243,13 @@ hic <- hic[!overlapsAny(hic, blacklist)]
 ```
 
 ```{r load-data}
-treatment_peaks <- file.path(macs2_path, "treatment_peaks.rds") %>%
+treatment_peaks <- macs2_path %>%
+  file.path(glue("{targets}_treatment_peaks.rds")) %>%
   unique() %>% 
   sapply(read_rds) %>% 
   setNames(unique(basename(macs2_path)))
-union_peaks <- file.path(macs2_path, "union_peaks.bed") %>%
+union_peaks <- macs2_path %>%
+  file.path(glue("{targets}_union_peaks.bed")) %>%
   lapply(import.bed, seqinfo = sq) %>%
   setNames(basename(macs2_path))
 all_union <- union_peaks %>% 
@@ -1412,7 +1414,7 @@ fl <- seq_along(pairs) %>%
   lapply(
     function(x) {
       file.path(
-        macs2_path[[x]], glue("{pairs[[x]]}_merged_treat_pileup.bw")
+        macs2_path[[x]], glue("{x}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         setNames(paste(names(pairs)[[x]], pairs[[x]]))
     } 
@@ -1596,7 +1598,7 @@ bwfl <- seq_along(pairs) %>%
   lapply(
     function(x) {
       file.path(
-        macs2_path[[x]], glue("{pairs[[x]]}_merged_treat_pileup.bw")
+        macs2_path[[x]], glue("{x}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         BigWigFileList() %>% 
         setNames(pairs[[x]])

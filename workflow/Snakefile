@@ -192,13 +192,13 @@ if pairs:
 	)
 
 
-ALL_OUTPUTS.extend(HTML_OUT)
+# ALL_OUTPUTS.extend(HTML_OUT)
 ## Keep the final index separate for easiers passing to other rules
 ALL_OUTPUTS.extend([os.path.join("docs", "index.html")])
 
 ## Peaks generated from the Rmd files
 CONS_PEAKS = expand(
-	os.path.join(macs2_path, "{target}", "{file}"),
+	os.path.join(macs2_path, "{target}", "{target}_{file}"),
 	target = targets,
 	file = ['union_peaks.bed', 'treatment_peaks.rds']
 )
@@ -213,11 +213,8 @@ INDIV_PEAKS = expand(
 	sample = samples
 )
 ALL_OUTPUTS.extend(INDIV_PEAKS)
-merged_pre = set(
-	df[['target', 'treat']].apply(
-		lambda row: '/'.join(row.values.astype(str)), axis=1
-	)
-)
+df['merged_pre'] = df[['target', 'treat']].agg('_'.join, axis = 1)
+merged_pre = set(df[['target', 'merged_pre']].agg('/'.join, axis = 1))
 MERGED_PEAKS = expand(
 	os.path.join(macs2_path, "{pre}_merged_peaks.narrowPeak"),
 	pre = merged_pre

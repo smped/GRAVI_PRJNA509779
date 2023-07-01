@@ -116,7 +116,7 @@ message("Writing qc_samples")
 macs2_logs %>%
   dplyr::select(sample = name, any_of(colnames(samples)), qc) %>%
   write_tsv(
-    file.path(macs2_path, target, "qc_samples.tsv")
+    file.path(macs2_path, target, glue("{target}_qc_samples.tsv"))
   )
 
 ##################
@@ -180,4 +180,7 @@ read_corrs <- bfl[samples$sample] %>%
     names_to = "sample",
     values_to = "correlation"
   )
-write_tsv(read_corrs, file.path(macs2_path, target, "cross_correlations.tsv"))
+write_tsv(
+  read_corrs, 
+  file.path(macs2_path, target, glue("{target}_cross_correlations.tsv"))
+)

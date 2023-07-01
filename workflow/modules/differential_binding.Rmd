@@ -56,12 +56,9 @@ source(here::here("workflow", "scripts", "custom_functions.R"))
 params <- read_yaml(here::here("config", "params.yml"))
 config <- read_yaml(here::here("config", "config.yml"))
 macs2_path <- here::here("output", "macs2", target)
-samples <- file.path(macs2_path, "qc_samples.tsv") %>% 
+samples <- file.path(macs2_path, glue("{target}_qc_samples.tsv")) %>% 
   read_tsv() %>% 
-  dplyr::filter(
-    qc == "pass",
-    treat %in% treat_levels
-  ) %>% 
+  dplyr::filter(qc == "pass", treat %in% treat_levels) %>% 
   mutate(treat = factor(treat, levels = treat_levels)) %>% 
   droplevels()
 stopifnot(nrow(samples) > 0)
@@ -342,7 +339,7 @@ As RNA-seq data `r ifelse(has_rnaseq, "was", "was not")` provided, the genes con
 # Data Preparation
 
 ```{r import-peaks}
-union_peaks <- here::here(macs2_path, "union_peaks.bed") %>%
+union_peaks <- file.path(macs2_path, glue("{target}_union_peaks.bed")) %>%
 	import.bed(seqinfo = sq)
 ```
 
@@ -438,7 +435,7 @@ Regions assigned to the greylist were added to the blacklisted regions and exclu
 
 ```{r window-counts}
 macs2_merged_logs <- file.path(
-  macs2_path, glue("{treat_levels}_merged_callpeak.log")
+  macs2_path, glue("{target}_{treat_levels}_merged_callpeak.log")
 	) %>%
 	importNgsLogs()
 fl <- max(macs2_merged_logs$fragment_length)
@@ -1108,7 +1105,9 @@ div(class = "table",
 ```{r make-heatmaps}
 profile_width <- 5e3
 n_bins <- 100
-bwfl <- file.path(macs2_path, glue("{treat_levels}_merged_treat_pileup.bw")) %>% 
+bwfl <- file.path(
+    macs2_path, glue("{target}_{treat_levels}_merged_treat_pileup.bw")
+  ) %>% 
   BigWigFileList() %>% 
   setNames(treat_levels) 
 sig_ranges <- merged_results %>% 
@@ -1529,7 +1528,7 @@ fh <- max(4, 1 + 3 * ceiling(length(grl_to_plot) / 3)) %>%
 ## The coverage
 bwfl <- list2(
   "{target}" := file.path(
-    macs2_path, glue("{treat_levels}_merged_treat_pileup.bw")
+    macs2_path, glue("{target}_{treat_levels}_merged_treat_pileup.bw")
   ) %>% 
     BigWigFileList() %>% 
     setNames(treat_levels)

@@ -1,15 +1,3 @@
-# def get_input_bam_from_sample_and_target(wildcards):
-# 	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
-# 	return expand(
-# 		os.path.join(bam_path, "{file}.bam"), file = set(df[ind]['input'])
-# 	)
-
-# def get_input_bai_from_sample_and_target(wildcards):
-# 	ind = (df['sample'] == wildcards.sample) & (df['target'] == wildcards.target)
-# 	return expand(
-# 		os.path.join(bam_path, "{file}.bam.bai"), file = set(df[ind]['input'])
-# 	)
-
 def get_merged_bam_from_treat_and_target(wildcards):
     ind = (df.treat == wildcards.treat) & (df.target == wildcards.target)
     return expand(
@@ -105,8 +93,10 @@ rule macs2_qc:
         seqinfo = os.path.join(annotation_path, "seqinfo.rds"),
         r = "workflow/scripts/macs2_qc.R"
     output:
-        cors = os.path.join(macs2_path, "{target}", "cross_correlations.tsv"),
-        qc = os.path.join(macs2_path, "{target}", "qc_samples.tsv")
+        cors = os.path.join(
+            macs2_path, "{target}", "{target}_cross_correlations.tsv"
+        ),
+        qc = os.path.join(macs2_path, "{target}", "{target}_qc_samples.tsv")
     conda: "../envs/rmarkdown.yml"
     threads: lambda wildcards: len(df[df['target'] == wildcards.target])
     resources:
@@ -127,31 +117,31 @@ rule macs2_merged:
         bai = get_merged_bai_from_treat_and_target,
         control = get_input_bam_from_treat_and_target,
         control_bai = get_input_bai_from_treat_and_target,
-        qc = os.path.join(macs2_path, "{target}", "qc_samples.tsv")
+        qc = os.path.join(macs2_path, "{target}", "{target}_qc_samples.tsv")
     output:
         narrow_peaks = os.path.join(
-            macs2_path, "{target}", "{treat}_merged_peaks.narrowPeak"
+            macs2_path, "{target}", "{target}_{treat}_merged_peaks.narrowPeak"
         ),
         summits = os.path.join(
-            macs2_path, "{target}", "{treat}_merged_summits.bed"
+            macs2_path, "{target}", "{target}_{treat}_merged_summits.bed"
         ),
         bedgraph = temp(
             expand(
                 os.path.join(
-                    macs2_path, "{{target}}", "{{treat}}_merged_{type}.bdg"
+                    macs2_path, "{{target}}", "{{target}}_{{treat}}_merged_{type}.bdg"
                 ),
                 type = ['treat_pileup', 'control_lambda']
             )
         ),
         log = os.path.join(
-            macs2_path, "{target}", "{treat}_merged_callpeak.log"
+            macs2_path, "{target}", "{target}_{treat}_merged_callpeak.log"
         )
     log: log_path + "/macs2_merged/{target}/{treat}_merged.log"
     conda: "../envs/macs2.yml"
     params:
         bamdir = bam_path,
         outdir = os.path.join(macs2_path, "{target}"),
-        prefix = "{treat}_merged",
+        prefix = "{target}_{treat}_merged",
         gsize = config['peaks']['macs2']['gsize'],
         fdr = config['peaks']['macs2']['fdr'],
         keep_duplicates = config['peaks']['macs2']['keep_duplicates']
@@ -184,14 +174,14 @@ rule macs2_merged:
 rule macs2_bdgcmp:
     input:
         bdg = os.path.join(
-            macs2_path, "{target}", "{treat}_merged_treat_pileup.bdg"
+            macs2_path, "{target}", "{target}_{treat}_merged_treat_pileup.bdg"
         ),
         ctrl = os.path.join(
-            macs2_path, "{target}", "{treat}_merged_control_lambda.bdg"
+            macs2_path, "{target}", "{target}_{treat}_merged_control_lambda.bdg"
         ),
     output:
         temp(
-            os.path.join(macs2_path, "{target}/{treat}_merged_FE.bdg"),
+            os.path.join(macs2_path, "{target}/{target}_{treat}_merged_FE.bdg"),
         )
     log:
         "workflow/logs/macs2_bdgcmp/{target}_{treat}_bdgcmp.log"
