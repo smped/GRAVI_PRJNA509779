@@ -72,12 +72,9 @@ source(here::here("workflow", "scripts", "custom_functions.R"))
 params <- read_yaml(here::here("config", "params.yml"))
 config <- read_yaml(here::here("config", "config.yml"))
 macs2_path <- here::here("output", "macs2", target)
-samples <- file.path(macs2_path, "qc_samples.tsv") %>% 
+samples <- file.path(macs2_path, glue("{target}_qc_samples.tsv")) %>% 
   read_tsv() %>% 
-  dplyr::filter(
-    qc == "pass",
-    treat %in% treat_levels
-  ) %>% 
+  dplyr::filter(qc == "pass", treat %in% treat_levels) %>% 
   mutate(treat = factor(treat, levels = treat_levels)) %>% 
   droplevels()
 stopifnot(nrow(samples) > 0)
@@ -249,8 +246,8 @@ has_hic <- as.logical(length(hic))
 facet_labeller <- as_labeller(
   c(
     c(
-      `TRUE` = "Consensus Peak",
-      `FALSE` = "No Consensus Peak"
+      `TRUE` = "Union Peak",
+      `FALSE` = "No Union Peak"
     ),
     structure(treat_levels, names = treat_levels),
     c(
@@ -332,7 +329,7 @@ desc_ihw <- list(
 
 This step of the workflow uses a sliding window approach to differential binding, as a logical extension to the methods suggested and implemented in the `csaw` package [@LunSmythF1000].
 
-1. Consensus Peaks derived from `macs2 callpeak` [@Zhang18798982] results are used to determine inclusion/exclusion values for sliding windows
+1. Union Peaks derived from `macs2 callpeak` [@Zhang18798982] results are used to determine inclusion/exclusion values for sliding windows
 `r desc_method[[db_method]]`
 `r if (ihw_method != "none") glue("3. Independent Hypothesis Weighting (IHW) [@IgnatiadisIHW2016] is additionally used to improve the power of the results. Under this strategy, p-values are partitioned based on {desc_ihw}, which is considered here to be a statistically independent variable.")`
 
@@ -358,7 +355,7 @@ As RNA-seq data `r ifelse(has_rnaseq, "was", "was not")` provided, the genes con
 # Data Preparation
 
 ```{r import-peaks}
-consensus_peaks <- here::here(macs2_path, "consensus_peaks.bed") %>%
+union_peaks <- file.path(macs2_path, glue("{target}_union_peaks.bed")) %>%
 	import.bed(seqinfo = sq)
 ```
 
@@ -454,7 +451,7 @@ Regions assigned to the greylist were added to the blacklisted regions and exclu
 
 ```{r window-counts}
 macs2_merged_logs <- file.path(
-  macs2_path, glue("{treat_levels}_merged_callpeak.log")
+  macs2_path, glue("{target}_{treat_levels}_merged_callpeak.log")
 	) %>%
 	importNgsLogs()
 fl <- max(macs2_merged_logs$fragment_length)
@@ -495,7 +492,7 @@ With the exclusion of black-listed and grey-listed regions, all alignments withi
 Any windows with fewer than `r length(bfl) - 1` alignments (i.e.1 read/sample) across all samples were discarded, leaving a total of `r comma(nrow(window_counts))` sliding windows, covering `r percent(sum(width(reduce(granges(window_counts)))) / sum(width(GRanges(sq))))` of the reference genome.
 
 These windows were then filtered using the `dualFilter()` function from `extraChIPs`, discarding windows with low counts.
-Under this approach, two thresholds are determined above which windows are retained, and with values chosen to return `r percent(config$comparisons$filter_q)` of sliding windows which overlap a macs2-derived consensus peak.
+Under this approach, two thresholds are determined above which windows are retained, and with values chosen to return `r percent(config$comparisons$filter_q)` of sliding windows which overlap a macs2-derived union peak.
 These values are set to filter based on 1) signal relative to input over an extended range and, 2) overall signal level.
 Both filtering strategies rely on the infrastructure provided by `csaw` [@LunSmythCsaw2014].
 
@@ -504,7 +501,7 @@ Both filtering strategies rely on the infrastructure provided by `csaw` [@LunSmy
 filtered_counts <- dualFilter(
   x = window_counts[, samples$sample],
   bg = window_counts[, samples$input],
-  ref = consensus_peaks,
+  ref = union_peaks,
   keep.totals = TRUE,
   q = config$comparisons$filter_q
 )
@@ -519,7 +516,7 @@ sample_labeller <- as_labeller(
 list(
   `Genomic Windows` = window_counts,
   `Retained Windows` = filtered_counts,
-  `Consensus Peaks` = consensus_peaks
+  `Union Peaks` = union_peaks
 ) %>% 
   lapply(granges) %>% 
   lapply(
@@ -537,15 +534,15 @@ list(
   unnest(everything()) %>% 
   left_join(
     tibble(
-      Dataset = c("Retained Windows", "Consensus Peaks"),
+      Dataset = c("Retained Windows", "Union Peaks"),
       `Unique (kb)` = c(
-        round(sum(width(setdiff(granges(filtered_counts), consensus_peaks))) / 1e3, 1),
-        round(sum(width(setdiff(consensus_peaks, granges(filtered_counts)))) / 1e3, 1)
+        round(sum(width(setdiff(granges(filtered_counts), union_peaks))) / 1e3, 1),
+        round(sum(width(setdiff(union_peaks, granges(filtered_counts)))) / 1e3, 1)
       ),
       `% Unique` = percent(
         1e3*`Unique (kb)` / c(
           sum(width(reduce(granges(filtered_counts)))),
-          sum(width(consensus_peaks))
+          sum(width(union_peaks))
         ),
         0.1
       )
@@ -556,24 +553,24 @@ list(
     caption = paste(
       "A dual filtering strategy was used based on retaining", 
       percent(config$comparisons$filter_q, 0.1), 
-      "of genomic windows overlapping the consensus peaks identified by ", 
+      "of genomic windows overlapping the union peaks identified by ", 
       "`macs2 callpeak` on merged samples. This approach combined both ", 
       "1) expression percentiles, and 2) signal strength in relation to the input sample.",
       "The complete set of sliding windows covered the majority of the genome,",
       "whilst those retained after filtering were focussed on strong binding",
-      "signal. Consensus peaks were as identified by `macs2 callpeak` in a", 
+      "signal. Union peaks were as identified by `macs2 callpeak` in a", 
       "previous step of the workflow.",
-      "Importantly, consensus peaks are non-overlapping, whilst the other two",
+      "Importantly, union peaks are non-overlapping, whilst the other two",
       "datasets are derived from overlapping sliding windows.",
       "This strategy of filtering the set of initial sliding windows retained",
       percent(
-        1 - sum(width(setdiff(consensus_peaks, rowRanges(filtered_counts)))) / sum(width(consensus_peaks))
+        1 - sum(width(setdiff(union_peaks, rowRanges(filtered_counts)))) / sum(width(union_peaks))
       ), 
-      "of the genomic regions covered by consensus peaks, with", 
+      "of the genomic regions covered by union peaks, with", 
       percent(
-        sum(width(setdiff(rowRanges(filtered_counts), consensus_peaks))) / sum(width(reduce(granges(filtered_counts)))))
+        sum(width(setdiff(rowRanges(filtered_counts), union_peaks))) / sum(width(reduce(granges(filtered_counts)))))
       , 
-      "of the retained windows being outside genomic regions covered by consensus peaks.",
+      "of the retained windows being outside genomic regions covered by union peaks.",
       ifelse(
         n_max == 5e4, 
         "For subsequent density and RLE plots, a subsample of 50,000 genomic regions will be used for speed.", 
@@ -610,7 +607,7 @@ merged_results <- mergeByCol(
   inc_cols = "p_mu0"
 ) %>% 
   mutate(
-    overlaps_ref = overlapsAny(., consensus_peaks),
+    overlaps_ref = overlapsAny(., union_peaks),
     direction = case_when(
       n_up == 0 & n_down == 0 ~ "Unchanged",
       logFC > 0 & n_up > n_down ~ "Up",
@@ -1124,7 +1121,9 @@ div(class = "table",
 ```{r make-heatmaps}
 profile_width <- 5e3
 n_bins <- 100
-bwfl <- file.path(macs2_path, glue("{treat_levels}_merged_treat_pileup.bw")) %>% 
+bwfl <- file.path(
+    macs2_path, glue("{target}_{treat_levels}_merged_treat_pileup.bw")
+  ) %>% 
   BigWigFileList() %>% 
   setNames(treat_levels) 
 sig_ranges <- merged_results %>% 
@@ -1545,7 +1544,7 @@ fh <- max(4, 1 + 3 * ceiling(length(grl_to_plot) / 3)) %>%
 ## The coverage
 bwfl <- list2(
   "{target}" := file.path(
-    macs2_path, glue("{treat_levels}_merged_treat_pileup.bw")
+    macs2_path, glue("{target}_{treat_levels}_merged_treat_pileup.bw")
   ) %>% 
     BigWigFileList() %>% 
     setNames(treat_levels)
@@ -1704,10 +1703,10 @@ makeCaption <- function(.gr) {
     ifelse(
       .gr$overlaps_ref,
       paste(
-        "A consensus peak overlapping this region was identified by",
+        "A union peak overlapping this region was identified by",
         "`macs2 callpeak` when using merged samples."
       ),
-      "No consensus peak was identified using `macs2 callpeak`."
+      "No union peak was identified using `macs2 callpeak`."
     ),
     ifelse(
       length(gn) > 0,
@@ -1849,7 +1848,7 @@ plotHFGC(
 )
 ```
 
-`r ifelse("top_down_no_macs2" %in% names(grl_to_plot), "### Significant Decreased Binding (No Consensus Peak)", "")`
+`r ifelse("top_down_no_macs2" %in% names(grl_to_plot), "### Significant Decreased Binding (No Union Peak)", "")`
 
 ```{r plot-top_down_no_macs2, eval = "top_down_no_macs2" %in% names(grl_to_plot), echo = "top_down_no_macs2" %in% names(grl_to_plot), fig.cap = makeCaption(grl_to_plot$top_down_no_macs2)}
 plotHFGC(
@@ -1932,7 +1931,7 @@ plotHFGC(
 )
 ```
 
-`r ifelse("top_up_no_macs2" %in% names(grl_to_plot), "### Significant Increased Binding (No Consensus Peak)", "")`
+`r ifelse("top_up_no_macs2" %in% names(grl_to_plot), "### Significant Increased Binding (No Union Peak)", "")`
 
 ```{r plot-top_up_no_macs2, eval = "top_up_no_macs2" %in% names(grl_to_plot), echo = "top_up_no_macs2" %in% names(grl_to_plot), fig.cap = makeCaption(grl_to_plot$top_up_no_macs2)}
 plotHFGC(

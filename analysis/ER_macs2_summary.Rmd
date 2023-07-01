@@ -72,7 +72,9 @@ colours <- read_rds(
 ```
 
 ```{r read-samples}
-samples <-read_tsv(file.path(macs2_path, target, "qc_samples.tsv"))
+samples <-macs2_path %>%
+  file.path(target, glue("{target}_qc_samples.tsv")) %>%
+  read_tsv()
 treat_levels <- unique(samples$treat)
 if (!is.null(config$comparisons$contrasts)) {
   ## Ensure levels respect those provided in contrasts
@@ -176,9 +178,8 @@ individual_peaks <- file.path(
 
 
 ```{r macs2-logs}
-macs2_logs <- file.path(
-    macs2_path, samples$sample, glue("{samples$sample}_callpeak.log")
-  ) %>%
+macs2_logs <- macs2_path %>%
+  file.path(samples$sample, glue("{samples$sample}_callpeak.log")  ) %>%
   importNgsLogs() %>%
   dplyr::select(
     -contains("file"), -outputs, -n_reads, -alt_fragment_length
@@ -186,10 +187,7 @@ macs2_logs <- file.path(
   left_join(samples, by = c("name" = "sample")) %>%
   mutate(
     total_peaks = map_int(
-      name,
-      function(x) {
-        length(individual_peaks[[x]])
-      }
+      name, function(x) length(individual_peaks[[x]])
     )
   ) 
 n_reps <- macs2_logs %>% 
@@ -367,7 +365,8 @@ samples$sample %>%
 ### Cross Correlations
 
 ```{r plot_correlation, fig.height=6, fig.cap = glue("*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample. For speed, only the first 5 chromosomes were used for sample-specific estimates.*")}
-file.path(macs2_path, target, "cross_correlations.tsv") %>% 
+macs2_path %>%
+  file.path(target, glue("{target}_cross_correlations.tsv")) %>% 
   read_tsv() %>% 
   left_join(samples, by = "sample") %>% 
   ggplot(aes(fl, correlation, colour = treat)) +
@@ -731,13 +730,14 @@ htmltools::tagList(
 ```
 
 
-### Oracle Peaks 
+### Treatment Peaks 
 
-```{r oracle-peaks}
-oracle_peaks <- treat_levels %>%
+```{r treatment-peaks}
+treatment_peaks <- treat_levels %>%
   sapply(
     function(x) {
-      gr <- file.path(macs2_path, target, glue("{x}_merged_peaks.narrowPeak")) %>%
+      gr <- macs2_path %>%
+        file.path(target, glue("{target}_{x}_merged_peaks.narrowPeak")) %>%
         importPeaks(seqinfo = sq, blacklist = blacklist) %>% 
         unlist()
       k <- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
@@ -753,7 +753,7 @@ oracle_peaks <- treat_levels %>%
     simplify = FALSE
   ) %>%
   GRangesList() 
-consensus_peaks <- oracle_peaks %>% 
+union_peaks <- treatment_peaks %>% 
   endoapply(subset, keep) %>% 
   endoapply(mutate, centre = start + peak) %>% 
   makeConsensus(
@@ -775,8 +775,8 @@ consensus_peaks <- oracle_peaks %>%
       factor(levels = regions)
   ) 
 if (has_features) {
-  consensus_peaks$Feature <- bestOverlap(
-    consensus_peaks, external_features, 
+  union_peaks$Feature <- bestOverlap(
+    union_peaks, external_features, 
     var = "feature", missing = "no_feature"
   ) %>% 
     factor(levels = names(colours$features)) %>% 
@@ -784,12 +784,12 @@ if (has_features) {
 }
 ```
 
-A set of treatment-specific `r target` *oracle peaks* was defined for each condition by comparing the peaks detected when merging all treatment-specific samples, against those detected within each replicate.
+A set of treatment-specific `r target` peaks (i.e. *treatment peaks*) was defined for each condition by comparing the peaks detected when merging all treatment-specific samples, against those detected within each replicate.
 Replicates which failed the previous QC steps are omitted from this step.
-Oracle peaks which overlapped a peak in more than `r percent(config$peaks$qc$min_prop_reps)` of the *individual replicates passing QC* in each treatment group, were retained.
+Treatment peaks which overlapped a peak in more than `r percent(config$peaks$qc$min_prop_reps)` of the *individual replicates passing QC* in each treatment group, were retained.
 
-```{r tab-oracle-peak}
-oracle_peaks %>%
+```{r tab-treatment-peak}
+treatment_peaks %>%
   lapply(
     function(x) {
       tibble(
@@ -808,7 +808,7 @@ oracle_peaks %>%
   pander(
     justify = "lrrrr",
     caption = glue(
-      "Oracle peaks detected by merging samples within each treatment group.",
+      "Treatment peaks detected by merging samples within each treatment group.",
       "Peaks were only retained if detected in at least",
       "{percent(config$peaks$qc$min_prop_reps)} of the retained samples for each", "treatment group, as described above.",
       .sep = " "
@@ -817,15 +817,15 @@ oracle_peaks %>%
 ```
 
 
-### Consensus Peaks {.tabset}
+### Union Peaks {.tabset}
 
 ```{r vd}
-vd <- oracle_peaks %>%
+vd <- treatment_peaks %>%
     lapply(
       function(x) {
         as.character(
           subsetByOverlaps(
-            consensus_peaks, 
+            union_peaks, 
             subset(x, keep)
           )
         )
@@ -836,10 +836,10 @@ vd <- oracle_peaks %>%
 ```
 
 
-In addition to the oracle peaks, a set of `r comma(length(consensus_peaks))` treatment-agnostic `r target` **consensus peaks** were defined.
-Consensus ranges were the *union* of all overlapping ranges defined and retained in one or more sets of oracle peaks.
+In addition to the treatment peaks, a set of `r comma(length(union_peaks))` treatment-agnostic `r target` **union peaks** were defined.
+Union ranges were the *union* of all overlapping ranges defined and retained in one or more sets of treatment peaks.
 Resulting values for the `score`, `signalValue`, `pValue` and `qValue` were calculated as the *median* across all treatments.
-*Peak summits* were taken as the median position of all summits which comprise the consensus peak.
+*Peak summits* were taken as the median position of all summits which comprise the union peak.
 
 #### `r ifelse(length(vd) <= 3, "Venn Diagram", "Upset Plot")`
 
@@ -897,19 +897,19 @@ if (length(vd) == 3) {
 } 
 ```
 
-`r if(length(vd) <= 3) glue("![*Number of {target} consensus peaks which overlap oracle peaks defined within each condition.*](assets/{target}/{target}_common_peaks.{fig_type})")`
+`r if(length(vd) <= 3) glue("![*Number of {target} union peaks which overlap treatment peaks defined within each condition.*](assets/{target}/{target}_common_peaks.{fig_type})")`
 
-```{r plot-common-upset, eval = length(vd) > 3, echo = length(vd) > 3, fig.height = 6, fig.cap = glue("*Number of {target} consensus peaks which overlap the oracle peaks defined within each condition.*")}
-ql <- names(oracle_peaks) %>% 
+```{r plot-common-upset, eval = length(vd) > 3, echo = length(vd) > 3, fig.height = 6, fig.cap = glue("*Number of {target} union peaks which overlap the treatment peaks defined within each condition.*")}
+ql <- names(treatment_peaks) %>% 
   lapply(
     function(x) upset_query(set = x, fill = colours$treat[[x]])
   )
 size <- get_size_mode('exclusive_intersection')
-oracle_peaks %>% 
+treatment_peaks %>% 
   makeConsensus() %>% 
   as_tibble() %>% 
   upset(
-    intersect = names(oracle_peaks),
+    intersect = names(treatment_peaks),
     base_annotations = list(
       `Peaks in Intersection` = intersection_size(
         text_mapping = aes(label = comma(!!size)),
@@ -931,7 +931,7 @@ oracle_peaks %>%
           hjust = 1.1, stat = 'count', size = 3.5
         ) +
         scale_y_reverse(expand = expansion(c(0.2, 0)), labels = comma) +
-        ylab("Consensus Peak Overlaps") +
+        ylab("Union Peak Overlaps") +
         theme(
           text = element_text(size = 12),
           panel.grid = element_blank(), 
@@ -954,8 +954,8 @@ oracle_peaks %>%
 
 #### Distance to TSS 
 
-```{r plot-consensus-dist-to-tss-hist, fig.height=6, fig.cap = glue("*Distances from the centre of the {target} consensus peak to the transcription start-site shown as A) a histogram, and B) as a cumulative distribution. The vertical dashed line indicates the range considered to be a promoter during annotation preparation. {comma(sum(overlapsAny(consensus_peaks, tss)))} of the {comma(length(consensus_peaks))} {target} consensus peaks ({percent(mean(overlapsAny(consensus_peaks, tss)), 0.1)}) directly overlapped a TSS.*")}
-a <- consensus_peaks %>% 
+```{r plot-union-dist-to-tss-hist, fig.height=6, fig.cap = glue("*Distances from the centre of the {target} union peak to the transcription start-site shown as A) a histogram, and B) as a cumulative distribution. The vertical dashed line indicates the range considered to be a promoter during annotation preparation. {comma(sum(overlapsAny(union_peaks, tss)))} of the {comma(length(union_peaks))} {target} union peaks ({percent(mean(overlapsAny(union_peaks, tss)), 0.1)}) directly overlapped a TSS.*")}
+a <- union_peaks %>% 
   join_nearest(
     mutate(tss, tss = start)
   ) %>% 
@@ -968,7 +968,7 @@ a <- consensus_peaks %>%
     x = "Distance to Nearest TSS (kb)",
     y = "Density"
   )
-b <- consensus_peaks %>% 
+b <- union_peaks %>% 
   join_nearest(
     mutate(tss, tss = start)
   ) %>% 
@@ -999,8 +999,8 @@ plot_grid(a, b, labels = c("A", "B"))
 
 #### Gene-Centric Regions
 
-```{r plot-region-overlap, fig.height=8, fig.width=8, fig.cap = glue("*Proportions of {target} consensus peaks which overlap gene-centric features.*")}
-consensus_peaks %>% 
+```{r plot-region-overlap, fig.height=8, fig.width=8, fig.cap = glue("*Proportions of {target} union peaks which overlap gene-centric features.*")}
+union_peaks %>% 
   plotPie(fill = "region") +
   scale_fill_manual(
     values = colours$regions %>%
@@ -1011,8 +1011,8 @@ consensus_peaks %>%
 
 `r ifelse(has_features, "#### External Features", "")`
 
-```{r plot-feature-overlap, eval = has_features, echo = has_features, fig.height=8, fig.width=8, fig.cap = glue("*The total number of {target} consensus peaks which overlap external features provided in {basename(config$external$features)}. If peaks map to multiple features, they are assigned to the one with the largest overlap.*")}
-consensus_peaks %>% 
+```{r plot-feature-overlap, eval = has_features, echo = has_features, fig.height=8, fig.width=8, fig.cap = glue("*The total number of {target} union peaks which overlap external features provided in {basename(config$external$features)}. If peaks map to multiple features, they are assigned to the one with the largest overlap.*")}
+union_peaks %>% 
   plotPie(fill = "Feature", label_size = 4) +
   scale_fill_manual(
     values = colours$features %>% setNames(str_sep_to_title(names(.)))
@@ -1022,8 +1022,8 @@ consensus_peaks %>%
 
 `r ifelse(has_features, "#### External Features And Gene-Centric Regions", "")`
 
-```{r plot-feature-region-overlap, eval = has_features, echo = has_features, fig.cap = glue("*The total number of {target} consensus peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*")}
-consensus_peaks %>% 
+```{r plot-feature-region-overlap, eval = has_features, echo = has_features, fig.cap = glue("*The total number of {target} union peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*")}
+union_peaks %>% 
   subset(Feature != "No Feature") %>% 
   as_tibble() %>% 
   droplevels() %>% 
@@ -1046,8 +1046,8 @@ consensus_peaks %>%
 
 ```{r grl-to-plot}
 grl_to_plot <- vector("list", length(treat_levels) + 1) %>%
-  setNames(c("consensus", treat_levels))
-grl_to_plot$consensus <- consensus_peaks %>%
+  setNames(c("union", treat_levels))
+grl_to_plot$union <- union_peaks %>%
   as_tibble() %>%
   arrange(desc(score)) %>%
   dplyr::slice(1) %>%
@@ -1055,13 +1055,13 @@ grl_to_plot$consensus <- consensus_peaks %>%
 grl_to_plot[treat_levels] <- treat_levels %>% 
   lapply(
     function(x) {
-      if (length(oracle_peaks[[x]]) == 0) return(NULL)
-      tbl <- oracle_peaks[[x]] %>% 
+      if (length(treatment_peaks[[x]]) == 0) return(NULL)
+      tbl <- treatment_peaks[[x]] %>% 
         filter(keep) %>% 
         filter_by_non_overlaps(
-          unlist(oracle_peaks[setdiff(treat_levels, x)])
+          unlist(treatment_peaks[setdiff(treat_levels, x)])
         ) %>% 
-        filter_by_non_overlaps(grl_to_plot$consensus) %>% 
+        filter_by_non_overlaps(grl_to_plot$union) %>% 
         as_tibble() 
       if (nrow(tbl) == 0) return(NULL)
       tbl %>% 
@@ -1078,14 +1078,14 @@ grl_to_plot <- grl_to_plot %>%
   distinctMC(.keep_all = TRUE) %>% 
   splitAsList(names(.)) %>% 
   endoapply(function(x) x[1,]) %>% 
-  .[intersect(c("consensus", treat_levels), names(.))]
+  .[intersect(c("union", treat_levels), names(.))]
 ```
 
 ```{r prepare-plot-objects}
 ## The coverage
 bwfl <- list2(
   "{target}" := macs2_path %>%
-  file.path(target, glue("{treat_levels}_merged_treat_pileup.bw")) %>% 
+  file.path(target, glue("{target}_{treat_levels}_merged_treat_pileup.bw")) %>% 
   BigWigFileList() %>% 
   setNames(treat_levels)
 )
@@ -1166,7 +1166,7 @@ y_lim <- bwfl %>%
 ```
 
 Coverage for a small set of highly ranked peaks are shown below.
-These are the most highly ranked Consensus Peak (by `score`) and any oracle peaks which are unique to each treatment group, after excluding the most highly ranked consensus peak.
+These are the most highly ranked Union Peak (by `score`) and any treatment peaks which are unique to each treatment group, after excluding the most highly ranked union peak.
 
 
 ```{r plot-highly-ranked}
@@ -1215,10 +1215,10 @@ htmltools::tagList(
       d <- gr$distance
       gn <- gr$gene_name
       peak_desc <- ifelse(
-        nm == "consensus",
-        "consensus peak by combined score across all treatments.",
+        nm == "union",
+        "union peak by combined score across all treatments.",
         paste(
-          "oracle-peak unique to the merged", nm, "samples."
+          "treatment-peak unique to the merged", nm, "samples."
         )
       )
       cp <- htmltools::tags$em(
@@ -1252,9 +1252,9 @@ htmltools::tagList(
           class="section level3",
           htmltools::h3(
             ifelse(
-              nm == "consensus",
-              "Consensus Peaks",
-              paste("Oracle Peaks:", nm)
+              nm == "union",
+              "Union Peaks",
+              paste("Treatment Peaks:", nm)
             )
           ),
           htmltools::div(
@@ -1279,38 +1279,42 @@ htmltools::tagList(
 
 ```{r export, results='hide'}
 all_out <- list(
-  consensus_peaks_bed = file.path(macs2_path, target, "consensus_peaks.bed"),
-  oracle_peaks_rds = file.path(macs2_path, target, "oracle_peaks.rds"),
+  union_peaks_bed = file.path(
+    macs2_path, target, glue("{target}_union_peaks.bed")
+  ),
+  treatment_peaks_rds = file.path(
+    macs2_path, target, glue("{target}_treatment_peaks.rds")),
   renv = file.path(
-    here::here("output/envs"), 
-    glue("{target}_macs2_summary.RData")
+    here::here("output/envs"), glue("{target}_macs2_summary.RData")
   )
 ) %>% 
   c(
     sapply(
-      names(oracle_peaks), 
+      names(treatment_peaks), 
       function(x) {
-        file.path(macs2_path, target, glue("{x}_oracle_peaks.bed"))
+        file.path(
+          macs2_path, target, glue("{target}_{x}_treatment_peaks.bed")
+        )
       },
       simplify = FALSE
     ) %>% 
       setNames(
-        glue("{names(.)}_oracle_peaks_bed")
+        glue("{target}_{names(.)}_treatment_peaks_bed")
       )
   )
-export(consensus_peaks, all_out$consensus_peaks)
-oracle_peaks %>%
+export(union_peaks, all_out$union_peaks)
+treatment_peaks %>%
   lapply(subset, keep) %>%
   lapply(select, -keep) %>%
   GRangesList() %>%
-  write_rds(all_out$oracle_peaks, compress = "gz")
-names(oracle_peaks) %>% 
+  write_rds(all_out$treatment_peaks, compress = "gz")
+names(treatment_peaks) %>% 
   lapply(
     function(x) {
-      id <- glue("{x}_oracle_peaks_bed")
+      id <- glue("{target}_{x}_treatment_peaks_bed")
       ## Create an empty file
       file.create(all_out[[id]])
-      oracle_peaks[[x]] %>% 
+      treatment_peaks[[x]] %>% 
         subset(keep) %>% 
         select(score, signalValue, pValue, qValue, peak) %>% 
         export(all_out[[id]], format = "narrowPeak")

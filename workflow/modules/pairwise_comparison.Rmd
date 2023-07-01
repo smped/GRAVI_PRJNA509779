@@ -1414,7 +1414,8 @@ fl <- seq_along(pairs) %>%
   lapply(
     function(x) {
       file.path(
-        macs2_path[[x]], glue("{x}_{pairs[[x]]}_merged_treat_pileup.bw")
+        macs2_path[[x]],
+         glue("{names(pairs)[x]}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         setNames(paste(names(pairs)[[x]], pairs[[x]]))
     } 
@@ -1598,7 +1599,8 @@ bwfl <- seq_along(pairs) %>%
   lapply(
     function(x) {
       file.path(
-        macs2_path[[x]], glue("{x}_{pairs[[x]]}_merged_treat_pileup.bw")
+        macs2_path[[x]], 
+        glue("{names(pairs)[x]}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         BigWigFileList() %>% 
         setNames(pairs[[x]])

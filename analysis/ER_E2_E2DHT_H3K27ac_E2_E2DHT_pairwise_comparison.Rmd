@@ -82,7 +82,7 @@ if (length(unique(targets)) == 1) {
     )
 }
 n_targets = length(unique(names(pairs)))
-samples <- file.path(macs2_path, "qc_samples.tsv") %>% 
+samples <- file.path(macs2_path, glue("{targets}_qc_samples.tsv")) %>% 
   lapply(read_tsv) %>% 
   lapply(mutate_all, as.character) %>% 
   bind_rows() %>% 
@@ -261,14 +261,16 @@ hic <- hic[!overlapsAny(hic, blacklist)]
 ```
 
 ```{r load-data}
-oracle_peaks <- file.path(macs2_path, "oracle_peaks.rds") %>%
+treatment_peaks <- macs2_path %>%
+  file.path(glue("{targets}_treatment_peaks.rds")) %>%
   unique() %>% 
   sapply(read_rds) %>% 
   setNames(unique(basename(macs2_path)))
-consensus_peaks <- file.path(macs2_path, "consensus_peaks.bed") %>%
+union_peaks <- macs2_path %>%
+  file.path(glue("{targets}_union_peaks.bed")) %>%
   lapply(import.bed, seqinfo = sq) %>%
   setNames(basename(macs2_path))
-all_consensus <- consensus_peaks %>% 
+all_union <- union_peaks %>% 
   GRangesList() %>% 
   unlist() %>% 
   GenomicRanges::reduce() %>% 
@@ -403,7 +405,7 @@ cmn_res <- list(tibble(gs_name = character(), leadingEdge = list()))
 
 This stage of the GRAVI workflow takes the results from two individual differential binding analyses and compares the results, by finding peaks which directly overlap and considering the joint behaviour.
 In this specific analyses the differential binding response for `r names(pairs)[[1]]` when comparing `r glue_collapse(rev(pairs[[1]]), sep = " Vs ")`, will be integrated with the differential binding response for `r names(pairs)[[2]]` comparing `r glue_collapse(rev(pairs[[2]]), sep = " Vs ")`.
-Data will first be described from the perspective of *consensus peaks* and *oracle peaks*, before moving onto the differentially bound windows obtained in previous steps.
+Data will first be described from the perspective of *union peaks* and *treatment peaks*, before moving onto the differentially bound windows obtained in previous steps.
 
 ## Integration Of Differential Binding Results
 
@@ -434,11 +436,11 @@ The results from enrichment analysis across ChIP target and RNA-Seq data will al
 
 # Peak Comparison {.tabset}
 
-Data was loaded for treatment-agnostic *consensus peaks* for `r glue_collapse(unique(targets), sep = " and ")` with treatment-specific *oracle peaks* (i.e. based on reproducibility across treatment-specific replicates).
+Data was loaded for treatment-agnostic *union peaks* for `r glue_collapse(unique(targets), sep = " and ")` with treatment-specific *treatment peaks* (i.e. based on reproducibility across treatment-specific replicates).
 `r if (length(unique(targets)) > 1) glue("The sets of macs2-derived peaks for both {targets[[1]]} and {targets[[2]]} were first compared using treatment-agnostic peaks for each target.")`
-The sets of treatment-specific *oracle-peaks* were then compared across the combined treatment groups and targets.
+The sets of treatment-specific *treatment-peaks* were then compared across the combined treatment groups and targets.
 
-`r if (length(unique(targets)) > 1) "## Consensus Peaks"`
+`r if (length(unique(targets)) > 1) "## Union Peaks"`
 
 ```{r plot-empty-peaks, results = 'hide', eval = length(unique(targets)) == 1, echo = FALSE}
 fig_name <- targets %>% 
@@ -448,13 +450,13 @@ file.create(file.path(fig_path, fig_name))
 ```
 
 
-```{r plot-consensus, results = 'hide', eval = length(unique(targets)) > 1, eval = length(unique(targets)) > 1}
+```{r plot-union, results = 'hide', eval = length(unique(targets)) > 1, eval = length(unique(targets)) > 1}
 fig_name <- targets %>% 
   paste(collapse = "_") %>% 
   paste0("_common_peaks.", fig_type)
 lapply(
-  consensus_peaks,
-  function(x) as.character(subsetByOverlaps(all_consensus, x))
+  union_peaks,
+  function(x) as.character(subsetByOverlaps(all_union, x))
 )%>% 
   venn.diagram(
     file.path(fig_path, fig_name),
@@ -469,11 +471,11 @@ lapply(
 file.remove(list.files(fig_path, pattern = "log$", full.names = TRUE))
 ```
 
-`r if (length(unique(targets)) > 1) glue("![*Union of peaks found in {targets[[1]]} and {targets[[2]]}, and which of the two targets each peak is found in. Peaks are based on the union of both sets of consensus peaks, which are themselves independent of treatment group.*](assets/{basename(fig_path)}/{fig_name})")`
+`r if (length(unique(targets)) > 1) glue("![*Union of peaks found in {targets[[1]]} and {targets[[2]]}, and which of the two targets each peak is found in. Peaks are based on the union of both sets of union peaks, which are themselves independent of treatment group.*](assets/{basename(fig_path)}/{fig_name})")`
 
 ## Treatment Specific Peaks
 
-```{r oracle-peaks-upset, fig.height = 6, fig.cap = glue("*Macs2 peaks detected for ", glue_collapse(unique(targets), sep = " and " ), " in the treatment groups ", glue_collapse(unique(unlist(pairs)), sep = ", ", last = " or "), ".*")}
+```{r treatment-peaks-upset, fig.height = 6, fig.cap = glue("*Macs2 peaks detected for ", glue_collapse(unique(targets), sep = " and " ), " in the treatment groups ", glue_collapse(unique(unlist(pairs)), sep = ", ", last = " or "), ".*")}
 bar_cols <- treat_colours[rev(unlist(pairs))]
 if (length(unique(targets)) == 1)
   bar_cols <- treat_colours[
@@ -489,7 +491,7 @@ samples %>%
   split(.$group) %>% 
   lapply(
     function(x) {
-      gr <- subsetByOverlaps(all_consensus, oracle_peaks[[x$target]][[x$treat]])
+      gr <- subsetByOverlaps(all_union, treatment_peaks[[x$target]][[x$treat]])
       as.character(gr)
     }
   ) %>% 
@@ -508,7 +510,7 @@ samples %>%
     keep.order = TRUE,
     order.by = "freq",
     set_size.show = TRUE, 
-    set_size.scale_max = oracle_peaks %>% 
+    set_size.scale_max = treatment_peaks %>% 
       lapply(function(x) lapply(x, length)) %>% 
       unlist() %>% 
       max() %>% 
@@ -1430,7 +1432,8 @@ fl <- seq_along(pairs) %>%
   lapply(
     function(x) {
       file.path(
-        macs2_path[[x]], glue("{pairs[[x]]}_merged_treat_pileup.bw")
+        macs2_path[[x]],
+         glue("{names(pairs)[x]}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         setNames(paste(names(pairs)[[x]], pairs[[x]]))
     } 
@@ -1504,7 +1507,7 @@ profile_heatmaps <- profile_heatmaps %>%
         ) +
         labs(
           x = "Distance from Centre (kb)",
-          fill = "logCPM", linetype = "Consensus\nPeak\nOverlap",
+          fill = "logCPM", linetype = "Union\nPeak\nOverlap",
           colour = "Sample"
         ) 
     }
@@ -1614,7 +1617,8 @@ bwfl <- seq_along(pairs) %>%
   lapply(
     function(x) {
       file.path(
-        macs2_path[[x]], glue("{pairs[[x]]}_merged_treat_pileup.bw")
+        macs2_path[[x]], 
+        glue("{names(pairs)[x]}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         BigWigFileList() %>% 
         setNames(pairs[[x]])

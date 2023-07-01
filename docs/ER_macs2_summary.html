@@ -516,7 +516,9 @@ colours &lt;- read_rds(
   file.path(annotation_path, &quot;colours.rds&quot;)
 ) %&gt;% 
   lapply(unlist)</code></pre>
-<pre class="r"><code>samples &lt;-read_tsv(file.path(macs2_path, target, &quot;qc_samples.tsv&quot;))
+<pre class="r"><code>samples &lt;-macs2_path %&gt;%
+  file.path(target, glue(&quot;{target}_qc_samples.tsv&quot;)) %&gt;%
+  read_tsv()
 treat_levels &lt;- unique(samples$treat)
 if (!is.null(config$comparisons$contrasts)) {
   ## Ensure levels respect those provided in contrasts
@@ -603,9 +605,8 @@ if (fig_type %in% c(&quot;bmp&quot;, &quot;jpeg&quot;, &quot;png&quot;, &quot;ti
     treat = left_join(tibble(sample = sample), samples, by = &quot;sample&quot;)$treat
   ) %&gt;% 
   setNames(samples$sample)</code></pre>
-<pre class="r"><code>macs2_logs &lt;- file.path(
-    macs2_path, samples$sample, glue(&quot;{samples$sample}_callpeak.log&quot;)
-  ) %&gt;%
+<pre class="r"><code>macs2_logs &lt;- macs2_path %&gt;%
+  file.path(samples$sample, glue(&quot;{samples$sample}_callpeak.log&quot;)  ) %&gt;%
   importNgsLogs() %&gt;%
   dplyr::select(
     -contains(&quot;file&quot;), -outputs, -n_reads, -alt_fragment_length
@@ -613,10 +614,7 @@ if (fig_type %in% c(&quot;bmp&quot;, &quot;jpeg&quot;, &quot;png&quot;, &quot;ti
   left_join(samples, by = c(&quot;name&quot; = &quot;sample&quot;)) %&gt;%
   mutate(
     total_peaks = map_int(
-      name,
-      function(x) {
-        length(individual_peaks[[x]])
-      }
+      name, function(x) length(individual_peaks[[x]])
     )
   ) 
 n_reps &lt;- macs2_logs %&gt;% 
@@ -920,7 +918,8 @@ dashed horizontal line</em>
 </div>
 <div id="cross-correlations" class="section level3">
 <h3>Cross Correlations</h3>
-<pre class="r"><code>file.path(macs2_path, target, &quot;cross_correlations.tsv&quot;) %&gt;% 
+<pre class="r"><code>macs2_path %&gt;%
+  file.path(target, glue(&quot;{target}_cross_correlations.tsv&quot;)) %&gt;% 
   read_tsv() %&gt;% 
   left_join(samples, by = &quot;sample&quot;) %&gt;% 
   ggplot(aes(fl, correlation, colour = treat)) +
@@ -1336,7 +1335,8 @@ Replicates which passed/failed QC are show in the specified colours.</em>
 <pre class="r"><code>treatment_peaks &lt;- treat_levels %&gt;%
   sapply(
     function(x) {
-      gr &lt;- file.path(macs2_path, target, glue(&quot;{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
+      gr &lt;- macs2_path %&gt;%
+        file.path(target, glue(&quot;{target}_{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
         importPeaks(seqinfo = sq, blacklist = blacklist) %&gt;% 
         unlist()
       k &lt;- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
@@ -1689,7 +1689,7 @@ grl_to_plot &lt;- grl_to_plot %&gt;%
 <pre class="r"><code>## The coverage
 bwfl &lt;- list2(
   &quot;{target}&quot; := macs2_path %&gt;%
-  file.path(target, glue(&quot;{treat_levels}_merged_treat_pileup.bw&quot;)) %&gt;% 
+  file.path(target, glue(&quot;{target}_{treat_levels}_merged_treat_pileup.bw&quot;)) %&gt;% 
   BigWigFileList() %&gt;% 
   setNames(treat_levels)
 )
@@ -1920,23 +1920,27 @@ across all conditions.</em>
 <div id="data-export" class="section level2">
 <h2>Data Export</h2>
 <pre class="r"><code>all_out &lt;- list(
-  union_peaks_bed = file.path(macs2_path, target, &quot;union_peaks.bed&quot;),
-  treatment_peaks_rds = file.path(macs2_path, target, &quot;treatment_peaks.rds&quot;),
+  union_peaks_bed = file.path(
+    macs2_path, target, glue(&quot;{target}_union_peaks.bed&quot;)
+  ),
+  treatment_peaks_rds = file.path(
+    macs2_path, target, glue(&quot;{target}_treatment_peaks.rds&quot;)),
   renv = file.path(
-    here::here(&quot;output/envs&quot;), 
-    glue(&quot;{target}_macs2_summary.RData&quot;)
+    here::here(&quot;output/envs&quot;), glue(&quot;{target}_macs2_summary.RData&quot;)
   )
 ) %&gt;% 
   c(
     sapply(
       names(treatment_peaks), 
       function(x) {
-        file.path(macs2_path, target, glue(&quot;{x}_treatment_peaks.bed&quot;))
+        file.path(
+          macs2_path, target, glue(&quot;{target}_{x}_treatment_peaks.bed&quot;)
+        )
       },
       simplify = FALSE
     ) %&gt;% 
       setNames(
-        glue(&quot;{names(.)}_treatment_peaks_bed&quot;)
+        glue(&quot;{target}_{names(.)}_treatment_peaks_bed&quot;)
       )
   )
 export(union_peaks, all_out$union_peaks)
@@ -1948,7 +1952,7 @@ treatment_peaks %&gt;%
 names(treatment_peaks) %&gt;% 
   lapply(
     function(x) {
-      id &lt;- glue(&quot;{x}_treatment_peaks_bed&quot;)
+      id &lt;- glue(&quot;{target}_{x}_treatment_peaks_bed&quot;)
       ## Create an empty file
       file.create(all_out[[id]])
       treatment_peaks[[x]] %&gt;% 
@@ -1962,14 +1966,14 @@ save.image(all_out$renv)</code></pre>
 <p>During this workflow the following files were exported:</p>
 <ul>
 <li><strong>union_peaks_bed</strong>:
-output/macs2/ER/union_peaks.bed</li>
+output/macs2/ER/ER_union_peaks.bed</li>
 <li><strong>treatment_peaks_rds</strong>:
-output/macs2/ER/treatment_peaks.rds</li>
+output/macs2/ER/ER_treatment_peaks.rds</li>
 <li><strong>renv</strong>: output/envs/ER_macs2_summary.RData</li>
-<li><strong>E2_treatment_peaks_bed</strong>:
-output/macs2/ER/E2_treatment_peaks.bed</li>
-<li><strong>E2DHT_treatment_peaks_bed</strong>:
-output/macs2/ER/E2DHT_treatment_peaks.bed</li>
+<li><strong>ER_E2_treatment_peaks_bed</strong>:
+output/macs2/ER/ER_E2_treatment_peaks.bed</li>
+<li><strong>ER_E2DHT_treatment_peaks_bed</strong>:
+output/macs2/ER/ER_E2DHT_treatment_peaks.bed</li>
 </ul>
 <!-- end of list -->
 </div>

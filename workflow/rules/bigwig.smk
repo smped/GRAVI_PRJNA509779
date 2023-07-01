@@ -4,7 +4,7 @@ rule sort_bedgraph:
     output:
         temp(os.path.join(macs2_path, "{path}", "{f}.sorted.bdg"))
     log: log_path + "/sort_bedgraph/{path}/{f}.log"
-    threads: 1
+    threads: 2
     retries: 1
     resources:
         runtime = "1h",
@@ -17,6 +17,7 @@ rule sort_bedgraph:
         sort \
           -k1,1 -k2,2n \
           -S {resources.mem_mb}M \
+          --parallel {threads} \
           {input} | \
           egrep $'^chr[0-9XY]+\t' > {output}
         echo -e "Finished sorting at $(date)" >> {log}
@@ -34,7 +35,7 @@ rule bedgraph_to_bigwig:
     threads: 1
     retries: 1
     resources:
-        runtime = "3h",
+        runtime = "2h",
         mem_mb = lambda wildcards, input, attempt: (input.size//1000000) * attempt * 8,
         disk_mb = lambda wildcards, input, attempt: (input.size//1000000) * attempt * 4,
     shell:

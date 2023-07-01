@@ -192,7 +192,7 @@ if pairs:
 	)
 
 
-# ALL_OUTPUTS.extend(HTML_OUT)
+ALL_OUTPUTS.extend(HTML_OUT)
 ## Keep the final index separate for easiers passing to other rules
 ALL_OUTPUTS.extend([os.path.join("docs", "index.html")])
 

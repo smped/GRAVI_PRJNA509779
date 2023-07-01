@@ -91,18 +91,19 @@ rule compile_differential_binding_html:
 		),
 		merged_macs2 = lambda wildcards: expand(
 			os.path.join(
-				macs2_path, "{{target}}", "{pre}_merged_callpeak.log"
+				macs2_path, "{{target}}", "{{target}}_{pre}_merged_callpeak.log"
 			),
 			pre = [wildcards.ref, wildcards.treat]
 		),
 		merged_bw = lambda wildcards: expand(
 			os.path.join(
-				macs2_path, "{{target}}", "{pre}_merged_treat_pileup.bw"
+				macs2_path, "{{target}}", 
+				"{{target}}_{pre}_merged_treat_pileup.bw"
 			),
 			pre = [wildcards.ref, wildcards.treat]
 		),
 		peaks = expand(
-			os.path.join(macs2_path, "{target}", "union_peaks.bed"),
+			os.path.join(macs2_path, "{target}", "{target}_union_peaks.bed"),
 			target = targets
 		),
 		here = here_file,
@@ -110,7 +111,9 @@ rule compile_differential_binding_html:
 		rmd = os.path.join(
 			rmd_path, "{target}_{ref}_{treat}_differential_binding.Rmd"
 		),
-		samples = os.path.join(macs2_path, "{target}", "qc_samples.tsv"),
+		samples = os.path.join(
+			macs2_path, "{target}", "{target}_qc_samples.tsv"
+		),
 		scripts = os.path.join("workflow", "scripts", "custom_functions.R"),
 		setup = rules.create_setup_chunk.output,
 		site_yaml = rules.create_site_yaml.output,
