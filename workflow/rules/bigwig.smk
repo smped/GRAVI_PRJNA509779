@@ -1,15 +1,15 @@
 rule bedgraph_to_bigwig:
 	input:
 		bedgraph = os.path.join(
-			macs2_path, "{path}", "{sample}_treat_pileup.bdg"
+			macs2_path, "{path}", "{f}.bdg"
 		),
 		chrom_sizes = chrom_sizes
 	output:
 		bigwig = os.path.join(
-			macs2_path, "{path}", "{sample}_treat_pileup.bw"
+			macs2_path, "{path}", "{f}.bw"
 		)
 	conda: "../envs/bedgraph_to_bigwig.yml"
-	log: log_path + "/bedgraph_to_bigwig/{path}/{sample}.log"
+	log: log_path + "/bedgraph_to_bigwig/{path}/{f}.log"
 	threads: 1
 	retries: 1
 	resources:
