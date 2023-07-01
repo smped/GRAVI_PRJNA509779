@@ -8,6 +8,7 @@
 *.Rproj
 *_cache
 workflow/logs/*
+workflow/slurm/*
 .snakemake/*
 data/*
 *bam
@@ -16,7 +17,6 @@ data/*
 *bw
 *filtered_windows.rds
 *gtf.gz
-*log
 *model.r
 *summits.bed
 *timestamp
