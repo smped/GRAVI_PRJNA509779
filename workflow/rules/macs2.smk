@@ -254,7 +254,7 @@ rule compile_macs2_summary_html:
 		),
 		peaks = expand(
 			os.path.join(macs2_path, "{{target}}", "{file}"),
-			file = ['consensus_peaks.bed', 'oracle_peaks.rds']
+			file = ['union_peaks.bed', 'treatment_peaks.rds']
 		),
 		renv = temp(
 			os.path.join("output", "envs", "{target}_macs2_summary.RData")

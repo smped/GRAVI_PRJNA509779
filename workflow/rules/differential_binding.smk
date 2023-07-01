@@ -102,7 +102,7 @@ rule compile_differential_binding_html:
 			pre = [wildcards.ref, wildcards.treat]
 		),
 		peaks = expand(
-			os.path.join(macs2_path, "{target}", "consensus_peaks.bed"),
+			os.path.join(macs2_path, "{target}", "union_peaks.bed"),
 			target = targets
 		),
 		here = here_file,

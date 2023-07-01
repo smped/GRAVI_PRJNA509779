@@ -2,7 +2,7 @@
 #' on individual samples. For each sample group, any sample with > X-fold, or
 #' fewer than 1/X-fold peaks when copmared to the median for each sample group
 #' is marked for exclusion from the
-#' calling of oracle/consensus peaks, as well as any downstream detection of
+#' calling of treatment/union peaks, as well as any downstream detection of
 #' differential binding. This value 'X' is specified in the main config.yml
 #' as the parameter `outlier_threshold`
 #'

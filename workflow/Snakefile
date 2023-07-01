@@ -200,7 +200,7 @@ ALL_OUTPUTS.extend([os.path.join("docs", "index.html")])
 CONS_PEAKS = expand(
 	os.path.join(macs2_path, "{target}", "{file}"),
 	target = targets,
-	file = ['consensus_peaks.bed', 'oracle_peaks.rds']
+	file = ['union_peaks.bed', 'treatment_peaks.rds']
 )
 ALL_OUTPUTS.extend(CONS_PEAKS)
 
