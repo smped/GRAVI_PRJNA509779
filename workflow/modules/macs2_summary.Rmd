@@ -460,6 +460,42 @@ ql <- samples$label %>%
       fill = colours$treat[as.character(dplyr::filter(samples, label == x)$treat)]
     )
   )
+if (nrow(dplyr::filter(df, if_all(samples$label)))) {
+  ql <- c(
+    ql,
+    list(
+      upset_query(
+        intersect = samples$label, only_components = "intersections_matrix", 
+        color = "darkorange", fill = "darkorange"
+      )
+    )
+  )
+}
+ql <- c(
+  ql,
+  treat_levels %>% 
+    lapply(
+      function(x) {
+        new_df <- dplyr::filter(
+          df, 
+          if_all(dplyr::filter(samples, treat == x)$label), 
+          !if_any(dplyr::filter(samples, treat != x)$label)
+        )
+        out <- NULL
+        if (nrow(new_df) > 0) {
+          out <- upset_query(
+            intersect = dplyr::filter(samples, treat == x)$label,
+            only_components = "intersections_matrix",
+            color = colours$treat[x], fill = colours$treat[x]
+          )
+          out
+        }
+        
+      }
+    ) %>% 
+    .[vapply(., length, integer(1)) > 0]
+)
+
 lb <- samples %>% 
   arrange(treat, !!sym(rep_col)) %>% 
   pull("label") %>% 
@@ -478,7 +514,7 @@ df %>%
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "grey20"),
-          panel.border = element_rect(colour = "grey20", fill=  NA)
+          panel.border = element_rect(colour = "grey20", fill =  NA)
         )
     ),
     annotations = list(
@@ -490,7 +526,7 @@ df %>%
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "grey20"),
-          panel.border = element_rect(colour = "grey20", fill=  NA)
+          panel.border = element_rect(colour = "grey20", fill =  NA)
         )
     ),
     set_sizes = (
@@ -504,17 +540,17 @@ df %>%
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "grey20"),
-          panel.border = element_rect(colour = "grey20", fill=  NA)
+          panel.border = element_rect(colour = "grey20", fill =  NA)
         )
     ),
     queries = ql,
     min_size = 10,
-    n_intersections = 50,
+    n_intersections = 40,
     sort_sets = FALSE
   ) +
   theme(
     panel.grid = element_blank(), 
-    panel.border = element_rect(colour = "grey20", fill=  NA),
+    panel.border = element_rect(colour = "grey20", fill =  NA),
     axis.line = element_line(colour = "grey20")
   ) +
   labs(x = "Intersection") +
@@ -629,7 +665,7 @@ htmltools::tagList(
                   theme(
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = "grey20"),
-                    panel.border = element_rect(colour = "grey20", fill=  NA)
+                    panel.border = element_rect(colour = "grey20", fill =  NA)
                   )
               ),
               annotations = list(
@@ -641,7 +677,7 @@ htmltools::tagList(
                   theme(
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = "grey20"),
-                    panel.border = element_rect(colour = "grey20", fill=  NA)
+                    panel.border = element_rect(colour = "grey20", fill =  NA)
                   )
               ),
               set_sizes = (
@@ -655,7 +691,7 @@ htmltools::tagList(
                   theme(
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = "grey20"),
-                    panel.border = element_rect(colour = "grey20", fill=  NA)
+                    panel.border = element_rect(colour = "grey20", fill =  NA)
                   )
               ),
               queries = ql,
@@ -683,7 +719,7 @@ htmltools::tagList(
         htmltools::div(
           htmltools::div(
             id = glue("{i}-replicates"),
-            class="section level4",
+            class = "section level4",
             htmltools::h4(i),
             htmltools::div(
               class = "figure", style = "text-align: center",
@@ -699,6 +735,28 @@ htmltools::tagList(
 )
 ```
 
+### Individual Peak Widths
+
+```{r plot-peak-width, fig.cap = "*Range of peak widths across all samples. The median value for all peaks is shown as the dashed horizontal line*"}
+individual_peaks %>% 
+  width() %>% 
+  as.list() %>% 
+  lapply(list) %>% 
+  as_tibble() %>% 
+  pivot_longer(cols = everything(), names_to = "sample", values_to = "width") %>% 
+  unnest(width) %>% 
+  left_join(samples, by = "sample") %>% 
+  ggplot(aes(label, width, fill = treat)) +
+  geom_boxplot(alpha = 0.9) +
+  geom_hline(
+    yintercept = median(width(unlist(individual_peaks))),
+    linetype = 2
+  ) +
+  scale_y_log10() +
+  scale_fill_manual(values = colours$treat) +
+  labs(x = "Sample", y = "Peak Width (bp)", fill = "Treatment")
+```
+
 
 ### Treatment Peaks 
 
@@ -708,7 +766,7 @@ treatment_peaks <- treat_levels %>%
     function(x) {
       gr <- macs2_path %>%
         file.path(target, glue("{target}_{x}_merged_peaks.narrowPeak")) %>%
-        importPeaks(seqinfo = sq, blacklist = blacklist) %>% 
+        importPeaks(seqinfo = sq, blacklist = blacklist, centre = TRUE) %>% 
         unlist()
       k <- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
       if (k > 0) {
@@ -725,7 +783,6 @@ treatment_peaks <- treat_levels %>%
   GRangesList() 
 union_peaks <- treatment_peaks %>% 
   endoapply(subset, keep) %>% 
-  endoapply(mutate, centre = start + peak) %>% 
   makeConsensus(
     var = c("score", "signalValue", "pValue", "qValue", "centre")
   ) %>% 
@@ -891,7 +948,7 @@ treatment_peaks %>%
           text = element_text(size = 12),
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "black"),
-          panel.border = element_rect(colour = "black", fill=  NA)
+          panel.border = element_rect(colour = "black", fill =  NA)
         )
     ),
     set_sizes = (
@@ -906,7 +963,7 @@ treatment_peaks %>%
           text = element_text(size = 12),
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "black"),
-          panel.border = element_rect(colour = "black", fill=  NA)
+          panel.border = element_rect(colour = "black", fill =  NA)
         )
     ),
     sort_sets = FALSE,
@@ -915,7 +972,7 @@ treatment_peaks %>%
   theme(
     text = element_text(size = 12),
     panel.grid = element_blank(), 
-    panel.border = element_rect(colour = "black", fill=  NA),
+    panel.border = element_rect(colour = "black", fill =  NA),
     axis.line = element_line(colour = "black")
   ) +
   labs(x = "Intersection") 
@@ -958,11 +1015,11 @@ b <- union_peaks %>%
   coord_cartesian(xlim = c(0, 100)) +
   labs(
     x = "Distance to Nearest TSS (kb)",
-    y = "Quantile"
+    y = "Percentile"
   ) +
   scale_y_continuous(labels = percent, breaks = seq(0, 1, by = 0.2)) +
   scale_x_continuous(breaks = seq(0, 100, by = 20))
-plot_grid(a, b, labels = c("A", "B"))
+a + b + plot_annotation(tag_levels = "A")
 ```
 
 
@@ -971,10 +1028,13 @@ plot_grid(a, b, labels = c("A", "B"))
 
 ```{r plot-region-overlap, fig.height=8, fig.width=8, fig.cap = glue("*Proportions of {target} union peaks which overlap gene-centric features.*")}
 union_peaks %>% 
-  plotPie(fill = "region") +
+  plotPie(
+    fill = "region", total_size = 4,
+    cat_glue = "{str_wrap(.data[[fill]], 15)}\n{comma(n, 1)}\n({percent(p, 0.1)})",
+    cat_alpha = 0.9, cat_adj = 0.05
+  ) +
   scale_fill_manual(
-    values = colours$regions %>%
-      setNames(regions[names(.)])
+    values = colours$regions %>% setNames(regions[names(.)])
   ) +
   theme(legend.position = "none")
 ```
@@ -983,7 +1043,11 @@ union_peaks %>%
 
 ```{r plot-feature-overlap, eval = has_features, echo = has_features, fig.height=8, fig.width=8, fig.cap = glue("*The total number of {target} union peaks which overlap external features provided in {basename(config$external$features)}. If peaks map to multiple features, they are assigned to the one with the largest overlap.*")}
 union_peaks %>% 
-  plotPie(fill = "Feature", label_size = 4) +
+  plotPie(
+    fill = "Feature", total_size = 4,
+    cat_glue = "{str_wrap(.data[[fill]], 15)}\n{comma(n, 1)}\n({percent(p, 0.1)})",
+    cat_alpha = 0.9, cat_adj = 0.05
+  ) +
   scale_fill_manual(
     values = colours$features %>% setNames(str_sep_to_title(names(.)))
   ) +
@@ -994,20 +1058,13 @@ union_peaks %>%
 
 ```{r plot-feature-region-overlap, eval = has_features, echo = has_features, fig.cap = glue("*The total number of {target} union peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*")}
 union_peaks %>% 
-  subset(Feature != "No Feature") %>% 
-  as_tibble() %>% 
-  droplevels() %>% 
-  plotPie(fill = "region", x = "Feature", label_size = 4, label_alpha = 0.7) +
-  scale_fill_manual(
-    values = colours$regions %>%
-      setNames(regions[names(.)])
-  ) +
-  labs(fill = "Region") +
-  theme(
-    panel.grid = element_blank(),
-    panel.border = element_blank(),
-    axis.line.x = element_line(),
-    legend.position = "top"
+  plotSplitDonut(
+    inner = "Feature", outer = "region",
+    inner_palette = colours$features %>% setNames(str_to_title(names(.))),
+    outer_palette = colours$regions %>% setNames(regions[names(.)]),
+    inner_glue = "{str_wrap(.data[[inner]], 15)}\nn = {comma(n, 1)}\n{percent(p,0.1)}",
+    outer_glue = "{str_wrap(.data[[outer]], 15)}\nn = {comma(n, 1)}\n{percent(p,0.1)}",
+    min_p = 0.03
   )
 ```
 
