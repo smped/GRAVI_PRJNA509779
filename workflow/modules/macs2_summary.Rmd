@@ -17,7 +17,6 @@ library(yaml)
 library(ngsReports)
 library(ComplexUpset)
 library(VennDiagram)
-library(cowplot)
 library(rlang)
 library(BiocParallel)
 library(parallel)
@@ -25,6 +24,7 @@ library(Rsamtools)
 library(Biostrings)
 library(ggside)
 library(extraChIPs)
+library(patchwork)
 ```
 
 ```{r options}
