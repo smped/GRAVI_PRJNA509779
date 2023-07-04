@@ -1,7 +1,7 @@
 ```{r example, echo = FALSE, eval = FALSE}
 ## This module requires the following to be set during preparation
-# target <- "AR"
-# threads <- 6
+target <- "AR"
+threads <- 6
 ```
 
 
@@ -17,7 +17,6 @@ library(yaml)
 library(ngsReports)
 library(ComplexUpset)
 library(VennDiagram)
-library(cowplot)
 library(rlang)
 library(BiocParallel)
 library(parallel)
@@ -25,6 +24,7 @@ library(Rsamtools)
 library(Biostrings)
 library(ggside)
 library(extraChIPs)
+library(patchwork)
 ```
 
 ```{r options}
@@ -423,25 +423,6 @@ Peak numbers may differ from above as those shown below are overlapping peaks wh
 
 In the case of four or more replicates, the package `ComplexUpset` was used to create UpSet plots [@Upset2014], with colours indicating QC status.
 
-```{r load-replicates}
-replicates_by_treat <- individual_peaks %>%
-  unlist() %>% 
-  splitAsList(.$treat) %>% 
-  .[vapply(., length, integer(1)) > 1] %>% 
-  lapply(select, sample) %>% 
-  lapply(reduceMC) %>% 
-  lapply(as_tibble) %>% 
-  lapply(unnest, sample) %>% 
-  lapply(mutate, detected = 1) %>% 
-  lapply(left_join, dplyr::select(samples, sample, label), by = "sample") %>%
-  lapply(dplyr::select, -sample) %>% 
-  lapply(function(x) {
-    split(x, x$label) %>% 
-      lapply(pull, "range")
-    }
-  )
-```
-
 #### All Samples
 
 ```{r all-reps-upset, fig.cap = "*UpSet plot showing all samples including those which failed prior QC steps. Any potential sample mislabelling will show up clearly here as samples from each group should show a preference to overlap other samples within the same treatment group. Intersections are only included if 10 or more sites are present. The top panel shows a boxplot of the median $q$-values produced by `macs2 callpeak` for each peak in the intersection. The y-axis for this panel is truncated at the 99^th^ percentile of values. Only intersections with 10 or more peaks are shown.*"}
@@ -559,6 +540,22 @@ df %>%
 
 
 ```{r plot-replicates}
+ranges_by_rep_treat <- individual_peaks %>%
+  unlist() %>% 
+  splitAsList(.$treat) %>% 
+  .[vapply(., length, integer(1)) > 1] %>% 
+  lapply(select, sample) %>% 
+  lapply(reduceMC) %>% 
+  lapply(as_tibble) %>% 
+  lapply(unnest, sample) %>% 
+  lapply(mutate, detected = 1) %>% 
+  lapply(left_join, dplyr::select(samples, sample, label), by = "sample") %>%
+  lapply(dplyr::select, -sample) %>% 
+  lapply(function(x) {
+    split(x, x$label) %>% 
+      lapply(pull, "range")
+    }
+  )
 ## First find the python executable
 which_py <- c(
   file.path(Sys.getenv("CONDA_PREFIX"), "bin", "python3"),
@@ -569,10 +566,10 @@ which_py <- c(
 stopifnot(length(which_py) == 1)
 rep_col <- hcl.colors(3, palette = "Zissou", rev = TRUE)
 htmltools::tagList(
-  names(replicates_by_treat) %>% 
+  names(ranges_by_rep_treat) %>% 
     lapply(
       function(i) {
-        x <- replicates_by_treat[[i]]
+        x <- ranges_by_rep_treat[[i]]
         fig_out <- file.path(fig_path, glue("{i}_replicates.{fig_type}"))
         if (length(x) == 1) {
           fig_fun(
@@ -646,10 +643,12 @@ htmltools::tagList(
             dplyr::filter(treat == i) %>% 
             pull('label') %>% 
             lapply(
-              function(x) upset_query(
-                set = x, 
-                fill = colours$qc[as.character(dplyr::filter(samples, treat == i, label == x)$qc)]
-              )
+              function(x) {
+                i <- as.character(
+                  dplyr::filter(samples, treat == i, label == x)$qc
+                )
+                upset_query(set = x, fill = colours$qc[i])
+              }
             )
           ## And plot
           p <- df %>% 
@@ -659,10 +658,11 @@ htmltools::tagList(
                 `Peaks in Intersection` = intersection_size(
                   text_mapping = aes(label = comma(!!size)),
                   bar_number_threshold = 1, text_colors = "black", 
-                  text = list(size = 3, angle = 90, vjust = 0.5, hjust = -0.1)
+                  text = list(size = 4, hjust = 0.5)
                 ) +
                   scale_y_continuous(expand = expansion(c(0, 0.2)), label = comma) +
                   theme(
+                    text = element_text(size = 14),
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = "grey20"),
                     panel.border = element_rect(colour = "grey20", fill =  NA)
@@ -675,6 +675,7 @@ htmltools::tagList(
                   scale_y_continuous(expand = expansion(c(0, 0.05))) +
                   ylab(expr(paste("Macs2 ", q[med]))) +
                   theme(
+                    text = element_text(size = 14),
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = "grey20"),
                     panel.border = element_rect(colour = "grey20", fill =  NA)
@@ -684,11 +685,12 @@ htmltools::tagList(
                 upset_set_size() +
                   geom_text(
                     aes(label = comma(after_stat(count))), 
-                    hjust = 1.1, stat = 'count', size = 3
+                    hjust = 1.1, stat = 'count', size = 4
                   ) +
                   scale_y_reverse(expand = expansion(c(0.2, 0)), label = comma) +
                   ylab(glue("Macs2 Peaks (FDR < {config$peaks$macs2$fdr})")) +
                   theme(
+                    text = element_text(size = 14),
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = "grey20"),
                     panel.border = element_rect(colour = "grey20", fill =  NA)
@@ -698,6 +700,7 @@ htmltools::tagList(
               min_size = 10,
               sort_sets = FALSE
             ) +
+            theme(text = element_text(size = 14)) +
             patchwork::plot_layout(heights = c(2, 3, 2))
           print(p)
           dev.off()
@@ -737,7 +740,7 @@ htmltools::tagList(
 
 ### Individual Peak Widths
 
-```{r plot-peak-width, fig.cap = "*Range of peak widths across all samples. The median value for all peaks is shown as the dashed horizontal line*"}
+```{r plot-peak-width, fig.cap = glue("*Range of peak widths across all samples. The median value for all peaks ({median(width(unlist(individual_peaks)))}bp) is shown as the dashed horizontal line*")}
 individual_peaks %>% 
   width() %>% 
   as.list() %>% 
@@ -752,6 +755,7 @@ individual_peaks %>%
     yintercept = median(width(unlist(individual_peaks))),
     linetype = 2
   ) +
+  facet_wrap(~treat, nrow = 1, scales = "free_x") +
   scale_y_log10() +
   scale_fill_manual(values = colours$treat) +
   labs(x = "Sample", y = "Peak Width (bp)", fill = "Treatment")
@@ -875,7 +879,7 @@ fig_name <- glue("{target}_common_peaks.{fig_type}")
 fig_out <- file.path(fig_path, fig_name)
 ## An empty file to keep snakemake happy if > 3 treatments
 file.create(fig_out) 
-if (length(vd) ==1) {
+if (length(vd) == 1) {
   fig_fun(filename = fig_out, width = 8, height = 3)
   grid.newpage()
   draw.single.venn(
@@ -941,11 +945,11 @@ treatment_peaks %>%
       `Peaks in Intersection` = intersection_size(
         text_mapping = aes(label = comma(!!size)),
         bar_number_threshold = 1, text_colors = "black", 
-        text = list(size = 3.5)
+        text = list(size = 4)
       ) +
         scale_y_continuous(expand = expansion(c(0, 0.1)), labels = comma) +
         theme(
-          text = element_text(size = 12),
+          text = element_text(size = 14),
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "black"),
           panel.border = element_rect(colour = "black", fill =  NA)
@@ -955,12 +959,12 @@ treatment_peaks %>%
       upset_set_size() +
         geom_text(
           aes(label = comma(after_stat(count))),
-          hjust = 1.1, stat = 'count', size = 3.5
+          hjust = 1.1, stat = 'count', size = 4
         ) +
         scale_y_reverse(expand = expansion(c(0.2, 0)), labels = comma) +
         ylab("Union Peak Overlaps") +
         theme(
-          text = element_text(size = 12),
+          text = element_text(size = 14),
           panel.grid = element_blank(), 
           axis.line = element_line(colour = "black"),
           panel.border = element_rect(colour = "black", fill =  NA)
@@ -970,7 +974,7 @@ treatment_peaks %>%
     queries = ql
   ) +
   theme(
-    text = element_text(size = 12),
+    text = element_text(size = 14),
     panel.grid = element_blank(), 
     panel.border = element_rect(colour = "black", fill =  NA),
     axis.line = element_line(colour = "black")
@@ -1031,7 +1035,7 @@ union_peaks %>%
   plotPie(
     fill = "region", total_size = 4,
     cat_glue = "{str_wrap(.data[[fill]], 15)}\n{comma(n, 1)}\n({percent(p, 0.1)})",
-    cat_alpha = 0.9, cat_adj = 0.05
+    cat_alpha = 0.9, cat_adj = 0.05, min_p = 0.025
   ) +
   scale_fill_manual(
     values = colours$regions %>% setNames(regions[names(.)])
@@ -1064,7 +1068,7 @@ union_peaks %>%
     outer_palette = colours$regions %>% setNames(regions[names(.)]),
     inner_glue = "{str_wrap(.data[[inner]], 15)}\nn = {comma(n, 1)}\n{percent(p,0.1)}",
     outer_glue = "{str_wrap(.data[[outer]], 15)}\nn = {comma(n, 1)}\n{percent(p,0.1)}",
-    min_p = 0.03
+    min_p = 0.03, outer_alpha = 0.8
   )
 ```
 
@@ -1135,7 +1139,7 @@ hfgc_genes <- read_rds(
 )
 gene_col <- "grey"
 ## If RNA-Seq data is present, the genes track switches to Up/Down etc
-if (nrow(rnaseq)){
+if (nrow(rnaseq)) {
   rna_lfc_col <- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), "logfc")][1]
   rna_fdr_col <- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), "fdr|adjp")][1]
   if (!is.na(rna_lfc_col) & !is.na(rna_fdr_col)) {
@@ -1276,7 +1280,7 @@ htmltools::tagList(
             str_replace_all(" ", "-") %>% 
             str_to_lower() %>% 
             paste0("-topranked"),
-          class="section level3",
+          class = "section level3",
           htmltools::h3(
             ifelse(
               nm == "union",
