@@ -467,7 +467,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">H3K27ac: MACS2 Summary</h1>
-<h4 class="date">05 July, 2023</h4>
+<h4 class="date">06 July, 2023</h4>
 
 </div>
 
@@ -1068,7 +1068,7 @@ individual_peaks %&gt;%
         bar_number_threshold = 1, text_colors = &quot;black&quot;, 
         text = list(size = 3.5, angle = 90, vjust = 0.5, hjust = -0.1)
       ) +
-        scale_y_continuous(expand = expansion(c(0, 0.2)), label = comma) +
+        scale_y_continuous(expand = expansion(c(0, 0.25)), label = comma) +
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = &quot;grey20&quot;),
@@ -1095,7 +1095,7 @@ individual_peaks %&gt;%
           aes(label = comma(after_stat(count))), 
           hjust = 1.1, stat = &#39;count&#39;, size = 3.5
         ) +
-        scale_y_reverse(expand = expansion(c(0.2, 0)), label = comma) +
+        scale_y_reverse(expand = expansion(c(0.3, 0)), label = comma) +
         ylab(glue(&quot;Macs2 Peaks (FDR &lt; {config$peaks$macs2$fdr})&quot;)) +
         theme(
           panel.grid = element_blank(), 

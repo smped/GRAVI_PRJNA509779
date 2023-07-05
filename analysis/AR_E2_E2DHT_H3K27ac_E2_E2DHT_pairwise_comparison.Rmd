@@ -2560,7 +2560,7 @@ htmltools::tagList(
               str_to_lower %>% 
               str_replace_all(" ", "-") %>% 
               str_replace_all("-+", "-"),
-            class="section level4",
+            class = "section level4",
             htmltools::h4(class = "tabset", x),
             htmltools::tags$em(cp),
             goseq_group_sig[[x]] %>% 
@@ -2782,7 +2782,7 @@ htmltools::tagList(
               str_remove_all(glue(".{fig_type}$")) %>%
               str_to_lower() %>%
               str_replace_all("_", "-"),
-            class ="section level4",
+            class = "section level4",
             htmltools::h4(x),
             htmltools::div(
               class = "figure", style = "text-align: center",
