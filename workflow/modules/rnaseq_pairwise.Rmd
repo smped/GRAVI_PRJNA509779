@@ -665,7 +665,7 @@ htmltools::tagList(
               ),
               status = colDef(name = "Individual Status", maxWidth = 100),
               padj_rna = colDef(
-                name =  glue("p<sub>{params$enrichment$adj}</sub> (RNA)"), html = TRUE,
+                name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (RNA)"), html = TRUE,
                 cell = function(value) ifelse(
                   value < 0.001,
                   sprintf("%.2e", value),
@@ -674,7 +674,7 @@ htmltools::tagList(
                 maxWidth = 80
               ),
               padj_chip = colDef(
-                name =  glue("p<sub>{params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
+                name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
                 cell = function(value) ifelse(
                   value < 0.001,
                   sprintf("%.2e", value),

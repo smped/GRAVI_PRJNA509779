@@ -276,7 +276,7 @@ de_genes_db_regions <- merged_results %>%
   ) %>% 
   mutate(
     region = case_when(
-      dist2Gene > params$gene_regions$upstream & str_detect(region, "Promoter|Exon|Intron") ~ paste(
+      dist2Gene > extra_params$gene_regions$upstream & str_detect(region, "Promoter|Exon|Intron") ~ paste(
         str_extract(region, ".*(Promoter|Exon|Intron)"), "(Other Gene)"),
       TRUE ~ as.character(region)
     ),
@@ -1405,7 +1405,7 @@ cmn_diff <- rnaseq_gsea %>%
   ) %>%
   unnest(p) %>% 
   dplyr::rename(padj_chip = adj_p, padj_rna = padj) %>% 
-  mutate(adj_p = p.adjust(pval, params$enrichment$adj)) %>% 
+  mutate(adj_p = p.adjust(pval, extra_params$enrichment$adj)) %>% 
   arrange(pval) %>% 
   dplyr::filter(adj_p < enrich_alpha) %>% 
   mutate(
@@ -1474,7 +1474,7 @@ tbl <- cmn_diff %>%
         minWidth = 120
       ),
       adj_p = colDef(
-        name = glue("p<sub>{params$enrichment$adj}</sub>"), html = TRUE,
+        name = glue("p<sub>{extra_params$enrichment$adj}</sub>"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1492,7 +1492,7 @@ tbl <- cmn_diff %>%
         maxWidth = 80
       ),
       padj_rna = colDef(
-        name =  glue("p<sub>{params$enrichment$adj}</sub> (RNA)"), html = TRUE,
+        name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (RNA)"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1501,7 +1501,7 @@ tbl <- cmn_diff %>%
         maxWidth = 80
       ),
       padj_chip = colDef(
-        name =  glue("p<sub>{params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
+        name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1586,7 +1586,7 @@ cmn_up <- rnaseq_gsea %>%
     ) %>%
   unnest(p) %>% 
   dplyr::rename(padj_chip = adj_p, padj_rna = padj) %>% 
-  mutate(adj_p = p.adjust(pval, params$enrichment$adj)) %>% 
+  mutate(adj_p = p.adjust(pval, extra_params$enrichment$adj)) %>% 
   arrange(pval) %>% 
   dplyr::filter(adj_p < enrich_alpha) %>% 
   mutate(
@@ -1657,7 +1657,7 @@ tbl <- cmn_up %>%
         minWidth = 120
       ),
       adj_p = colDef(
-        name = glue("p<sub>{params$enrichment$adj}</sub>"), html = TRUE,
+        name = glue("p<sub>{extra_params$enrichment$adj}</sub>"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1675,7 +1675,7 @@ tbl <- cmn_up %>%
         maxWidth = 80
       ),
       padj_rna = colDef(
-        name =  glue("p<sub>{params$enrichment$adj}</sub> (RNA)"), html = TRUE,
+        name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (RNA)"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1684,7 +1684,7 @@ tbl <- cmn_up %>%
         maxWidth = 80
       ),
       padj_chip = colDef(
-        name =  glue("p<sub>{params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
+        name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1768,7 +1768,7 @@ cmn_down <- rnaseq_gsea %>%
     pval = vapply(p, function(x) metap::maximump(unlist(x))$p, numeric(1))
     ) %>%
   dplyr::rename(padj_chip = adj_p, padj_rna = padj) %>% 
-  mutate(adj_p = p.adjust(pval, params$enrichment$adj)) %>% 
+  mutate(adj_p = p.adjust(pval, extra_params$enrichment$adj)) %>% 
   arrange(pval) %>% 
   dplyr::filter(adj_p < enrich_alpha) %>% 
   mutate(
@@ -1839,7 +1839,7 @@ tbl <- cmn_down %>%
         minWidth = 120
       ),
       adj_p = colDef(
-        name = glue("p<sub>{params$enrichment$adj}</sub>"), html = TRUE,
+        name = glue("p<sub>{extra_params$enrichment$adj}</sub>"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1857,7 +1857,7 @@ tbl <- cmn_down %>%
         maxWidth = 80
       ),
       padj_rna = colDef(
-        name =  glue("p<sub>{params$enrichment$adj}</sub> (RNA)"), html = TRUE,
+        name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (RNA)"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
@@ -1866,7 +1866,7 @@ tbl <- cmn_down %>%
         maxWidth = 80
       ),
       padj_chip = colDef(
-        name =  glue("p<sub>{params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
+        name =  glue("p<sub>{extra_params$enrichment$adj}</sub> (ChIP)"), html = TRUE,
         cell = function(value) ifelse(
           value < 0.001,
           sprintf("%.2e", value),
