@@ -448,7 +448,7 @@ txt <- ifelse(
 cp <-  htmltools::em(
   glue(
     "Combined windows were mapped to genes, and their position amongst the ",
-    "RNA-Seq results was assessed. {sum(gsea_nondir_sig$padj < enrich_alpha)} sets of windows were ",
+    "RNA-Seq results was assessed. {sum(gsea_nondir$padj < enrich_alpha)} sets of windows were ",
     "associated with changes in gene expression, using only the p-value to ", 
     "rank the {comma(nrow(rnaseq), 1)} genes considered as detected."
   )
