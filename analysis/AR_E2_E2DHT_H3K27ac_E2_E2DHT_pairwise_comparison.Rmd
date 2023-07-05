@@ -3,24 +3,21 @@ title: 'AR: E2DHT Vs. E2 Compared To H3K27ac: E2DHT Vs. E2'
 date: "`r format(Sys.Date(), '%d %B, %Y')`"
 bibliography: references.bib
 link-citations: true
+params:
+  threads: 4
+  pairs:
+    value:
+      AR: ["E2", "E2DHT"]
+      H3K27ac: ["E2", "E2DHT"]
 ---
 
 ```{r set-knitr-opts, echo=FALSE, child = here::here('analysis/setup_chunk.Rmd')}
 ```
 
-```{r set-vals}
-threads <- 4
-pairs <- list(
-  "AR" = c("E2", "E2DHT"),
-  "H3K27ac" = c("E2", "E2DHT")
-)
-```
 
-
-```{r example, echo = FALSE, eval=FALSE}
-## This module requires the following to be set during preparation
-# threads <- 6
-# pairs <- list(AR = c("E2", "E2DHT"), ER = c("E2", "E2DHT"))
+```{r get_params, echo = FALSE}
+threads <- params$threads
+pairs <- params$pairs
 ```
 
 
@@ -49,9 +46,6 @@ library(ggraph)
 library(tidygraph)
 source(here::here("workflow", "scripts", "custom_functions.R"))
 register(MulticoreParam(workers = threads))
-```
-
-```{r options}
 panderOptions("big.mark", ",")
 panderOptions("missing", "")
 panderOptions("table.split.table", Inf)
@@ -66,7 +60,7 @@ theme_set(
 
 ```{r samples}
 config <- read_yaml(here::here("config", "config.yml"))
-params <- read_yaml(here::here("config", "params.yml"))
+extra_params <- read_yaml(here::here("config", "params.yml"))
 targets <- names(pairs)
 macs2_path <- here::here("output", "macs2", targets)
 fdr_alpha <- config$comparisons$fdr
@@ -459,14 +453,13 @@ The sets of treatment-specific *treatment-peaks* were then compared across the c
 
 `r if (length(unique(targets)) > 1) "## Union Peaks"`
 
-```{r plot-union, results = 'hide', eval = length(unique(targets)) > 1, eval = length(unique(targets)) > 1, fig.cap = glue("![*Union of peaks found in {targets[[1]]} and {targets[[2]]}, and which of the two targets each peak is found in. Peaks are based on the union of both sets of union peaks, which are themselves independent of treatment group.*](assets/{basename(fig_path)}/{fig_name})"), fig.height = 8, fig.width = 8}
+```{r plot-union, results = 'hide', eval = length(unique(targets)) > 1, eval = length(unique(targets)) > 1, fig.cap = glue("*Union of peaks found in {targets[[1]]} and {targets[[2]]}, and which of the two targets each peak is found in. Peaks are based on the union of both sets of union peaks, which are themselves independent of treatment group.*"), fig.height = 8, fig.width = 8}
 plotOverlaps(
   union_peaks, set_col = comp_cols[comps], alpha = 0.3, 
   cex = 1.3, cat.cex = 1.3
 )
 ```
 
-`r if (length(unique(targets)) > 1) `
 
 ## Treatment Specific Peaks
 
@@ -596,9 +589,9 @@ all_windows <- all_windows %>%
   select(any_of(c("region", "feature", "hic")), everything()) %>% 
   mapByFeature(
     gtf_gene, prom = prom4mapping, enh = feat_enh, gi = hic,
-    gr2gene = params$mapping$gr2gene, 
-    prom2gene = params$mapping$prom2gene,
-    enh2gene = params$mapping$enh2gene, gi2gene = params$mapping$gi2gene
+    gr2gene = extra_params$mapping$gr2gene, 
+    prom2gene = extra_params$mapping$prom2gene,
+    enh2gene = extra_params$mapping$enh2gene, gi2gene = extra_params$mapping$gi2gene
   ) 
 all_windows$detected <- all_windows$gene_name
 if (has_rnaseq) all_windows$detected <- endoapply(
@@ -1711,11 +1704,11 @@ htmltools::tagList(
 
 
 ```{r msigdb}
-min_gs_size <- params$enrichment$min_size
+min_gs_size <- extra_params$enrichment$min_size
 if (is.null(min_gs_size) | is.na(min_gs_size)) min_gs_size <- 0
-max_gs_size <- params$enrichment$max_size
+max_gs_size <- extra_params$enrichment$max_size
 if (is.null(max_gs_size) | is.na(max_gs_size)) max_gs_size <- Inf
-min_sig <- params$enrichment$min_sig
+min_sig <- extra_params$enrichment$min_sig
 if (is.null(min_sig) | is.na(min_sig)) min_sig <- 1
 
 all_ids <- gtf_gene %>%
@@ -1736,10 +1729,10 @@ all_ids <- gtf_gene %>%
   mutate(
     n_windows = as.integer(ifelse(is.na(n_windows), 0, n_windows))
   )
-msigdb <- msigdbr(species = params$enrichment$species) %>% 
+msigdb <- msigdbr(species = extra_params$enrichment$species) %>% 
   dplyr::filter(
-    gs_cat %in% unlist(params$enrichment$msigdb$gs_cat) |
-      gs_subcat %in% unlist(params$enrichment$msigdb$gs_subcat),
+    gs_cat %in% unlist(extra_params$enrichment$msigdb$gs_cat) |
+      gs_subcat %in% unlist(extra_params$enrichment$msigdb$gs_subcat),
     str_detect(ensembl_gene, "^E")
   ) %>% 
   dplyr::rename(gene_id = ensembl_gene, gene_name = gene_symbol) %>% # For easier integration 
@@ -1768,21 +1761,21 @@ gs_url <- msigdb %>%
   ) %>% 
   with(setNames(gs_url, gs_name))
 
-min_network_size <- params$networks$min_size
+min_network_size <- extra_params$networks$min_size
 if (is.null(min_network_size) | is.na(min_network_size))
   min_network_size <- 2
 
-max_network_size <- params$networks$max_size
+max_network_size <- extra_params$networks$max_size
 if (is.null(max_network_size) | is.na(max_network_size))
   max_network_size <- Inf
 
-max_network_dist <- params$networks$max_distance
+max_network_dist <- extra_params$networks$max_distance
 if (is.null(max_network_dist) | is.na(max_network_dist))
   max_network_dist <- 1
 
-net_layout <- params$networks$layout
-enrich_alpha <- params$enrichment$alpha
-adj_method <- match.arg(params$enrichment$adj, p.adjust.methods)
+net_layout <- extra_params$networks$layout
+enrich_alpha <- extra_params$enrichment$alpha
+adj_method <- match.arg(extra_params$enrichment$adj, p.adjust.methods)
 adj_desc <- case_when(
   p.adjust.methods %in% c("fdr", "BH") ~ "the Benjamini-Hochberg FDR",
   p.adjust.methods %in% c("BY") ~ "the Benjamini-Yekutieli FDR",

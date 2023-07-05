@@ -3,20 +3,17 @@ title: 'AR: MACS2 Summary'
 date: "`r format(Sys.Date(), '%d %B, %Y')`"
 bibliography: references.bib
 link-citations: true
+params:
+    target: "AR"
+    threads: 1
 ---
 
 ```{r set-knitr-opts, echo=FALSE, child = here::here('analysis/setup_chunk.Rmd')}
 ```
 
-```{r set-vals}
-target <- "AR"
-threads <- 1
-```
-
-```{r example, echo = FALSE, eval = FALSE}
-## This module requires the following to be set during preparation
-# target <- "AR"
-# threads <- 6
+```{r get-params}
+target <- params$target
+threads <- params$threads
 ```
 
 
@@ -40,9 +37,6 @@ library(Biostrings)
 library(ggside)
 library(extraChIPs)
 library(patchwork)
-```
-
-```{r options}
 panderOptions("big.mark", ",")
 panderOptions("missing", "")
 panderOptions("table.split.table", Inf)
@@ -61,7 +55,7 @@ config <- read_yaml(
   here::here("config", "config.yml")
 )
 fdr_alpha <- config$comparisons$fdr
-params <- read_yaml(here::here("config", "params.yml"))
+extra_params <- read_yaml(here::here("config", "params.yml"))
 bam_path <- here::here(config$paths$bam)
 macs2_path <- here::here("output", "macs2")
 annotation_path <- here::here("output", "annotations")
@@ -1023,7 +1017,7 @@ b <- union_peaks %>%
   ggplot(aes(abs(d) / 1e3, q)) +
   geom_line() +
   geom_vline(
-    xintercept = max(unlist(params$gene_regions$promoters)) / 1e3, 
+    xintercept = max(unlist(extra_params$gene_regions$promoters)) / 1e3, 
     linetype = 2, colour = "grey40"
   ) +
   coord_cartesian(xlim = c(0, 100)) +

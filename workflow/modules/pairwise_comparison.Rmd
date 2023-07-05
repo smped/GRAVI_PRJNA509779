@@ -1,5 +1,5 @@
 
-```{r get_params, echo = FALSE, eval=FALSE}
+```{r get_params, echo = FALSE}
 threads <- params$threads
 pairs <- params$pairs
 ```
@@ -437,14 +437,13 @@ The sets of treatment-specific *treatment-peaks* were then compared across the c
 
 `r if (length(unique(targets)) > 1) "## Union Peaks"`
 
-```{r plot-union, results = 'hide', eval = length(unique(targets)) > 1, eval = length(unique(targets)) > 1, fig.cap = glue("![*Union of peaks found in {targets[[1]]} and {targets[[2]]}, and which of the two targets each peak is found in. Peaks are based on the union of both sets of union peaks, which are themselves independent of treatment group.*](assets/{basename(fig_path)}/{fig_name})"), fig.height = 8, fig.width = 8}
+```{r plot-union, results = 'hide', eval = length(unique(targets)) > 1, eval = length(unique(targets)) > 1, fig.cap = glue("*Union of peaks found in {targets[[1]]} and {targets[[2]]}, and which of the two targets each peak is found in. Peaks are based on the union of both sets of union peaks, which are themselves independent of treatment group.*"), fig.height = 8, fig.width = 8}
 plotOverlaps(
   union_peaks, set_col = comp_cols[comps], alpha = 0.3, 
   cex = 1.3, cat.cex = 1.3
 )
 ```
 
-`r if (length(unique(targets)) > 1) `
 
 ## Treatment Specific Peaks
 

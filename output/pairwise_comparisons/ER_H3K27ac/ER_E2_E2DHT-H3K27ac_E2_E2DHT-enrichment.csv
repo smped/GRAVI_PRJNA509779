@@ -1,2 +1,0 @@
-group,gs_name,pval,adj_p,numDEInCat,numInCat,gs_url,gs_description,gene_name
-ER Undetected - H3K27ac Up,HES2_TARGET_GENES,4.142370045753441e-5,0.04022241314426591,28,879,http://gtrd.biouml.org/,"Genes containing one or more binding sites for UniProt:Q9Y543 (HES2) in their promoter regions (TSS -1000,+100 bp) as identified by GTRD version 20.06 ChIP-seq harmonization.",AQP3; ATF6; C1orf21; CDK5RAP2; CECR2; CUEDC1; CYB5A; DLEU2; EHF; FLNB; IQGAP2; KIAA0232; LRBA; MRPS23; MTMR9; NEDD4L; NFIC; NFX1; NRP1; PTPRM; RAB31; SCNN1A; SLC38A1; SYBU; TEX2; TMSB4X; TNFRSF1A; VWA8

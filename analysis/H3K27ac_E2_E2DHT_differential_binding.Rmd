@@ -3,22 +3,19 @@ title: 'H3K27ac Differential Binding: E2DHT Vs. E2'
 date: "`r format(Sys.Date(), '%d %B, %Y')`"
 bibliography: references.bib
 link-citations: true
+params:
+    target: "H3K27ac"
+    treat_levels: ["E2", "E2DHT"]
+    threads: 1
 ---
 
 ```{r set-knitr-opts, echo=FALSE, child = here::here('analysis/setup_chunk.Rmd')}
 ```
 
-```{r set-vals}
-target <- "H3K27ac"
-treat_levels <- c("E2", "E2DHT")
-threads <- 1
-```
-
-```{r example, echo = FALSE, eval=TRUE}
-## This module requires the following to be set during preparation
-# target <- "ER"
-# threads <- 6
-# treat_levels <- c("Veh", "DHT")
+```{r get_params, echo = FALSE, eval=TRUE}
+target <- params$target
+treat_levels <- params$treat_levels
+threads <- params$threads
 ```
 
 ```{r packages}
@@ -52,9 +49,6 @@ library(extraChIPs)
 library(tidygraph)
 library(ggraph)
 library(metap)
-```
-
-```{r options}
 panderOptions("big.mark", ",")
 panderOptions("missing", "")
 panderOptions("table.split.table", Inf)
@@ -69,7 +63,7 @@ source(here::here("workflow", "scripts", "custom_functions.R"))
 ```
 
 ```{r load-config}
-params <- read_yaml(here::here("config", "params.yml"))
+extra_params <- read_yaml(here::here("config", "params.yml"))
 config <- read_yaml(here::here("config", "config.yml"))
 macs2_path <- here::here("output", "macs2", target)
 samples <- file.path(macs2_path, glue("{target}_qc_samples.tsv")) %>% 
@@ -689,10 +683,10 @@ merged_results <- merged_results %>%
     prom = reduce(c(feat_prom, granges(gene_regions$promoter))),
     enh = feat_enh,
     gi = hic, 
-    gr2gene = params$mapping$gr2gene,
-    prom2gene = params$mapping$prom2gene,
-    enh2gene = params$mapping$enh2gene,
-    gi2gene = params$mapping$gi2gene
+    gr2gene = extra_params$mapping$gr2gene,
+    prom2gene = extra_params$mapping$prom2gene,
+    enh2gene = extra_params$mapping$enh2gene,
+    gi2gene = extra_params$mapping$gi2gene
   )
 ```
 
@@ -705,10 +699,10 @@ During mapping to genes, promoters were defined the union of all regions defined
 
 These features were used to map merged windows to features using the process defined in the function `extraChIPs::mapByFeature()`:
 
-1. Ranges *overlapping a promoter* are assigned to genes `r ifelse(params$mapping$prom2gene == 0, "directly overlapping", paste("within", params$mapping$prom2gene, "bp of"))` that specific promoter
-2. Ranges *overlapping an enhancer* are assigned to all genes `r ifelse(params$mapping$enh2gene == 0, "directly overlapping", paste("within", round(params$mapping$enh2gene/1e3, 1), "kb of"))` the enhancer
-3. Ranges *overlapping a long-range interaction* are assigned to all genes `r ifelse(params$mapping$gi2gene == 0, "directly overlapping", paste("within", round(params$mapping$gi2gene/1e3, 1), "kb of"))` either end of the interaction
-4. Ranges with *no gene assignment from the previous steps* are assigned to all overlapping genes, or the nearest gene within `r round(params$mapping$gr2gene/1e3, 1)`kb
+1. Ranges *overlapping a promoter* are assigned to genes `r ifelse(extra_params$mapping$prom2gene == 0, "directly overlapping", paste("within", extra_params$mapping$prom2gene, "bp of"))` that specific promoter
+2. Ranges *overlapping an enhancer* are assigned to all genes `r ifelse(extra_params$mapping$enh2gene == 0, "directly overlapping", paste("within", round(extra_params$mapping$enh2gene/1e3, 1), "kb of"))` the enhancer
+3. Ranges *overlapping a long-range interaction* are assigned to all genes `r ifelse(extra_params$mapping$gi2gene == 0, "directly overlapping", paste("within", round(extra_params$mapping$gi2gene/1e3, 1), "kb of"))` either end of the interaction
+4. Ranges with *no gene assignment from the previous steps* are assigned to all overlapping genes, or the nearest gene within `r round(extra_params$mapping$gr2gene/1e3, 1)`kb
 
 Notably, genes are only passed to step 4 if no gene assignment has been made in steps 1, 2 or 3.
 For visualisation purposes, only genes which were considered as detected in any provided RNA-Seq data will be shown as the mapping targets.
@@ -1955,16 +1949,16 @@ plotHFGC(
 # Enrichment Testing 
 
 ```{r msigdb}
-min_gs_size <- params$enrichment$min_size
+min_gs_size <- extra_params$enrichment$min_size
 if (is.null(min_gs_size) | is.na(min_gs_size)) min_gs_size <- 0
-max_gs_size <- params$enrichment$max_size
+max_gs_size <- extra_params$enrichment$max_size
 if (is.null(max_gs_size) | is.na(max_gs_size)) max_gs_size <- Inf
-min_sig <- params$enrichment$min_sig
+min_sig <- extra_params$enrichment$min_sig
 if (is.null(min_sig) | is.na(min_sig)) min_sig <- 1
 msigdb <- msigdbr(species = "Homo sapiens") %>% 
   dplyr::filter(
-    gs_cat %in% unlist(params$enrichment$msigdb$gs_cat) |
-      gs_subcat %in% unlist(params$enrichment$msigdb$gs_subcat),
+    gs_cat %in% unlist(extra_params$enrichment$msigdb$gs_cat) |
+      gs_subcat %in% unlist(extra_params$enrichment$msigdb$gs_subcat),
     str_detect(ensembl_gene, "^E")
   ) %>% 
   dplyr::rename(gene_id = ensembl_gene, gene_name = gene_symbol) %>% # For easier integration 
@@ -1994,21 +1988,21 @@ gs_url <- msigdb %>%
   ) %>% 
   with(setNames(gs_url, gs_name))
 
-min_network_size <- params$networks$min_size
+min_network_size <- extra_params$networks$min_size
 if (is.null(min_network_size) | is.na(min_network_size))
   min_network_size <- 2
 
-max_network_size <- params$networks$max_size
+max_network_size <- extra_params$networks$max_size
 if (is.null(max_network_size) | is.na(max_network_size))
   max_network_size <- Inf
 
-max_network_dist <- params$networks$max_distance
+max_network_dist <- extra_params$networks$max_distance
 if (is.null(max_network_dist) | is.na(max_network_dist))
   max_network_dist <- 1
 
-net_layout <- params$networks$layout
-enrich_alpha <- params$enrichment$alpha
-adj_method <- match.arg(params$enrichment$adj, p.adjust.methods)
+net_layout <- extra_params$networks$layout
+enrich_alpha <- extra_params$enrichment$alpha
+adj_method <- match.arg(extra_params$enrichment$adj, p.adjust.methods)
 adj_desc <- case_when(
   p.adjust.methods %in% c("fdr", "BH") ~ "the Benjamini-Hochberg FDR",
   p.adjust.methods %in% c("BY") ~ "the Benjamini-Yekutieli FDR",

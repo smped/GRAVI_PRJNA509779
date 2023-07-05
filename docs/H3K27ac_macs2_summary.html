@@ -472,8 +472,8 @@ div.tocify {
 </div>
 
 
-<pre class="r"><code>target &lt;- &quot;H3K27ac&quot;
-threads &lt;- 1</code></pre>
+<pre class="r"><code>target &lt;- params$target
+threads &lt;- params$threads</code></pre>
 <pre class="r"><code>library(tidyverse)
 library(magrittr)
 library(rtracklayer)
@@ -492,8 +492,8 @@ library(Rsamtools)
 library(Biostrings)
 library(ggside)
 library(extraChIPs)
-library(patchwork)</code></pre>
-<pre class="r"><code>panderOptions(&quot;big.mark&quot;, &quot;,&quot;)
+library(patchwork)
+panderOptions(&quot;big.mark&quot;, &quot;,&quot;)
 panderOptions(&quot;missing&quot;, &quot;&quot;)
 panderOptions(&quot;table.split.table&quot;, Inf)
 theme_set(
@@ -508,7 +508,7 @@ source(here::here(&quot;workflow/scripts/custom_functions.R&quot;))</code></pre>
   here::here(&quot;config&quot;, &quot;config.yml&quot;)
 )
 fdr_alpha &lt;- config$comparisons$fdr
-params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
+extra_params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
 bam_path &lt;- here::here(config$paths$bam)
 macs2_path &lt;- here::here(&quot;output&quot;, &quot;macs2&quot;)
 annotation_path &lt;- here::here(&quot;output&quot;, &quot;annotations&quot;)
@@ -1614,7 +1614,7 @@ b &lt;- union_peaks %&gt;%
   ggplot(aes(abs(d) / 1e3, q)) +
   geom_line() +
   geom_vline(
-    xintercept = max(unlist(params$gene_regions$promoters)) / 1e3, 
+    xintercept = max(unlist(extra_params$gene_regions$promoters)) / 1e3, 
     linetype = 2, colour = &quot;grey40&quot;
   ) +
   coord_cartesian(xlim = c(0, 100)) +
