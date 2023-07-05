@@ -1,4 +1,4 @@
-INFO  @ Sat, 01 Jul 2023 02:57:42: 
+INFO  @ Wed, 05 Jul 2023 18:36:05: 
 # Command line: callpeak -t data/bam/SRR8315179.bam -c data/bam/SRR8315192.bam -f BAM -g hs --keep-dup all -q 0.05 -n SRR8315179 --bdg --SPMR --outdir output/macs2/SRR8315179
 # ARGUMENTS LIST:
 # name = SRR8315179
@@ -17,70 +17,265 @@ INFO  @ Sat, 01 Jul 2023 02:57:42:
 # Paired-End mode is off
 # MACS will save fragment pileup signal per million reads
  
-INFO  @ Sat, 01 Jul 2023 02:57:42: #1 read tag files... 
-INFO  @ Sat, 01 Jul 2023 02:57:42: #1 read treatment tags... 
-INFO  @ Sat, 01 Jul 2023 02:57:43:  1000000 
-INFO  @ Sat, 01 Jul 2023 02:57:45:  2000000 
-INFO  @ Sat, 01 Jul 2023 02:57:47:  3000000 
-INFO  @ Sat, 01 Jul 2023 02:57:48:  4000000 
-INFO  @ Sat, 01 Jul 2023 02:57:50:  5000000 
-INFO  @ Sat, 01 Jul 2023 02:57:52:  6000000 
-INFO  @ Sat, 01 Jul 2023 02:57:53:  7000000 
-INFO  @ Sat, 01 Jul 2023 02:57:55:  8000000 
-INFO  @ Sat, 01 Jul 2023 02:57:57:  9000000 
-INFO  @ Sat, 01 Jul 2023 02:57:58:  10000000 
-INFO  @ Sat, 01 Jul 2023 02:58:00:  11000000 
-INFO  @ Sat, 01 Jul 2023 02:58:02:  12000000 
-INFO  @ Sat, 01 Jul 2023 02:58:04:  13000000 
-INFO  @ Sat, 01 Jul 2023 02:58:05:  14000000 
-INFO  @ Sat, 01 Jul 2023 02:58:07:  15000000 
-INFO  @ Sat, 01 Jul 2023 02:58:09:  16000000 
-INFO  @ Sat, 01 Jul 2023 02:58:10:  17000000 
-INFO  @ Sat, 01 Jul 2023 02:58:11: 17729490 reads have been read. 
-INFO  @ Sat, 01 Jul 2023 02:58:12: #1.2 read input tags... 
-INFO  @ Sat, 01 Jul 2023 02:58:13:  1000000 
-INFO  @ Sat, 01 Jul 2023 02:58:15:  2000000 
-INFO  @ Sat, 01 Jul 2023 02:58:17:  3000000 
-INFO  @ Sat, 01 Jul 2023 02:58:18:  4000000 
-INFO  @ Sat, 01 Jul 2023 02:58:20:  5000000 
-INFO  @ Sat, 01 Jul 2023 02:58:22:  6000000 
-INFO  @ Sat, 01 Jul 2023 02:58:23:  7000000 
-INFO  @ Sat, 01 Jul 2023 02:58:25:  8000000 
-INFO  @ Sat, 01 Jul 2023 02:58:27:  9000000 
-INFO  @ Sat, 01 Jul 2023 02:58:28:  10000000 
-INFO  @ Sat, 01 Jul 2023 02:58:30:  11000000 
-INFO  @ Sat, 01 Jul 2023 02:58:32:  12000000 
-INFO  @ Sat, 01 Jul 2023 02:58:33:  13000000 
-INFO  @ Sat, 01 Jul 2023 02:58:35:  14000000 
-INFO  @ Sat, 01 Jul 2023 02:58:37:  15000000 
-INFO  @ Sat, 01 Jul 2023 02:58:38:  16000000 
-INFO  @ Sat, 01 Jul 2023 02:58:40:  17000000 
-INFO  @ Sat, 01 Jul 2023 02:58:42:  18000000 
-INFO  @ Sat, 01 Jul 2023 02:58:43:  19000000 
-INFO  @ Sat, 01 Jul 2023 02:58:44: 19309861 reads have been read. 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #1 tag size is determined as 70 bps 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #1 tag size = 70.0 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #1  total tags in treatment: 17729490 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #1  total tags in control: 19309861 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #1 finished! 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #2 Build Peak Model... 
-INFO  @ Sat, 01 Jul 2023 02:58:44: #2 looking for paired plus/minus strand peaks... 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #2 number of paired peaks: 12091 
-INFO  @ Sat, 01 Jul 2023 02:58:46: start model_add_line... 
-INFO  @ Sat, 01 Jul 2023 02:58:46: start X-correlation... 
-INFO  @ Sat, 01 Jul 2023 02:58:46: end of X-cor 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #2 finished! 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #2 predicted fragment length is 178 bps 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #2 alternative fragment length(s) may be 178 bps 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #2.2 Generate R script for model : output/macs2/SRR8315179/SRR8315179_model.r 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #3 Call peaks... 
-INFO  @ Sat, 01 Jul 2023 02:58:46: #3 Pre-compute pvalue-qvalue table... 
-INFO  @ Sat, 01 Jul 2023 02:59:51: #3 In the peak calling step, the following will be performed simultaneously: 
-INFO  @ Sat, 01 Jul 2023 02:59:51: #3   Write bedGraph files for treatment pileup (after scaling if necessary)... SRR8315179_treat_pileup.bdg 
-INFO  @ Sat, 01 Jul 2023 02:59:51: #3   Write bedGraph files for control lambda (after scaling if necessary)... SRR8315179_control_lambda.bdg 
-INFO  @ Sat, 01 Jul 2023 02:59:51: #3   --SPMR is requested, so pileup will be normalized by sequencing depth in million reads. 
-INFO  @ Sat, 01 Jul 2023 02:59:51: #3 Call peaks for each chromosome... 
-INFO  @ Sat, 01 Jul 2023 03:01:00: #4 Write output xls file... output/macs2/SRR8315179/SRR8315179_peaks.xls 
-INFO  @ Sat, 01 Jul 2023 03:01:00: #4 Write peak in narrowPeak format file... output/macs2/SRR8315179/SRR8315179_peaks.narrowPeak 
-INFO  @ Sat, 01 Jul 2023 03:01:00: #4 Write summits bed file... output/macs2/SRR8315179/SRR8315179_summits.bed 
-INFO  @ Sat, 01 Jul 2023 03:01:00: Done! 
+INFO  @ Wed, 05 Jul 2023 18:36:05: #1 read tag files... 
+INFO  @ Wed, 05 Jul 2023 18:36:05: #1 read treatment tags... 
+INFO  @ Wed, 05 Jul 2023 18:36:06:  1000000 
+INFO  @ Wed, 05 Jul 2023 18:36:08:  2000000 
+INFO  @ Wed, 05 Jul 2023 18:36:10:  3000000 
+INFO  @ Wed, 05 Jul 2023 18:36:12:  4000000 
+INFO  @ Wed, 05 Jul 2023 18:36:13:  5000000 
+INFO  @ Wed, 05 Jul 2023 18:36:15:  6000000 
+INFO  @ Wed, 05 Jul 2023 18:36:17:  7000000 
+INFO  @ Wed, 05 Jul 2023 18:36:18:  8000000 
+INFO  @ Wed, 05 Jul 2023 18:36:20:  9000000 
+INFO  @ Wed, 05 Jul 2023 18:36:22:  10000000 
+INFO  @ Wed, 05 Jul 2023 18:36:23:  11000000 
+INFO  @ Wed, 05 Jul 2023 18:36:25:  12000000 
+INFO  @ Wed, 05 Jul 2023 18:36:27:  13000000 
+INFO  @ Wed, 05 Jul 2023 18:36:28:  14000000 
+INFO  @ Wed, 05 Jul 2023 18:36:30:  15000000 
+INFO  @ Wed, 05 Jul 2023 18:36:32:  16000000 
+INFO  @ Wed, 05 Jul 2023 18:36:33:  17000000 
+INFO  @ Wed, 05 Jul 2023 18:36:35: 17729490 reads have been read. 
+INFO  @ Wed, 05 Jul 2023 18:36:35: #1.2 read input tags... 
+INFO  @ Wed, 05 Jul 2023 18:36:37:  1000000 
+INFO  @ Wed, 05 Jul 2023 18:36:38:  2000000 
+INFO  @ Wed, 05 Jul 2023 18:36:40:  3000000 
+INFO  @ Wed, 05 Jul 2023 18:36:42:  4000000 
+INFO  @ Wed, 05 Jul 2023 18:36:43:  5000000 
+INFO  @ Wed, 05 Jul 2023 18:36:45:  6000000 
+INFO  @ Wed, 05 Jul 2023 18:36:47:  7000000 
+INFO  @ Wed, 05 Jul 2023 18:36:48:  8000000 
+INFO  @ Wed, 05 Jul 2023 18:36:50:  9000000 
+INFO  @ Wed, 05 Jul 2023 18:36:52:  10000000 
+INFO  @ Wed, 05 Jul 2023 18:36:53:  11000000 
+INFO  @ Wed, 05 Jul 2023 18:36:55:  12000000 
+INFO  @ Wed, 05 Jul 2023 18:36:57:  13000000 
+INFO  @ Wed, 05 Jul 2023 18:36:58:  14000000 
+INFO  @ Wed, 05 Jul 2023 18:37:00:  15000000 
+INFO  @ Wed, 05 Jul 2023 18:37:02:  16000000 
+INFO  @ Wed, 05 Jul 2023 18:37:03:  17000000 
+INFO  @ Wed, 05 Jul 2023 18:37:05:  18000000 
+INFO  @ Wed, 05 Jul 2023 18:37:07:  19000000 
+INFO  @ Wed, 05 Jul 2023 18:37:07: 19309861 reads have been read. 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #1 tag size is determined as 70 bps 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #1 tag size = 70.0 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #1  total tags in treatment: 17729490 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #1  total tags in control: 19309861 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #1 finished! 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #2 Build Peak Model... 
+INFO  @ Wed, 05 Jul 2023 18:37:07: #2 looking for paired plus/minus strand peaks... 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #2 number of paired peaks: 12091 
+INFO  @ Wed, 05 Jul 2023 18:37:09: start model_add_line... 
+INFO  @ Wed, 05 Jul 2023 18:37:09: start X-correlation... 
+INFO  @ Wed, 05 Jul 2023 18:37:09: end of X-cor 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #2 finished! 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #2 predicted fragment length is 178 bps 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #2 alternative fragment length(s) may be 178 bps 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #2.2 Generate R script for model : output/macs2/SRR8315179/SRR8315179_model.r 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #3 Call peaks... 
+INFO  @ Wed, 05 Jul 2023 18:37:09: #3 Pre-compute pvalue-qvalue table... 
+INFO  @ Wed, 05 Jul 2023 18:38:15: #3 In the peak calling step, the following will be performed simultaneously: 
+INFO  @ Wed, 05 Jul 2023 18:38:15: #3   Write bedGraph files for treatment pileup (after scaling if necessary)... SRR8315179_treat_pileup.bdg 
+INFO  @ Wed, 05 Jul 2023 18:38:15: #3   Write bedGraph files for control lambda (after scaling if necessary)... SRR8315179_control_lambda.bdg 
+INFO  @ Wed, 05 Jul 2023 18:38:15: #3   --SPMR is requested, so pileup will be normalized by sequencing depth in million reads. 
+INFO  @ Wed, 05 Jul 2023 18:38:15: #3 Call peaks for each chromosome... 
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpar0lxqzi'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpar0lxqzi'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpwpnvqxk3'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpwpnvqxk3'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmp5alt4rja'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmp5alt4rja'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpf9_fxa4p'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpf9_fxa4p'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpuc3atkb0'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpuc3atkb0'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmp2yfo0ktg'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmp2yfo0ktg'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpdkly5dgn'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpdkly5dgn'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpsrg6oyqg'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpsrg6oyqg'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpqd7255oa'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpqd7255oa'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpjf097adw'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpjf097adw'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpg4g23in3'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpg4g23in3'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpl0uoh5v3'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpl0uoh5v3'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpu1988xih'
+Exception ignored in: 'MACS2.IO.CallPeakUnit.CallerFromAlignments.__chrom_call_peak_using_certain_criteria'
+Traceback (most recent call last):
+  File "MACS2/IO/CallPeakUnit.pyx", line 489, in MACS2.IO.CallPeakUnit.CallerFromAlignments.__pileup_treat_ctrl_a_chromosome
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 340, in mkstemp
+    return _mkstemp_inner(dir, prefix, suffix, flags, output_type)
+  File "/hpcfs/users/a1018048/envs/3d1fbf0d79dd5041842db897c580e0ef_/lib/python3.7/tempfile.py", line 258, in _mkstemp_inner
+    fd = _os.open(file, flags, 0o600)
+OSError: [Errno 28] No space left on device: '/mnt/tmp_local/lls_529714/tmpu1988xih'
+INFO  @ Wed, 05 Jul 2023 18:38:46: #4 Write output xls file... output/macs2/SRR8315179/SRR8315179_peaks.xls 
+INFO  @ Wed, 05 Jul 2023 18:38:46: #4 Write peak in narrowPeak format file... output/macs2/SRR8315179/SRR8315179_peaks.narrowPeak 
+INFO  @ Wed, 05 Jul 2023 18:38:46: #4 Write summits bed file... output/macs2/SRR8315179/SRR8315179_summits.bed 
+INFO  @ Wed, 05 Jul 2023 18:38:46: Done! 

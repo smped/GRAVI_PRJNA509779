@@ -13,7 +13,7 @@
 
 <title>ER: MACS2 Summary</title>
 
-<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.23/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
@@ -467,13 +467,13 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">ER: MACS2 Summary</h1>
-<h4 class="date">01 July, 2023</h4>
+<h4 class="date">05 July, 2023</h4>
 
 </div>
 
 
-<pre class="r"><code>target &lt;- &quot;ER&quot;
-threads &lt;- 1</code></pre>
+<pre class="r"><code>target &lt;- params$target
+threads &lt;- params$threads</code></pre>
 <pre class="r"><code>library(tidyverse)
 library(magrittr)
 library(rtracklayer)
@@ -485,15 +485,15 @@ library(yaml)
 library(ngsReports)
 library(ComplexUpset)
 library(VennDiagram)
-library(cowplot)
 library(rlang)
 library(BiocParallel)
 library(parallel)
 library(Rsamtools)
 library(Biostrings)
 library(ggside)
-library(extraChIPs)</code></pre>
-<pre class="r"><code>panderOptions(&quot;big.mark&quot;, &quot;,&quot;)
+library(extraChIPs)
+library(patchwork)
+panderOptions(&quot;big.mark&quot;, &quot;,&quot;)
 panderOptions(&quot;missing&quot;, &quot;&quot;)
 panderOptions(&quot;table.split.table&quot;, Inf)
 theme_set(
@@ -508,7 +508,7 @@ source(here::here(&quot;workflow/scripts/custom_functions.R&quot;))</code></pre>
   here::here(&quot;config&quot;, &quot;config.yml&quot;)
 )
 fdr_alpha &lt;- config$comparisons$fdr
-params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
+extra_params &lt;- read_yaml(here::here(&quot;config&quot;, &quot;params.yml&quot;))
 bam_path &lt;- here::here(config$paths$bam)
 macs2_path &lt;- here::here(&quot;output&quot;, &quot;macs2&quot;)
 annotation_path &lt;- here::here(&quot;output&quot;, &quot;annotations&quot;)
@@ -516,7 +516,7 @@ colours &lt;- read_rds(
   file.path(annotation_path, &quot;colours.rds&quot;)
 ) %&gt;% 
   lapply(unlist)</code></pre>
-<pre class="r"><code>samples &lt;-macs2_path %&gt;%
+<pre class="r"><code>samples &lt;- macs2_path %&gt;%
   file.path(target, glue(&quot;{target}_qc_samples.tsv&quot;)) %&gt;%
   read_tsv()
 treat_levels &lt;- unique(samples$treat)
@@ -830,33 +830,26 @@ exclusion as described above will be indicated with an (F)</em>
 <h3>Peaks Detected</h3>
 <pre class="r"><code>suppressWarnings(
   macs2_logs %&gt;%
-    ggplot(
-      aes(label, total_peaks, fill = qc)
-    ) +
+    ggplot(aes(label, total_peaks, fill = qc)) +
     geom_col() +
     geom_label(
       aes(x = label, y = total_peaks, label = lab, colour = qc),
       data = . %&gt;%
         dplyr::filter(total_peaks &gt; 0) %&gt;% 
         mutate(
-          lab = comma(total_peaks, accuracy = 1),
-          total = total_peaks
+          lab = comma(total_peaks, accuracy = 1), total = total_peaks
         ),
-      inherit.aes = FALSE,
-      show.legend = FALSE
+      nudge_y = 0.03 * max(macs2_logs$total_peaks),
+      inherit.aes = FALSE, show.legend = FALSE
     ) +
     facet_grid(~treat, scales = &quot;free_x&quot;, space = &quot;free_x&quot;) +
     scale_y_continuous(expand = expansion(c(0, 0.05)), labels = comma) +
     scale_fill_manual(values = colours$qc) +
     scale_colour_manual(values = colours$qc) +
     labs(
-      x = &quot;Sample&quot;,
-      y = &quot;Total Peaks&quot;,
-      fill = &quot;QC&quot;
+      x = &quot;Sample&quot;, y = &quot;Total Peaks&quot;, fill = &quot;QC&quot;
     ) +
-    ggtitle(
-      glue(&quot;{target}: Number of Peaks&quot;)
-    )
+    ggtitle(glue(&quot;{target}: Number of Peaks&quot;))
 )</code></pre>
 <div class="figure" style="text-align: center">
 <img src="ER_macs2_summary_files/figure-html/plot-macs2-peaks-individual-1.png" alt="*Peaks identified for each ER sample. The number of peaks passing the inclusion criteria for `macs2 callpeak` (FDR &lt; 0.05) are provided. Any samples marked for exclusion are coloured as indicated in the figure legend.*" width="960" />
@@ -879,33 +872,22 @@ the figure legend.</em>
         sbp &lt;- ScanBamParam(which = gr)
         rip &lt;- sum(countBam(bfl[[x]], param = sbp)$records)
       }
-      tibble(
-        name = x,
-        reads_in_peaks = rip
-      )
+      tibble(name = x, reads_in_peaks = rip)
     }
   ) %&gt;%
   bind_rows() %&gt;%
   left_join(macs2_logs, by = &quot;name&quot;) %&gt;%
-  mutate(
-    frip = reads_in_peaks / n_tags_treatment
-  ) %&gt;%
-  ggplot(
-    aes(label, frip, fill = qc)
-  ) +
+  mutate(frip = reads_in_peaks / n_tags_treatment) %&gt;%
+  ggplot(aes(label, frip, fill = qc)) +
   geom_col() +
   geom_hline(yintercept = 0.01, colour = &quot;grey&quot;, linetype = 2) +
   facet_grid(~treat, scales = &quot;free_x&quot;, space = &quot;free&quot;) +
   scale_y_continuous(labels = percent, expand = expansion(c(0, 0.05))) +
   scale_fill_manual(values = colours$qc) +
   labs(
-    x = &quot;Sample&quot;,
-    y = &quot;Fraction of Reads In Peaks&quot;,
-    fill = &quot;QC&quot;
+    x = &quot;Sample&quot;, y = &quot;Fraction of Reads In Peaks&quot;, fill = &quot;QC&quot;
   ) +
-  ggtitle(
-    glue(&quot;{target}: Fraction Of Reads In Peaks&quot;)
-  )</code></pre>
+  ggtitle(glue(&quot;{target}: Fraction Of Reads In Peaks&quot;))</code></pre>
 <div class="figure" style="text-align: center">
 <img src="ER_macs2_summary_files/figure-html/plot-frip-1.png" alt="*Fraction of Reads In Peaks for each sample. Higher values indicate more reads specifically associated with the ChIP target (ER). The common-use minimum value for an acceptable sample (1%) is shown as a dashed horizontal line*" width="960" />
 <p class="caption">
@@ -930,26 +912,31 @@ dashed horizontal line</em>
     data = macs2_logs,
     colour = &quot;grey40&quot;, linetype = 2
   ) +
+  geom_label(
+    aes(label = fl),
+    data = . %&gt;% 
+      mutate(correlation = correlation + 0.03 * max(correlation)) %&gt;% 
+      dplyr::filter(correlation == max(correlation), .by = sample),
+    show.legend = FALSE, alpha = 0.7
+  ) +
   facet_grid(as.formula(paste(&quot;treat ~&quot;, rep_col))) +
   scale_colour_manual(values = colours$treat[treat_levels]) +
   scale_x_continuous(
     breaks = seq(0, 5*max(macs2_logs$fragment_length), by = 200)
   ) +
   labs(
-    x = &quot;Distance (bp)&quot;,
-    y = &quot;Cross Correlation&quot;,
-    colour = &quot;Treat&quot;
+    x = &quot;Distance (bp)&quot;, y = &quot;Cross Correlation&quot;, colour = &quot;Treat&quot;
   ) +
-  ggtitle(
-    glue(&quot;{target}: Cross Correlations&quot;)
-  )</code></pre>
+  ggtitle(glue(&quot;{target}: Cross Correlations&quot;))</code></pre>
 <div class="figure" style="text-align: center">
-<img src="ER_macs2_summary_files/figure-html/plot_correlation-1.png" alt="*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample. For speed, only the first 5 chromosomes were used for sample-specific estimates.*" width="960" />
+<img src="ER_macs2_summary_files/figure-html/plot_correlation-1.png" alt="*Cross Correlaton between alignments up to 1kb apart. The dashed, grey, vertical line is the fragment length estimated by `macs2 callpeak` for each sample, with labels indicating the approximate point of the highest correlation, as representative of the average fragment length. For speed, only the first 5 chromosomes were used for sample-specific estimates.*" width="960" />
 <p class="caption">
 <em>Cross Correlaton between alignments up to 1kb apart. The dashed,
 grey, vertical line is the fragment length estimated by
-<code>macs2 callpeak</code> for each sample. For speed, only the first 5
-chromosomes were used for sample-specific estimates.</em>
+<code>macs2 callpeak</code> for each sample, with labels indicating the
+approximate point of the highest correlation, as representative of the
+average fragment length. For speed, only the first 5 chromosomes were
+used for sample-specific estimates.</em>
 </p>
 </div>
 </div>
@@ -1018,32 +1005,32 @@ replicates</p>
 <code>ComplexUpset</code> was used to create UpSet plots <span
 class="citation">(<a href="#ref-Upset2014" role="doc-biblioref">Lex et
 al. 2014</a>)</span>, with colours indicating QC status.</p>
-<pre class="r"><code>replicates_by_treat &lt;- individual_peaks %&gt;%
-  unlist() %&gt;% 
-  splitAsList(.$treat) %&gt;% 
-  .[vapply(., length, integer(1)) &gt; 1] %&gt;% 
-  lapply(select, sample) %&gt;% 
-  lapply(reduceMC) %&gt;% 
-  lapply(as_tibble) %&gt;% 
-  lapply(unnest, sample) %&gt;% 
-  lapply(mutate, detected = 1) %&gt;% 
-  lapply(left_join, dplyr::select(samples, sample, label), by = &quot;sample&quot;) %&gt;%
-  lapply(dplyr::select, -sample) %&gt;% 
-  lapply(function(x) {
-    split(x, x$label) %&gt;% 
-      lapply(pull, &quot;range&quot;)
-    }
-  )</code></pre>
 <div id="all-samples" class="section level4">
 <h4>All Samples</h4>
-<pre class="r"><code>df &lt;- individual_peaks %&gt;% 
-  makeConsensus(var = &quot;qValue&quot;) %&gt;% 
+<pre class="r"><code>sample2label &lt;- setNames(samples$label, samples$sample)
+sets &lt;- list(all = paste(samples$label, collapse = &quot;; &quot;)) %&gt;% 
+  c(
+    samples %&gt;% 
+      split(.$treat) %&gt;% 
+      lapply(function(x) paste(x$label, collapse = &quot;; &quot;))
+  ) %&gt;% 
+  unlist()
+valid_sets &lt;- makeConsensus(individual_peaks) %&gt;% 
   as_tibble() %&gt;% 
-  mutate(qValue = vapply(qValue, median, numeric(1))) %&gt;% 
-  rename_with(
-      function(x) dplyr::filter(samples, sample == x)$label,
-      all_of(samples$sample)
-  )
+  pivot_longer(
+    cols = all_of(samples$sample), names_to = &quot;sample&quot;, values_to = &quot;has_peak&quot;
+  ) %&gt;% 
+  dplyr::filter(has_peak) %&gt;% 
+  mutate(sample = sample2label[sample]) %&gt;% 
+  summarise(
+    samples = paste(sample, collapse = &quot;; &quot;), .by = range
+  ) %&gt;% 
+  distinct(samples) %&gt;% 
+  dplyr::filter(samples %in% sets) %&gt;% 
+  pull(samples) %&gt;% 
+  setNames(vapply(., function(x){names(which(sets == x))}, character(1))) %&gt;% 
+  lapply(function(x) str_split(x, &quot;; &quot;)[[1]])
+## Use upset_query objects to fill key intersections and sets
 ql &lt;- samples$label %&gt;% 
   lapply(
     function(x) upset_query(
@@ -1051,61 +1038,76 @@ ql &lt;- samples$label %&gt;%
       fill = colours$treat[as.character(dplyr::filter(samples, label == x)$treat)]
     )
   )
-lb &lt;- samples %&gt;% 
-  arrange(treat, !!sym(rep_col)) %&gt;% 
-  pull(&quot;label&quot;) %&gt;% 
-  rev()
+if (length(valid_sets) &gt; 0) {
+  ql &lt;- c(
+    ql,
+    names(valid_sets) %&gt;% 
+      lapply(
+        function(x) {
+          col &lt;- ifelse(x == &quot;all&quot;, &quot;darkorange&quot;, colours$treat[[x]])
+          upset_query(
+            intersect = valid_sets[[x]], 
+            only_components = &quot;intersections_matrix&quot;, 
+            color = col, fill = col
+          )
+        }
+      )
+  )
+}
+lb &lt;- rev(arrange(samples, treat)$label)
 size &lt;- get_size_mode(&#39;exclusive_intersection&#39;)
-df %&gt;% 
-  upset(
-    intersect = lb,
+individual_peaks %&gt;% 
+  setNames(sample2label[names(.)]) %&gt;% 
+  .[lb] %&gt;% 
+  plotOverlaps(
+    var = &quot;qValue&quot;, f = &quot;median&quot;,
+    .sort_sets = FALSE, queries = ql,
     base_annotations = list(
       `Peaks in Intersection` = intersection_size(
         text_mapping = aes(label = comma(!!size)),
         bar_number_threshold = 1, text_colors = &quot;black&quot;, 
-        text = list(size = 3, angle = 90, vjust = 0.5, hjust = -0.1)
+        text = list(size = 3.5, angle = 90, vjust = 0.5, hjust = -0.1)
       ) +
         scale_y_continuous(expand = expansion(c(0, 0.2)), label = comma) +
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = &quot;grey20&quot;),
-          panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+          panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA)
         )
     ),
     annotations = list(
       qValue = ggplot(mapping = aes(y = qValue)) +
         geom_boxplot(na.rm = TRUE, outlier.colour = rgb(0, 0, 0, 0.2)) +
-        coord_cartesian(ylim = c(0, quantile(df$qValue, 0.99))) +
+        coord_cartesian(
+          ylim = c(0, quantile(unlist(individual_peaks)$qValue, 0.99))
+        ) +
         scale_y_continuous(expand = expansion(c(0, 0.05))) +
         ylab(expr(paste(&quot;Macs2 &quot;, q[med]))) +
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = &quot;grey20&quot;),
-          panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+          panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA)
         )
     ),
     set_sizes = (
       upset_set_size() +
         geom_text(
           aes(label = comma(after_stat(count))), 
-          hjust = 1.1, stat = &#39;count&#39;, size = 3
+          hjust = 1.1, stat = &#39;count&#39;, size = 3.5
         ) +
         scale_y_reverse(expand = expansion(c(0.2, 0)), label = comma) +
         ylab(glue(&quot;Macs2 Peaks (FDR &lt; {config$peaks$macs2$fdr})&quot;)) +
         theme(
           panel.grid = element_blank(), 
           axis.line = element_line(colour = &quot;grey20&quot;),
-          panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+          panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA)
         )
     ),
-    queries = ql,
-    min_size = 10,
-    n_intersections = 50,
-    sort_sets = FALSE
+    min_size = 10, n_intersections = 40
   ) +
   theme(
     panel.grid = element_blank(), 
-    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA),
+    panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA),
     axis.line = element_line(colour = &quot;grey20&quot;)
   ) +
   labs(x = &quot;Intersection&quot;) +
@@ -1124,7 +1126,23 @@ y-axis for this panel is truncated at the 99<sup>th</sup> percentile of
 values. Only intersections with 10 or more peaks are shown.</em>
 </p>
 </div>
-<pre class="r"><code>## First find the python executable
+<pre class="r"><code>ranges_by_rep_treat &lt;- individual_peaks %&gt;%
+  unlist() %&gt;% 
+  splitAsList(.$treat) %&gt;% 
+  .[vapply(., length, integer(1)) &gt; 1] %&gt;% 
+  lapply(select, sample) %&gt;% 
+  lapply(reduceMC) %&gt;% 
+  lapply(as_tibble) %&gt;% 
+  lapply(unnest, sample) %&gt;% 
+  lapply(mutate, detected = 1) %&gt;% 
+  lapply(left_join, dplyr::select(samples, sample, label), by = &quot;sample&quot;) %&gt;%
+  lapply(dplyr::select, -sample) %&gt;% 
+  lapply(function(x) {
+    split(x, x$label) %&gt;% 
+      lapply(pull, &quot;range&quot;)
+    }
+  )
+## First find the python executable
 which_py &lt;- c(
   file.path(Sys.getenv(&quot;CONDA_PREFIX&quot;), &quot;bin&quot;, &quot;python3&quot;),
   Sys.which(&quot;python3&quot;)
@@ -1134,10 +1152,10 @@ which_py &lt;- c(
 stopifnot(length(which_py) == 1)
 rep_col &lt;- hcl.colors(3, palette = &quot;Zissou&quot;, rev = TRUE)
 htmltools::tagList(
-  names(replicates_by_treat) %&gt;% 
+  names(ranges_by_rep_treat) %&gt;% 
     lapply(
       function(i) {
-        x &lt;- replicates_by_treat[[i]]
+        x &lt;- ranges_by_rep_treat[[i]]
         fig_out &lt;- file.path(fig_path, glue(&quot;{i}_replicates.{fig_type}&quot;))
         if (length(x) == 1) {
           fig_fun(
@@ -1211,10 +1229,12 @@ htmltools::tagList(
             dplyr::filter(treat == i) %&gt;% 
             pull(&#39;label&#39;) %&gt;% 
             lapply(
-              function(x) upset_query(
-                set = x, 
-                fill = colours$qc[as.character(dplyr::filter(samples, treat == i, label == x)$qc)]
-              )
+              function(x) {
+                i &lt;- as.character(
+                  dplyr::filter(samples, treat == i, label == x)$qc
+                )
+                upset_query(set = x, fill = colours$qc[i])
+              }
             )
           ## And plot
           p &lt;- df %&gt;% 
@@ -1224,13 +1244,14 @@ htmltools::tagList(
                 `Peaks in Intersection` = intersection_size(
                   text_mapping = aes(label = comma(!!size)),
                   bar_number_threshold = 1, text_colors = &quot;black&quot;, 
-                  text = list(size = 3, angle = 90, vjust = 0.5, hjust = -0.1)
+                  text = list(size = 4, hjust = 0.5)
                 ) +
                   scale_y_continuous(expand = expansion(c(0, 0.2)), label = comma) +
                   theme(
+                    text = element_text(size = 14),
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = &quot;grey20&quot;),
-                    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+                    panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA)
                   )
               ),
               annotations = list(
@@ -1240,29 +1261,32 @@ htmltools::tagList(
                   scale_y_continuous(expand = expansion(c(0, 0.05))) +
                   ylab(expr(paste(&quot;Macs2 &quot;, q[med]))) +
                   theme(
+                    text = element_text(size = 14),
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = &quot;grey20&quot;),
-                    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+                    panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA)
                   )
               ),
               set_sizes = (
                 upset_set_size() +
                   geom_text(
                     aes(label = comma(after_stat(count))), 
-                    hjust = 1.1, stat = &#39;count&#39;, size = 3
+                    hjust = 1.1, stat = &#39;count&#39;, size = 4
                   ) +
                   scale_y_reverse(expand = expansion(c(0.2, 0)), label = comma) +
                   ylab(glue(&quot;Macs2 Peaks (FDR &lt; {config$peaks$macs2$fdr})&quot;)) +
                   theme(
+                    text = element_text(size = 14),
                     panel.grid = element_blank(), 
                     axis.line = element_line(colour = &quot;grey20&quot;),
-                    panel.border = element_rect(colour = &quot;grey20&quot;, fill=  NA)
+                    panel.border = element_rect(colour = &quot;grey20&quot;, fill =  NA)
                   )
               ),
               queries = ql,
               min_size = 10,
               sort_sets = FALSE
             ) +
+            theme(text = element_text(size = 14)) +
             patchwork::plot_layout(heights = c(2, 3, 2))
           print(p)
           dev.off()
@@ -1284,7 +1308,7 @@ htmltools::tagList(
         htmltools::div(
           htmltools::div(
             id = glue(&quot;{i}-replicates&quot;),
-            class=&quot;section level4&quot;,
+            class = &quot;section level4&quot;,
             htmltools::h4(i),
             htmltools::div(
               class = &quot;figure&quot;, style = &quot;text-align: center&quot;,
@@ -1330,6 +1354,34 @@ Replicates which passed/failed QC are show in the specified colours.</em>
 </div>
 </div>
 </div>
+<div id="individual-peak-widths" class="section level3">
+<h3>Individual Peak Widths</h3>
+<pre class="r"><code>individual_peaks %&gt;% 
+  width() %&gt;% 
+  as.list() %&gt;% 
+  lapply(list) %&gt;% 
+  as_tibble() %&gt;% 
+  pivot_longer(cols = everything(), names_to = &quot;sample&quot;, values_to = &quot;width&quot;) %&gt;% 
+  unnest(width) %&gt;% 
+  left_join(samples, by = &quot;sample&quot;) %&gt;% 
+  ggplot(aes(label, width, fill = treat)) +
+  geom_boxplot(alpha = 0.9) +
+  geom_hline(
+    yintercept = median(width(unlist(individual_peaks))),
+    linetype = 2
+  ) +
+  facet_wrap(~treat, nrow = 1, scales = &quot;free_x&quot;) +
+  scale_y_log10() +
+  scale_fill_manual(values = colours$treat) +
+  labs(x = &quot;Sample&quot;, y = &quot;Peak Width (bp)&quot;, fill = &quot;Treatment&quot;)</code></pre>
+<div class="figure" style="text-align: center">
+<img src="ER_macs2_summary_files/figure-html/plot-peak-width-1.png" alt="*Range of peak widths across all samples. The median value for all peaks (296bp) is shown as the dashed horizontal line*" width="960" />
+<p class="caption">
+<em>Range of peak widths across all samples. The median value for all
+peaks (296bp) is shown as the dashed horizontal line</em>
+</p>
+</div>
+</div>
 <div id="treatment-peaks" class="section level3">
 <h3>Treatment Peaks</h3>
 <pre class="r"><code>treatment_peaks &lt;- treat_levels %&gt;%
@@ -1337,7 +1389,7 @@ Replicates which passed/failed QC are show in the specified colours.</em>
     function(x) {
       gr &lt;- macs2_path %&gt;%
         file.path(target, glue(&quot;{target}_{x}_merged_peaks.narrowPeak&quot;)) %&gt;%
-        importPeaks(seqinfo = sq, blacklist = blacklist) %&gt;% 
+        importPeaks(seqinfo = sq, blacklist = blacklist, centre = TRUE) %&gt;% 
         unlist()
       k &lt;- dplyr::filter(n_reps, treat == x)$n * config$peaks$qc$min_prop_reps
       if (k &gt; 0) {
@@ -1354,7 +1406,6 @@ Replicates which passed/failed QC are show in the specified colours.</em>
   GRangesList() 
 union_peaks &lt;- treatment_peaks %&gt;% 
   endoapply(subset, keep) %&gt;% 
-  endoapply(mutate, centre = start + peak) %&gt;% 
   makeConsensus(
     var = c(&quot;score&quot;, &quot;signalValue&quot;, &quot;pValue&quot;, &quot;qValue&quot;, &quot;centre&quot;)
   ) %&gt;% 
@@ -1481,7 +1532,7 @@ all summits which comprise the union peak.</p>
 fig_out &lt;- file.path(fig_path, fig_name)
 ## An empty file to keep snakemake happy if &gt; 3 treatments
 file.create(fig_out) 
-if (length(vd) ==1) {
+if (length(vd) == 1) {
   fig_fun(filename = fig_out, width = 8, height = 3)
   grid.newpage()
   draw.single.venn(
@@ -1563,17 +1614,17 @@ b &lt;- union_peaks %&gt;%
   ggplot(aes(abs(d) / 1e3, q)) +
   geom_line() +
   geom_vline(
-    xintercept = max(unlist(params$gene_regions$promoters)) / 1e3, 
+    xintercept = max(unlist(extra_params$gene_regions$promoters)) / 1e3, 
     linetype = 2, colour = &quot;grey40&quot;
   ) +
   coord_cartesian(xlim = c(0, 100)) +
   labs(
     x = &quot;Distance to Nearest TSS (kb)&quot;,
-    y = &quot;Quantile&quot;
+    y = &quot;Percentile&quot;
   ) +
   scale_y_continuous(labels = percent, breaks = seq(0, 1, by = 0.2)) +
   scale_x_continuous(breaks = seq(0, 100, by = 20))
-plot_grid(a, b, labels = c(&quot;A&quot;, &quot;B&quot;))</code></pre>
+a + b + plot_annotation(tag_levels = &quot;A&quot;)</code></pre>
 <div class="figure" style="text-align: center">
 <img src="ER_macs2_summary_files/figure-html/plot-union-dist-to-tss-hist-1.png" alt="*Distances from the centre of the ER union peak to the transcription start-site shown as A) a histogram, and B) as a cumulative distribution. The vertical dashed line indicates the range considered to be a promoter during annotation preparation. 637 of the 7,532 ER union peaks (8.5%) directly overlapped a TSS.*" width="960" />
 <p class="caption">
@@ -1588,10 +1639,13 @@ directly overlapped a TSS.</em>
 <div id="gene-centric-regions" class="section level4">
 <h4>Gene-Centric Regions</h4>
 <pre class="r"><code>union_peaks %&gt;% 
-  plotPie(fill = &quot;region&quot;) +
+  plotPie(
+    fill = &quot;region&quot;, total_size = 4,
+    cat_glue = &quot;{str_wrap(.data[[fill]], 15)}\n{comma(n, 1)}\n({percent(p, 0.1)})&quot;,
+    cat_alpha = 0.9, cat_adj = 0.05, min_p = 0.025
+  ) +
   scale_fill_manual(
-    values = colours$regions %&gt;%
-      setNames(regions[names(.)])
+    values = colours$regions %&gt;% setNames(regions[names(.)])
   ) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <div class="figure" style="text-align: center">
@@ -1605,7 +1659,11 @@ features.</em>
 <div id="external-features" class="section level4">
 <h4>External Features</h4>
 <pre class="r"><code>union_peaks %&gt;% 
-  plotPie(fill = &quot;Feature&quot;, label_size = 4) +
+  plotPie(
+    fill = &quot;Feature&quot;, total_size = 4,
+    cat_glue = &quot;{str_wrap(.data[[fill]], 15)}\n{comma(n, 1)}\n({percent(p, 0.1)})&quot;,
+    cat_alpha = 0.9, cat_adj = 0.05
+  ) +
   scale_fill_manual(
     values = colours$features %&gt;% setNames(str_sep_to_title(names(.)))
   ) +
@@ -1623,20 +1681,13 @@ features, they are assigned to the one with the largest overlap.</em>
 class="section level4">
 <h4>External Features And Gene-Centric Regions</h4>
 <pre class="r"><code>union_peaks %&gt;% 
-  subset(Feature != &quot;No Feature&quot;) %&gt;% 
-  as_tibble() %&gt;% 
-  droplevels() %&gt;% 
-  plotPie(fill = &quot;region&quot;, x = &quot;Feature&quot;, label_size = 4, label_alpha = 0.7) +
-  scale_fill_manual(
-    values = colours$regions %&gt;%
-      setNames(regions[names(.)])
-  ) +
-  labs(fill = &quot;Region&quot;) +
-  theme(
-    panel.grid = element_blank(),
-    panel.border = element_blank(),
-    axis.line.x = element_line(),
-    legend.position = &quot;top&quot;
+  plotSplitDonut(
+    inner = &quot;Feature&quot;, outer = &quot;region&quot;,
+    inner_palette = colours$features %&gt;% setNames(str_to_title(names(.))),
+    outer_palette = colours$regions %&gt;% setNames(regions[names(.)]),
+    inner_glue = &quot;{str_wrap(.data[[inner]], 15)}\nn = {comma(n, 1)}\n{percent(p,0.1)}&quot;,
+    outer_glue = &quot;{str_wrap(.data[[outer]], 15)}\nn = {comma(n, 1)}\n{percent(p,0.1)}&quot;,
+    min_p = 0.03, outer_alpha = 0.8
   )</code></pre>
 <div class="figure" style="text-align: center">
 <img src="ER_macs2_summary_files/figure-html/plot-feature-region-overlap-1.png" alt="*The total number of ER union peaks overlapping external features and gene-centric regions. If a peak overlaps multiple features or regions, it is assigned to be the one with the largest overlap. Any peaks which don't overlap a feature have been excluded.*" width="960" />
@@ -1712,7 +1763,7 @@ hfgc_genes &lt;- read_rds(
 )
 gene_col &lt;- &quot;grey&quot;
 ## If RNA-Seq data is present, the genes track switches to Up/Down etc
-if (nrow(rnaseq)){
+if (nrow(rnaseq)) {
   rna_lfc_col &lt;- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), &quot;logfc&quot;)][1]
   rna_fdr_col &lt;- colnames(rnaseq)[str_detect(str_to_lower(colnames(rnaseq)), &quot;fdr|adjp&quot;)][1]
   if (!is.na(rna_lfc_col) &amp; !is.na(rna_fdr_col)) {
@@ -1850,7 +1901,7 @@ excluding the most highly ranked union peak.</p>
             str_replace_all(&quot; &quot;, &quot;-&quot;) %&gt;% 
             str_to_lower() %&gt;% 
             paste0(&quot;-topranked&quot;),
-          class=&quot;section level3&quot;,
+          class = &quot;section level3&quot;,
           htmltools::h3(
             ifelse(
               nm == &quot;union&quot;,
@@ -2043,26 +2094,25 @@ Session information </button>
 <em>grDevices</em>, <em>utils</em>, <em>datasets</em>, <em>methods</em>
 and <em>base</em></p>
 <p><strong>other attached packages:</strong>
-<em>extraChIPs(v.1.5.5)</em>, <em>SummarizedExperiment(v.1.28.0)</em>,
+<em>extraChIPs(v.1.5.6)</em>, <em>SummarizedExperiment(v.1.28.0)</em>,
 <em>Biobase(v.2.58.0)</em>, <em>MatrixGenerics(v.1.10.0)</em>,
 <em>matrixStats(v.1.0.0)</em>, <em>ggside(v.0.2.2)</em>,
 <em>Rsamtools(v.2.14.0)</em>, <em>Biostrings(v.2.66.0)</em>,
 <em>XVector(v.0.38.0)</em>, <em>BiocParallel(v.1.32.5)</em>,
-<em>rlang(v.1.1.1)</em>, <em>cowplot(v.1.1.1)</em>,
-<em>VennDiagram(v.1.7.3)</em>, <em>futile.logger(v.1.4.3)</em>,
-<em>ComplexUpset(v.1.3.3)</em>, <em>ngsReports(v.2.0.0)</em>,
-<em>patchwork(v.1.1.2)</em>, <em>yaml(v.2.3.7)</em>,
-<em>plyranges(v.1.18.0)</em>, <em>scales(v.1.2.1)</em>,
-<em>pander(v.0.6.5)</em>, <em>glue(v.1.6.2)</em>,
-<em>rtracklayer(v.1.58.0)</em>, <em>GenomicRanges(v.1.50.0)</em>,
-<em>GenomeInfoDb(v.1.34.9)</em>, <em>IRanges(v.2.32.0)</em>,
-<em>S4Vectors(v.0.36.0)</em>, <em>BiocGenerics(v.0.44.0)</em>,
-<em>magrittr(v.2.0.3)</em>, <em>lubridate(v.1.9.2)</em>,
-<em>forcats(v.1.0.0)</em>, <em>stringr(v.1.5.0)</em>,
-<em>dplyr(v.1.1.2)</em>, <em>purrr(v.1.0.1)</em>,
-<em>readr(v.2.1.4)</em>, <em>tidyr(v.1.3.0)</em>,
-<em>tibble(v.3.2.1)</em>, <em>ggplot2(v.3.4.2)</em> and
-<em>tidyverse(v.2.0.0)</em></p>
+<em>rlang(v.1.1.1)</em>, <em>VennDiagram(v.1.7.3)</em>,
+<em>futile.logger(v.1.4.3)</em>, <em>ComplexUpset(v.1.3.3)</em>,
+<em>ngsReports(v.2.0.0)</em>, <em>patchwork(v.1.1.2)</em>,
+<em>yaml(v.2.3.7)</em>, <em>plyranges(v.1.18.0)</em>,
+<em>scales(v.1.2.1)</em>, <em>pander(v.0.6.5)</em>,
+<em>glue(v.1.6.2)</em>, <em>rtracklayer(v.1.58.0)</em>,
+<em>GenomicRanges(v.1.50.0)</em>, <em>GenomeInfoDb(v.1.34.9)</em>,
+<em>IRanges(v.2.32.0)</em>, <em>S4Vectors(v.0.36.0)</em>,
+<em>BiocGenerics(v.0.44.0)</em>, <em>magrittr(v.2.0.3)</em>,
+<em>lubridate(v.1.9.2)</em>, <em>forcats(v.1.0.0)</em>,
+<em>stringr(v.1.5.0)</em>, <em>dplyr(v.1.1.2)</em>,
+<em>purrr(v.1.0.1)</em>, <em>readr(v.2.1.4)</em>,
+<em>tidyr(v.1.3.0)</em>, <em>tibble(v.3.2.1)</em>,
+<em>ggplot2(v.3.4.2)</em> and <em>tidyverse(v.2.0.0)</em></p>
 <p><strong>loaded via a namespace (and not attached):</strong>
 <em>utf8(v.1.2.3)</em>, <em>tidyselect(v.1.2.0)</em>,
 <em>RSQLite(v.2.3.1)</em>, <em>AnnotationDbi(v.1.60.0)</em>,
@@ -2112,13 +2162,13 @@ and <em>base</em></p>
 <em>ComplexHeatmap(v.2.14.0)</em>, <em>MASS(v.7.3-60)</em>,
 <em>GenomicInteractions(v.1.32.0)</em>, <em>rappdirs(v.0.3.3)</em>,
 <em>Matrix(v.1.5-4.1)</em>, <em>cli(v.3.6.1)</em>,
-<em>metapod(v.1.6.0)</em>, <em>Gviz(v.1.42.0)</em>,
+<em>Gviz(v.1.42.0)</em>, <em>metapod(v.1.6.0)</em>,
 <em>igraph(v.1.4.3)</em>, <em>pkgconfig(v.2.0.3)</em>,
 <em>GenomicAlignments(v.1.34.0)</em>, <em>foreign(v.0.8-84)</em>,
 <em>plotly(v.4.10.2)</em>, <em>xml2(v.1.3.4)</em>,
 <em>InteractionSet(v.1.26.0)</em>, <em>foreach(v.1.5.2)</em>,
 <em>bslib(v.0.5.0)</em>, <em>VariantAnnotation(v.1.44.0)</em>,
-<em>digest(v.0.6.31)</em>, <em>rmarkdown(v.2.22)</em>,
+<em>digest(v.0.6.31)</em>, <em>rmarkdown(v.2.23)</em>,
 <em>htmlTable(v.2.4.1)</em>, <em>edgeR(v.3.40.0)</em>,
 <em>restfulr(v.0.0.15)</em>, <em>curl(v.5.0.1)</em>,
 <em>rjson(v.0.2.21)</em>, <em>nlme(v.3.1-162)</em>,

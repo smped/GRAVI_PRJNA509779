@@ -13,7 +13,7 @@
 
 <title>Annotations</title>
 
-<script src="site_libs/header-attrs-2.22/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.23/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/sandstone.min.css" rel="stylesheet" />
@@ -452,7 +452,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Annotations</h1>
-<h4 class="date">01 July, 2023</h4>
+<h4 class="date">05 July, 2023</h4>
 
 </div>
 
@@ -514,7 +514,8 @@ if (has_external) {
 <div id="genome-annotations" class="section level1">
 <h1>Genome Annotations</h1>
 <p>Before analysing any datasets, annotations for the genome and
-transcriptome were defined.</p>
+transcriptome were checked and key objects were defined for consistent
+use throughout the workflow.</p>
 <div id="genome-description" class="section level2">
 <h2>Genome Description</h2>
 <pre class="r"><code>sq &lt;- read_rds(file.path(annotation_path, &quot;seqinfo.rds&quot;))</code></pre>
@@ -529,13 +530,15 @@ information about the underlying genome, such as a
 <div id="blacklisted-regions" class="section level2 tabset">
 <h2 class="tabset">Blacklisted Regions</h2>
 <pre class="r"><code>blacklist &lt;- import.bed(here::here(config$external$blacklist), seqinfo = sq)</code></pre>
+<p>Blacklisted regions were supplied in the file
+<code>rconfig$external$blacklist</code>.</p>
 <div id="summary" class="section level3">
 <h3>Summary</h3>
 <pre class="r"><code>blacklist %&gt;% 
   group_by(name) %&gt;% 
   summarise(
     n = n(),
-    p = percent(sum(width)/ sum(seqlengths(sq))),
+    p = percent(sum(width) / sum(seqlengths(sq))),
     kb = sum(width) / 1e3,
     min = min(width) / 1e3,
     median = median(width) / 1e3,
@@ -554,16 +557,14 @@ information about the underlying genome, such as a
   ) %&gt;% 
   pander(
     caption = glue(
-      &quot;*Summary of genomic regions excluded in the blacklist. &quot;,
-      &quot;The default set of blacklisted regions was used, as obtained from &quot;,
-      &quot;the Biconductor package &#39;GreyListChIP&#39;.&quot;
+      &quot;*Summary of genomic regions provided in the blacklist. &quot;,
+      &quot;These regions will be excluded from all subsequent analyses.*&quot;
     ),
     justify = &quot;lrrrrrr&quot;
   )</code></pre>
 <table>
-<caption>*Summary of genomic regions excluded in the blacklist. The
-default set of blacklisted regions was used, as obtained from the
-Biconductor package ‘GreyListChIP’.</caption>
+<caption><em>Summary of genomic regions provided in the blacklist. These
+regions will be excluded from all subsequent analyses.</em></caption>
 <colgroup>
 <col width="22%" />
 <col width="14%" />
@@ -664,55 +665,44 @@ so transcript models could be simply visualised throughout the
 workflow.</li>
 </ul>
 <p>In total this annotation build contained 62,449 genes, 229,655
-transcripts and 1,379,777 exons.</p>
+transcripts and 1,379,777 exons, after restricting the dataset to the
+autosomes and sex chromosomes.</p>
 </div>
 <div id="gene-centric-regions" class="section level2 tabset">
 <h2 class="tabset">Gene-Centric Regions</h2>
 <pre class="r"><code>gene_regions &lt;- read_rds(file.path(annotation_path, &quot;gene_regions.rds&quot;))
 regions &lt;- vapply(gene_regions, function(x) unique(x$region), character(1))
 missing_reg_col &lt;- setdiff(names(regions), names(colours$regions))
-if (length(missing_reg_col) &gt; 0){
+if (length(missing_reg_col) &gt; 0) {
   def_reg_cols &lt;- c(
-    promoters = &quot;#FF3300&quot;, upstream = &quot;#E1EE05&quot;, exons = &quot;#7EDD57&quot;, 
-    introns = &quot;#006600&quot;, proximal = &quot;#000066&quot;, distal = &quot;#551A8B&quot;
+    promoter = &quot;#FF3300&quot;, upstream_promoter = &quot;#E1EE05&quot;, exon = &quot;#7EDD57&quot;, 
+    intron = &quot;#006600&quot;, proximal_intergenic = &quot;#000066&quot;, distal_intergenic = &quot;#551A8B&quot;
   )
   colours$regions[missing_reg_col] &lt;- def_reg_cols[missing_reg_col]
 }
 region_cols &lt;- unlist(colours$regions) %&gt;% 
   setNames(regions[names(.)])</code></pre>
 <p>Using the provided GTF, <strong>unique</strong> gene and
-transcript-centric features were also defined as:</p>
+transcript-centric features were also defined using
+<code>defineRegions()</code>, and will be treated as annotated regions
+throughout the workflow. The regions are:</p>
 <ol style="list-style-type: decimal">
-<li>Promoters</li>
-<li>Upstream</li>
+<li>Promoters (-1500/+500bp)</li>
+<li>Upstream Promoters (&gt; 1500bp; &lt; 5000bp)</li>
 <li>Exons</li>
 <li>Introns</li>
 <li>Intergenic regions within 10kb of a gene</li>
 <li>Intergenic regions &gt;10kb from any defined genes</li>
 </ol>
+<p>Colours were also defined for each of these regions for consistent
+visualisation.</p>
 <p>In addition, TSS regions were defined as a separate object given each
 TSS has single-base width. With the exception of TSS and Promoters,
 these features were non-overlapping and defined in a hierarchical,
-unstranded manner.</p>
-<ul>
-<li><em>TSS</em> regions were the individual start sites for each
-transcript. Given that many transcripts can originate from the same TSS,
-this is somewhat smaller than the number of actual transcripts defined
-in the GTF</li>
-<li><em>Promoters</em> were first defined for all individual transcripts
-as the region -1500/+500bp around each TSS, as specified in
-<code>config.params.yml</code>. Overlapping regions were merged to
-create a single promoter region for all transcripts within that genomic
-region.</li>
-<li><em>Upstream promoters</em> were then defined as the region
-extending 5kb upstream from a TSS, but excluding any region already
-defined as a promoter through the previous merging step.
-<!-- Any ranges within these which overlapped other genes were removed. --></li>
-<li><em>Exons</em> and <em>Introns</em> were considered to be any exon
-or intron, not previously included in one of the above regions.</li>
-<li><em>Intergenic</em> regions were defined as those within 10kb
-(excluding upstream promoters) or those &gt;10kb from any gene</li>
-</ul>
+un-stranded manner. <em>TSS</em> regions represent the individual start
+sites for each transcript, and given that many transcripts can originate
+from the same TSS, this is somewhat smaller than the number of actual
+transcripts defined in the GTF.</p>
 <pre class="r"><code>cp &lt;- em(
   glue(
     &quot;
@@ -784,8 +774,8 @@ div(class = &quot;table&quot;,
 Colours used throughout the workflow for each region are indicated in the 
 first column, with other summary statistics making up the rest of the table.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a3963a4e8943085aed5d" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-a3963a4e8943085aed5d">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500)","Upstream Promoter (-5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91611,161434,183663,36482,12646],"Width":[210.742887,281.037327,77.78419,1309.46188,255.426502,961.224626],"Mn":[2.37216216794237,3.06772469463274,0.481832761376166,7.12969885061226,7.00143912066224,76.0101712794559],"% Genome":[0.068076501182934,0.0907837896515298,0.0251267104571295,0.422996877815511,0.0825106973387704,0.310505423554126]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,611","161,434","183,663","36,482","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.07","0.48","7.13","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"b4ce36624db3052304ccec7148db419e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d98353824e892bc9ba4d" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-d98353824e892bc9ba4d">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"Guide":["#FF3300","#E1EE05","#7EDD57","#006600","#000066","#551A8B"],"Region":["Promoter (-1500/+500)","Upstream Promoter (-5kb)","Exon","Intron","Intergenic (<10kb)","Intergenic (>10kb)"],"N":[88840,91611,161434,183663,36482,12646],"Width":[210.742887,281.037327,77.78419,1309.46188,255.426502,961.224626],"Mn":[2.37216216794237,3.06772469463274,0.481832761376166,7.12969885061226,7.00143912066224,76.0101712794559],"% Genome":[0.068076501182934,0.0907837896515298,0.0251267104571295,0.422996877815511,0.0825106973387704,0.310505423554126]},"columns":[{"id":"Guide","name":"","type":"character","cell":["","","","","",""],"maxWidth":50,"style":[{"background":"#FF3300"},{"background":"#E1EE05"},{"background":"#7EDD57"},{"background":"#006600"},{"background":"#000066"},{"background":"#551A8B"}]},{"id":"Region","name":"Region","type":"factor","minWidth":200},{"id":"N","name":"N","type":"numeric","cell":["88,840","91,611","161,434","183,663","36,482","12,646"],"maxWidth":150},{"id":"Width","name":"Total Width (Mb)","type":"numeric","cell":["210.7","281.0","77.8","1309.5","255.4","961.2"]},{"id":"Mn","name":"Average Width (kb)","type":"numeric","cell":["2.37","3.07","0.48","7.13","7.00","76.01"]},{"id":"% Genome","name":"% Genome","type":"numeric","cell":["6.8%","9.1%","2.5%","42.3%","8.3%","31.1%"]}],"dataKey":"b4ce36624db3052304ccec7148db419e"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div id="summary-1" class="section level3">
@@ -797,18 +787,20 @@ first column, with other summary statistics making up the rest of the table.</em
   mutate(region = factor(region, levels = regions)) %&gt;% 
   setNames(NULL) %&gt;%
   plotPie(
-    fill = &quot;region&quot;, scale_by = &quot;width&quot;, show_total = FALSE, 
-    category_size = 3.5
+    fill = &quot;region&quot;, scale_by = &quot;width&quot;, scale_factor = 1e6,
+    total_glue = &quot;{comma(N, 0.1)}Mb&quot;, total_size = 4.5,
+    cat_glue = &quot;{str_wrap(.data[[fill]], 10)}\n{comma(n, 0.1)}Mb\n({percent(p, 0.1)})&quot;,
+    cat_alpha = 0.8, cat_adj = 0.1, cat_size = 3.5
   ) +
   scale_fill_manual(values = region_cols) +
   theme(legend.position = &quot;none&quot;)</code></pre>
 <div class="figure" style="text-align: center">
-<img src="annotation_description_files/figure-html/pie-gene-regions-1.png" alt="*Summary of gene-centric regions using the above workflow and the supplied GTF. Percentages represent the amount of the genome allocated to each region. Blacklisted regions were not considered for this step of the annotation.*" width="768" />
+<img src="annotation_description_files/figure-html/pie-gene-regions-1.png" alt="*Summary of gene-centric regions using `defineRegions()` and the supplied GTF. Percentages represent the amount of the genome allocated to each region with total widths shown in Mb. Blacklisted regions were not considered for this step of the annotation.*" width="768" />
 <p class="caption">
-<em>Summary of gene-centric regions using the above workflow and the
-supplied GTF. Percentages represent the amount of the genome allocated
-to each region. Blacklisted regions were not considered for this step of
-the annotation.</em>
+<em>Summary of gene-centric regions using <code>defineRegions()</code>
+and the supplied GTF. Percentages represent the amount of the genome
+allocated to each region with total widths shown in Mb. Blacklisted
+regions were not considered for this step of the annotation.</em>
 </p>
 </div>
 </div>
@@ -924,7 +916,7 @@ regions.</em>
 <pre class="r"><code>feat_path &lt;- here::here(config$external$features)
 external_features &lt;- list(features = c())
 has_features &lt;- FALSE
-if (length(feat_path)&gt; 0) {
+if (length(feat_path) &gt; 0) {
   stopifnot(file.exists(feat_path))
   external_features &lt;- suppressWarnings(
     import.gff(feat_path, genome = sq)
@@ -952,55 +944,26 @@ if (length(missing_feat_col) &gt; 0) {
 }
 colours$features &lt;- feat_col</code></pre>
 <p>External features were compared to the gene-centric annotations.</p>
-<pre class="r"><code>suppressWarnings(
-  external_features %&gt;% 
-    mutate(w = width) %&gt;% 
-    mcols() %&gt;% 
-    as_tibble() %&gt;% 
-    pivot_longer(
-      cols = all_of(names(regions)),
-      names_to = &quot;region&quot;, values_to = &quot;prop&quot;
-    ) %&gt;% 
-    group_by(feature, region) %&gt;% 
-    summarise(ol = sum(prop*w/1e6), .groups = &quot;drop&quot;) %&gt;% 
-    left_join(
-      external_features %&gt;%
-        group_by(feature) %&gt;% 
-        summarise(w = sum(width/1e6)) %&gt;%
-        as_tibble(),
-      by = &quot;feature&quot;
-    ) %&gt;% 
-    mutate(
-      p = ol / w,
-      Feature = factor(feature, levels = names(feat_col)) %&gt;% 
-        fct_relabel(str_sep_to_title),
-      region = factor(regions[region], levels = regions)
-    ) %&gt;% 
-    ggplot(
-      aes(fct_rev(region), p, fill = feature)
-    ) +
-    geom_col(colour = &quot;grey80&quot;) +
-    geom_label(
-      aes(label = percent(p, accuracy = 1)),
-      data = . %&gt;% 
-        group_by(region, feature, Feature) %&gt;% 
-        summarise(p = sum(p), .groups = &quot;drop&quot;),
-      alpha = 0.5,
-      nudge_y = 0.03
-    ) +
-    coord_flip() +
-    facet_grid(Feature~., scales = &quot;free_y&quot;, space = &quot;free&quot;) +
-    scale_y_continuous(labels = percent, expand = expansion(c(0, 0.05))) +
-    scale_fill_manual(values = feat_col) +
-    labs(x = &quot;&quot;, y = &quot;&quot;) +
-    theme(legend.position = &quot;none&quot;)
-)</code></pre>
+<pre class="r"><code>external_features %&gt;% 
+  as_tibble() %&gt;% 
+  dplyr::select(range, feature, all_of(names(gene_regions))) %&gt;% 
+  pivot_longer(
+    cols = all_of(names(gene_regions)), names_to = &quot;region&quot;, values_to = &quot;p&quot;
+  ) %&gt;% 
+  mutate(region = regions[region]) %&gt;% 
+  plotSplitDonut(
+    inner = &quot;feature&quot;, outer = &quot;region&quot;, scale_by = &quot;p&quot;, scale_factor = 1,
+    inner_palette = colours$feature, outer_palette = region_cols,
+    inner_glue = &quot;{str_wrap(.data[[inner]], 10)}\n{comma(n, 1)}\n{percent(p,0.1)}&quot;,
+    outer_glue = &quot;{str_wrap(.data[[outer]], 15)}\n{percent(p,0.1)}&quot;,
+  )</code></pre>
 <div class="figure" style="text-align: center">
-<img src="annotation_description_files/figure-html/plot-feature-by-region-1.png" alt="*The proportion of the ranges provided as external features in the file enhancer_atlas_2.0_zr75.gtf.gz, and which overlap the gene-centric regions defined above.*" width="960" />
+<img src="annotation_description_files/figure-html/plot-feature-by-region-1.png" alt="*The proportion of the ranges provided as external features in the file enhancer_atlas_2.0_zr75.gtf.gz, and which overlap the gene-centric regions defined above. Values were estimated using the proportion of bases within each feature that overlap each of the regions.*" width="960" />
 <p class="caption">
 <em>The proportion of the ranges provided as external features in the
 file enhancer_atlas_2.0_zr75.gtf.gz, and which overlap the gene-centric
-regions defined above.</em>
+regions defined above. Values were estimated using the proportion of
+bases within each feature that overlap each of the regions.</em>
 </p>
 </div>
 <pre class="r"><code>cp &lt;- em(
@@ -1032,7 +995,7 @@ tbl &lt;- external_features %&gt;%
     columns = list(
       guide = colDef(
         maxWidth = 40,
-        style = function(value) list(background= value),
+        style = function(value) list(background = value),
         cell = function(value) &quot;&quot;,
         name = &quot;&quot;
       ),
@@ -1067,8 +1030,8 @@ div(class = &quot;table&quot;,
 <div class="caption">
 <em>Summary of external features provided in the file enhancer_atlas_2.0_zr75.gtf.gz. All peaks and windows will be compared to these throughout the workflow. The colours defined for each feature is show as a guide on the left.</em>
 </div>
-<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-15cea30f2a857d602b65" style="width:auto;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-15cea30f2a857d602b65">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.66],"med":[1.17],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"95710736a46fcd95ff7e663bdcf3d11b"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
+<div class="reactable html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-db1763429b91a06ed4d6" style="width:auto;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-db1763429b91a06ed4d6">{"x":{"tag":{"name":"Reactable","attribs":{"data":{"guide":["#FFFF00"],"feature":["Enhancer"],"N":[32462],"Width":[49775.66],"med":[1.17],"range":["[0.1, 432.2]"]},"columns":[{"id":"guide","name":"","type":"character","cell":[""],"maxWidth":40,"style":[{"background":"#FFFF00"}]},{"id":"feature","name":"Feature","type":"factor","footer":{"name":"b","attribs":{},"children":["Total"]}},{"id":"N","name":"N","type":"numeric","cell":["32,462"],"footer":{"name":"b","attribs":{},"children":["32,462"]}},{"id":"Width","name":"Total Width (kb)","type":"numeric","cell":["49,776"],"footer":{"name":"b","attribs":{},"children":["49,776"]}},{"id":"med","name":"Median Width (kb)","type":"numeric","cell":["1.17"]},{"id":"range","name":"Size Range (kb)","type":["glue","character"],"align":"right"}],"dataKey":"95710736a46fcd95ff7e663bdcf3d11b"},"children":[]},"class":"reactR_markup"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -1104,7 +1067,7 @@ missing_dir_cols &lt;- setdiff(
   c(&quot;up&quot;, &quot;down&quot;, &quot;unchanged&quot;, &quot;undetected&quot;, &quot;ambiguous&quot;), 
   names(colours$direction)
 )
-if (length(missing_dir_cols) &gt; 0){
+if (length(missing_dir_cols) &gt; 0) {
   def_dir_cols &lt;- c(
     up = &quot;#CA0020&quot;, down = &quot;#0571B0&quot;, 
     unchanged = &quot;#7F7F7F&quot;, undetected = &quot;#E5E5E5&quot;,
@@ -1137,7 +1100,7 @@ simply add them to <code>config/rmarkdown.yml</code>.</p>
 <div id="regions" class="section level2">
 <h2>Regions</h2>
 <pre class="r"><code>.plotScheme(colours$regions, xlab = &quot;Regions&quot;)</code></pre>
-<p><img src="annotation_description_files/figure-html/plot-regions-1.png" width="1344" style="display: block; margin: auto;" /></p>
+<p><img src="annotation_description_files/figure-html/plot-regions-1.png" width="768" style="display: block; margin: auto;" /></p>
 </div>
 <div id="features" class="section level2">
 <h2>Features</h2>
@@ -1160,8 +1123,8 @@ simply add them to <code>config/rmarkdown.yml</code>.</p>
 </div>
 <div id="data-export" class="section level1">
 <h1>Data Export</h1>
-<p>During the setup of all required annotations, the following files
-were exported:</p>
+<p>During setup of all required annotations, the following files were
+exported:</p>
 <ul>
 <li><strong>chrom_sizes</strong>:
 GRAVI_PRJNA509779/output/annotations/chrom.sizes</li>
@@ -1201,7 +1164,7 @@ Session information
 <em>stats</em>, <em>graphics</em>, <em>grDevices</em>, <em>utils</em>,
 <em>datasets</em>, <em>methods</em> and <em>base</em></p>
 <p><strong>other attached packages:</strong>
-<em>extraChIPs(v.1.5.5)</em>, <em>ggside(v.0.2.2)</em>,
+<em>extraChIPs(v.1.5.6)</em>, <em>ggside(v.0.2.2)</em>,
 <em>BiocParallel(v.1.32.5)</em>, <em>GenomicInteractions(v.1.32.0)</em>,
 <em>InteractionSet(v.1.26.0)</em>,
 <em>SummarizedExperiment(v.1.28.0)</em>, <em>Biobase(v.2.58.0)</em>,
@@ -1274,7 +1237,7 @@ Session information
 <em>xml2(v.1.3.4)</em>, <em>foreach(v.1.5.2)</em>,
 <em>bslib(v.0.5.0)</em>, <em>XVector(v.0.38.0)</em>,
 <em>VariantAnnotation(v.1.44.0)</em>, <em>digest(v.0.6.31)</em>,
-<em>Biostrings(v.2.66.0)</em>, <em>rmarkdown(v.2.22)</em>,
+<em>Biostrings(v.2.66.0)</em>, <em>rmarkdown(v.2.23)</em>,
 <em>htmlTable(v.2.4.1)</em>, <em>edgeR(v.3.40.0)</em>,
 <em>restfulr(v.0.0.15)</em>, <em>curl(v.5.0.1)</em>,
 <em>Rsamtools(v.2.14.0)</em>, <em>rjson(v.0.2.21)</em>,

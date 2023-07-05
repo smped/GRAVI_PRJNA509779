@@ -23,7 +23,7 @@ glue(
 	  pairs:
 	    value:
 	      {{target1}}: [\"{{ref1}}\", \"{{treat1}}\"]
-          {{target2}}: [\"{{ref2}}\", \"{{treat2}}\"]
+	      {{target2}}: [\"{{ref2}}\", \"{{treat2}}\"]
 	---
 
 	```{r set-knitr-opts, echo=FALSE, child = here::here('analysis/setup_chunk.Rmd')}
