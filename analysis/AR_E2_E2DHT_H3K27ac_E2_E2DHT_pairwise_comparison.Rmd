@@ -1181,7 +1181,8 @@ fl <- seq_along(pairs) %>%
     function(x) {
       file.path(
         macs2_path[[x]],
-         glue("{names(pairs)[x]}_{pairs[[x]]}_merged_FE.bw")
+         # glue("{names(pairs)[x]}_{pairs[[x]]}_merged_FE.bw")
+         glue("{names(pairs)[x]}_{pairs[[x]]}_merged_treat_pileup.bw")
       ) %>% 
         setNames(paste(names(pairs)[[x]], pairs[[x]]))
     } 
@@ -1232,7 +1233,7 @@ profile_heatmaps <- sig_profiles %>%
     plotProfileHeatmap,
     profileCol = "profile_data", 
     xLab = "Distance from Centre (bp)",
-    fillLab = "log2 Fold\nEnrichment",
+    fillLab = "log2 CPM",
     colour = "name",
     mc.cores = min(length(.), threads)
   ) 
@@ -1269,7 +1270,7 @@ profile_heatmaps <- profile_heatmaps %>%
         ) +
         labs(
           x = "Distance from Centre (kb)",
-          fill = "log2 Fold\nEnrichment", linetype = "Union\nPeak\nOverlap",
+          fill = "log2 CPM", linetype = "Union\nPeak\nOverlap",
           colour = "Sample"
         ) 
     }
@@ -1312,7 +1313,7 @@ htmltools::tagList(
         centered at the midpoint between ranges identified as the maximal 
         signal range, based on {c1} only. If more than {n_max} ranges were 
         defined, plots were restricted to {n_max} ranges. Values showb are log2 
-        fold-enrichment over input as produced by macs2 bdgcmp.
+        CPM taking the SPMR-based bigwig files produced by macs callpeak.
         "
         )
       )
