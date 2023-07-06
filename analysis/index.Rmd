@@ -51,7 +51,7 @@ Treatment groups and targets are specified using `config/config.yml`.
 here::here("workflow", "rules", "rulegraph.dot") %>%
   readLines() %>%
   rm_dot_node(node = "\"all\"") %>%
-  add_input_node(node = "Alignments\n(Bam Files)", col = "red", ignore = "(download|define|macs2|create|install)") %>%
+  add_input_node(node = "Alignments\n(Bam Files)", col = "red", ignore = "(download|define|macs2|create|install|update)") %>%
   change_node_colour("(index|macs2|annotations|bedgraph|compile|greylist|coverage)", "red") %>%
   change_node_colour("(create|build|update)", "forestgreen") %>%
   change_node_colour("(download|write|copy|install)", "blue") %>%

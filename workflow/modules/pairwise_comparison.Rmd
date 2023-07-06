@@ -1200,18 +1200,17 @@ x_lab <- c(
 sig_profiles <- grl_to_plot %>% 
   endoapply(
     function(x) {
-      if (length(x) < n_max) return(x)
+      if (length(x) <= n_max) return(x)
       id <- sample(length(x), n_max)
       sort(x[id])
     }
   ) %>% 
   mclapply(
-  grl_to_plot, 
-  function(x) getProfileData(
-    bwfl_fe, x, upstream = profile_width / 2, bins = n_bins, log = TRUE
-  ),
-  mc.cores = min(length(grl_to_plot), threads)
-)
+    function(x) getProfileData(
+      bwfl_fe, x, upstream = profile_width / 2, bins = n_bins, log = TRUE
+    ),
+    mc.cores = min(length(grl_to_plot), threads)
+  )
 profile_heatmaps <- sig_profiles %>% 
   mclapply(
     plotProfileHeatmap,
