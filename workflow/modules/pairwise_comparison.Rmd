@@ -414,7 +414,7 @@ Differential binding analyses generally focus on controlling the Type I errors (
 When seeking to correctly classify a window across two datasets, the detection as changed can be taken as a robust finding, whilst the consideration as unchanged may be less robust.
 When comparing a window across two datasets, a detection as changed within one dataset is taken as primary evidence of 'something interesting' occurring, with the secondary consideration being the correct description of the combined binding patterns.
 For this reason, and to minimise issues with hard thresholding, once a window is considered to be of interest, the p-value used in the second comparison is that obtained (and FDR-adjusted) using the test for $H_0: \mu = 0$ instead of the initial $H_0: 0 < |\mu| < \lambda$.
-The insistence on the more stringent initial inclusion criteria still protects against false discoveries from the prespective of window identification, but this approach instead allows *improved classification* across both comparisons.
+The insistence on the more stringent initial inclusion criteria still protects against false discoveries from the perspective of window identification, but this approach instead allows *improved classification* across both comparisons.
 
 For *classification steps within each window*, each target is given the status 1) Up, 2) Down, 3) Unchanged, or 4) Undetected.
 Across two comparisons, this gives 15 possible classifications for each region found with at least one target bound (e.g. Up-Up, Up-Down, Up-Unchanged, Up-Undetected etc.), given that any potential Undetected-Undetected windows will not be included for obvious reasons.
@@ -1189,14 +1189,7 @@ grl_to_plot <- all_windows %>%
   ) %>% 
   lapply(function(x) GRanges(x$rng, seqinfo = sq)) %>% 
   GRangesList() %>% 
-  endoapply(distinctMC) %>% 
-  endoapply(
-    function(x) {
-      if (length(x) < n_max) return(x)
-      id <- sample(length(x), n_max)
-      sort(x[id])
-    }
-  )
+  endoapply(distinctMC) 
 profile_width <- 5e3
 x_lab <- c(
   seq(0, floor(0.5 * profile_width / 1e3), length.out = 3),
@@ -1204,7 +1197,15 @@ x_lab <- c(
 ) %>% 
   sort() %>% 
   unique()
-sig_profiles <- mclapply(
+sig_profiles <- grl_to_plot %>% 
+  endoapply(
+    function(x) {
+      if (length(x) < n_max) return(x)
+      id <- sample(length(x), n_max)
+      sort(x[id])
+    }
+  ) %>% 
+  mclapply(
   grl_to_plot, 
   function(x) getProfileData(
     bwfl_fe, x, upstream = profile_width / 2, bins = n_bins, log = TRUE
@@ -1275,7 +1276,7 @@ htmltools::tagList(
           str_replace_all("_-_", "-") %>% 
           paste0("_profile_heatmap.", fig_type)
       )
-      n_ranges <- length(unique(profile_heatmaps[[x]]$data$range))
+      n_ranges <- length(grl_to_plot[[x]])
       n_samples <- length(unique(profile_heatmaps[[x]]$data$name))
       fig_fun(
         filename = img_out,
@@ -1292,11 +1293,11 @@ htmltools::tagList(
       cp <- htmltools::tags$em(
         glue(
           "
-        All {n_ranges} ranges showing the pattern of {pw}. Ranges are centered 
-        at the midpoint between ranges identified as the maximal signal range,
-        based on {c1} only. If more than {n_max} ranges were provided, only 
-        {n_max} will be plotted. Values plotted are log2 fold-enrichmenbt over 
-        Input as produced by macs2 bdgcmp.
+        {n_ranges} ranges were defined as showing the pattern {pw}. Ranges were 
+        centered at the midpoint between ranges identified as the maximal 
+        signal range, based on {c1} only. If more than {n_max} ranges were 
+        defined, plots were restricted to {n_max} ranges. Values showb are log2 
+        fold-enrichment over input as produced by macs2 bdgcmp.
         "
         )
       )
@@ -1307,7 +1308,7 @@ htmltools::tagList(
             str_remove_all(glue(".{fig_type}$")) %>% 
             str_to_lower() %>% 
             str_replace_all("_", "-"),
-          class ="section level3",
+          class = "section level3",
           htmltools::h3(pw),
           htmltools::div(
             class = "figure", style = "text-align: center",
@@ -1835,14 +1836,14 @@ This will capture and describe the overall biological activity being jointly reg
 
 The genes in each section and intersection in the following Venn Diagram will then be analysed against the complete set of `r comma(length(unique(unlist(comp_ids))))` genes mapped to either `r glue_collapse(comps, last = ' or ')`.
 Firstly, all `r comma(length(mapped_ids))` genes mapped to a binding site were tested for enrichment in comparison to the set of `r comma(length(unique(gtf_gene$gene_id)))` `r ifelse(has_rnaseq, "detected", "annotated")` genes.
-For this analysis, gene width was used as a potential source of sampling bias and Wallenius' Non-Central Hypergeomteric was used as implemented in `goseq` [@YoungGoseq2010].
+For this analysis, gene width was used as a potential source of sampling bias and Wallenius' Non-Central Hypergeometric was used as implemented in `goseq` [@YoungGoseq2010].
 
 The sets of genes mapped to each section of the Venn Diagram were then tested for enrichment in comparison to the larger set of `r comma(length(mapped_ids))` mapped genes.
 The standard hypergeometric distribution was used for these analyses.
 
 If `r min_network_size` or more gene-sets were considered to be enriched, a network plot was produced using the same methodology as for results from differential binding for individual comparisons.
 
-```{r venn-shared-genes, results='hide', fig.show='asis', fig.cap = glue("*Venn Diagram showing __genes__ mapped to a binding region associated with {glue_collapse(comps, sep = ' or ')}. Of the {comma(nrow(all_ids))} genes under consideration, a total of {comma(length(mapped_ids))} genes were mapped to a binding region across both comparisons, leaving {comma(nrow(all_ids) - length(mapped_ids))} genes unmapped to a binding region across either comparison.*")}
+```{r venn-shared-genes, results = 'hide', fig.show = 'asis', fig.cap = glue("*Venn Diagram showing __genes__ mapped to a binding region associated with {glue_collapse(comps, sep = ' or ')}. Of the {comma(nrow(all_ids))} genes under consideration, a total of {comma(length(mapped_ids))} genes were mapped to a binding region across both comparisons, leaving {comma(nrow(all_ids) - length(mapped_ids))} genes unmapped to a binding region across either comparison.*")}
 plotOverlaps(
   comp_ids, set_col = comp_cols[comps], cex = 1.2, cat.cex = 1.2
 )
@@ -1852,7 +1853,7 @@ plotOverlaps(
 
 #### Mapped Genes To Either `r glue_collapse(comps, last = " or ")`
 
-```{r goseq-mapped-res, fig.show='hide'}
+```{r goseq-mapped-res, fig.show = 'hide'}
 pwf_mapped <- gtf_gene %>%
   mutate(w = width) %>%
   as_tibble() %>% 
@@ -1891,7 +1892,7 @@ plot_network_mapped <- length(tg_mapped) >= min_network_size
 ```
 
 
-```{r tbl-goseq-mapped-res, eval = any_goseq_mapped, echo =any_goseq_mapped}
+```{r tbl-goseq-mapped-res, eval = any_goseq_mapped, echo = any_goseq_mapped}
 tbl <- goseq_mapped_res %>%
   dplyr::filter(enriched) %>% 
   dplyr::select(
@@ -2002,7 +2003,7 @@ para <- glue(
 ```
 
 
-```{r goseq_t1t2_res, eval = n_targets == 2, fig.show='hide'}
+```{r goseq_t1t2_res, eval = n_targets == 2, fig.show = 'hide'}
 pwf_t1t2 <- nullp(
   vec_t1t2,
   bias.data = log10(setNames(all_ids$w, all_ids$gene_id)[mapped_ids]), 
@@ -2132,7 +2133,7 @@ para <- glue(
 )
 ```
 
-```{r goseq-t1only-res, fig.show='hide'}
+```{r goseq-t1only-res, fig.show = 'hide'}
 pwf_t1only <- nullp(
   vec_t1only,
   bias.data = log10(setNames(all_ids$w, all_ids$gene_id)[mapped_ids]), 
@@ -2262,7 +2263,7 @@ para <- glue(
 any_goseq_t2only <- plot_network_t2only <- FALSE
 ```
 
-```{r goseq-t2only-res, fig.show='hide'}
+```{r goseq-t2only-res, fig.show = 'hide'}
 pwf_t2only <- nullp(
   vec_t2only,
   bias.data = log10(setNames(all_ids$w, all_ids$gene_id)[mapped_ids]), 
@@ -2370,7 +2371,7 @@ div(class = "table",
 
 `r if (plot_network_mapped) "#### All Mapped Genes"`
 
-```{r plot-network-mapped, eval = plot_network_mapped, echo = plot_network_mapped, fig.cap=glue("*Network plot showing  gene-sets enriched amongst the overall set of sites with a binding site from __either__ comparison.*")}
+```{r plot-network-mapped, eval = plot_network_mapped, echo = plot_network_mapped, fig.cap = glue("*Network plot showing  gene-sets enriched amongst the overall set of sites with a binding site from __either__ comparison.*")}
 tg_mapped %>% 
   ggraph(layout = net_layout, weights = oc^2) +
   geom_edge_link(aes(width = oc^2, alpha = oc^2)) +
@@ -2401,7 +2402,7 @@ tg_mapped %>%
 
 `r if (plot_network_t1t2) paste("#### Genes Mapped to Both", glue_collapse(comps, last = ' and '))`
 
-```{r plot-network-t1t2, eval = plot_network_t1t2, echo = plot_network_t1t2, fig.cap=glue("*Network plot showing gene-sets enriched amongst the overall set of sites with a binding site for __both__ {comps[[1]]} and {comps[[2]]}.*")}
+```{r plot-network-t1t2, eval = plot_network_t1t2, echo = plot_network_t1t2, fig.cap = glue("*Network plot showing gene-sets enriched amongst the overall set of sites with a binding site for __both__ {comps[[1]]} and {comps[[2]]}.*")}
 tg_t1t2 %>% 
   ggraph(layout = net_layout, weights = oc^2) +
   geom_edge_link(aes(width = oc^2, alpha = oc^2)) +
@@ -2432,7 +2433,7 @@ tg_t1t2 %>%
 
 `r if (plot_network_t1only) glue("#### Genes Mapped to {comps[[1]]} Only")`
 
-```{r plot-network-t1only, eval = plot_network_t1only, echo = plot_network_t1only, fig.cap=glue("*Network plot showing all gene-sets enriched amongst the overall set of sites with a binding site for __{comps[[1]]} only__.*")}
+```{r plot-network-t1only, eval = plot_network_t1only, echo = plot_network_t1only, fig.cap = glue("*Network plot showing all gene-sets enriched amongst the overall set of sites with a binding site for __{comps[[1]]} only__.*")}
 tg_t1only %>% 
   ggraph(layout = net_layout, weights = oc^2) +
   geom_edge_link(aes(width = oc^2, alpha = oc^2)) +
@@ -2463,7 +2464,7 @@ tg_t1only %>%
 
 `r if (plot_network_t2only) glue("#### Genes Mapped to {comps[[2]]} Only")`
 
-```{r plot-network-t2only, eval = plot_network_t2only, echo = plot_network_t2only, fig.cap=glue("*Network plot showing all gene-sets enriched amongst the overall set of sites with a binding site for __{comps[[2]]} only__.*")}
+```{r plot-network-t2only, eval = plot_network_t2only, echo = plot_network_t2only, fig.cap = glue("*Network plot showing all gene-sets enriched amongst the overall set of sites with a binding site for __{comps[[2]]} only__.*")}
 tg_t2only %>% 
   ggraph(layout = net_layout, weights = oc^2) +
   geom_edge_link(aes(width = oc^2, alpha = oc^2)) +
@@ -2495,7 +2496,7 @@ tg_t2only %>%
 
 ## Comparison of Differentially Bound Windows
 
-```{r goseq-groups, fig.show='hide'}
+```{r goseq-groups, fig.show = 'hide'}
 n_peaks <- structure(all_ids$n_windows, names = all_ids$gene_id)[mapped_ids]
 goseq_group_res <- group_ids %>% 
   .[str_detect(names(.), "Up|Down")] %>% 
@@ -2757,7 +2758,7 @@ htmltools::tagList(
           height = knitr::opts_current$get("fig.height")
         )
         p <- tg_group_res[[x]] %>%
-          ggraph(layout = net_layout, weights =oc^2) +
+          ggraph(layout = net_layout, weights = oc^2) +
           geom_edge_link(aes(width = oc^2, alpha = oc^2)) +
           geom_node_point(
             aes(fill = -log10(pval), size = numDEInCat),
