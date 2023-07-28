@@ -46,7 +46,7 @@ navbar:
         href: ER_E2_E2DHT_H3K27ac_E2_E2DHT_pairwise_comparison.html
   right:
   - icon: fa-github
-    href: https://github.com/steveped/GRAVI
+    href: https://github.com/smped/GRAVI
 output:
   html_document:
     toc: yes
